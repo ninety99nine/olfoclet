@@ -1,0 +1,160 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ *  Editable Div Placeholder Styles
+ */
+.editable-content-field[placeholder]:empty:before {
+    content: attr(placeholder);
+    color: #b1b1b1;
+}
+
+/*
+ *  Code Editor Scroll Bar Styles
+ */
+
+/*  Code Editor Header */
+/*
+ .code_editor .header {
+    background: #282c34;
+    height: 200px !important;
+    border-radius: 10px 10px 0 0;
+}
+*/
+/*  Code Editor Content */
+/*
+.code_editor .code_area {
+    margin-top: 30px;
+    overflow-y: auto !important;
+    border-radius: 10px !important;
+}
+
+.code_editor .code_area textarea {
+    right: 0;
+    bottom: 0;
+}
+*/
+
+/*  Scrollbar width */
+.code_editor .code_area textarea::-webkit-scrollbar,
+.code_editor .code_area code::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+/*  Scrollbar Track */
+.code_editor .code_area textarea::-webkit-scrollbar-track,
+.code_editor .code_area code::-webkit-scrollbar-track {
+    background: #5c6370;
+    border-radius: 10px;
+    margin: 40px 0px 5px 0px;
+}
+
+/*  Scrollbar Handle */
+.code_editor .code_area textarea::-webkit-scrollbar-thumb,
+.code_editor .code_area code::-webkit-scrollbar-thumb {
+    background: #4886fc;
+    border-radius: 10px;
+}
+
+/*  Scrollbar Handle On Hover */
+.code_editor .code_area textarea::-webkit-scrollbar-thumb:hover,
+.code_editor .code_area code::-webkit-scrollbar-thumb:hover {
+  background: #6c9fff;
+}
+
+/*
+ *  Element Pro UI Adjustments (Message)
+ */
+.el-message--success {
+    background: #0b9f6e !important;
+}
+
+.el-message--warning {
+    background: #e3a008 !important;
+}
+
+.el-message--error {
+    background: #f05152 !important;
+}
+
+.el-message--info {
+    background: #3e82f8 !important;
+}
+
+.el-message i, .el-message p {
+    color: #fff !important;
+}
+
+/*
+ *  Element Pro UI Adjustments (Popover)
+ */
+.el-popover.el-popper {
+    word-break: break-word !important;
+}
+
+/*
+ *  Element Pro UI Adjustments (Cascader)
+ */
+.el-input__wrapper {
+    padding: 0 10px !important;
+    box-shadow: none !important;
+    border-radius: 0.5rem !important;
+    background: transparent !important;
+}
+
+.el-input__wrapper .el-input__inner{
+    box-shadow: none;
+}
+
+/*
+ *  Vue 3 - Transition Animations (Fade)
+*/
+.fade-enter-active {
+    transition: all 0.3s ease-out;
+}
+
+.fade-leave-active {
+    transition: all 0.3s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+
+/*
+ *  Vue 3 - Transition Animations (Slide Fade)
+*/
+.slide-fade-enter-active {
+    transition: all 0.3s ease-out;
+}
+
+.slide-fade-leave-active {
+    transition: all 0.3s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+    transform: translateX(20px);
+    opacity: 0;
+}
+
+/*
+ *  Vue 3 - Transition Animations (Slide Up)
+*/
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all 0.25s ease-out;
+}
+
+.slide-up-enter-from {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.slide-up-leave-to {
+  opacity: 0;
+  transform: translateY(-30px);
+}
