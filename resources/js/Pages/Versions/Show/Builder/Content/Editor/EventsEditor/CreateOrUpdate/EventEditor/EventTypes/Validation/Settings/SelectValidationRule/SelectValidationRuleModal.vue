@@ -238,7 +238,13 @@
                         name: 'Validate Date Format (DD/MM/YYYY)',
                         type: 'valiate_date_format',
                         error_msg: 'Please enter a valid date (DD/MM/YYYY) e.g 02/08/2020',
-                        comment: 'Makes sure that the target value contains a valid date format (DD/MM/YYYY) e.g e.g 02/08/2020.'
+                        comment: 'Makes sure that the target value contains a valid date format (DD/MM/YYYY) e.g e.g 02/08/2020. This also works for other similar date formats e.g 2/8/2020 or 2/08/2020 or 02/8/2020. The date must be correct therefore 02/13/2020 is invalid since there is no 13th month.'
+                    },
+                    {
+                        name: 'Validate Date Format (DD-MM-YYYY)',
+                        type: 'valiate_date_using_hyphen_format',
+                        error_msg: 'Please enter a valid date (DD-MM-YYYY) e.g 02-08-2020',
+                        comment: 'Makes sure that the target value contains a valid date format (DD-MM-YYYY) e.g e.g 02-08-2020. This also works for other similar date formats e.g 2-8-2020 or 2-08-2020 or 02-8-2020. The date must be correct therefore 02-13-2020 is invalid since there is no 13th month.'
                     },
                     {
                         name: 'No Spaces',

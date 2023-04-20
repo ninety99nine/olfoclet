@@ -41,7 +41,7 @@
         components: { PrimaryAlert, DefaultButton, DefaultCodeSnippet },
         data() {
             return {
-                endpoint: route('launch.ussd.simulation')
+                endpoint: route('launch.ussd')
             }
         },
         methods: {

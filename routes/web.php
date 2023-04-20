@@ -13,6 +13,7 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\AppController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
 use App\Models\UssdSession;
 
@@ -26,6 +27,42 @@ use App\Models\UssdSession;
 | contains the "web" middleware group. Now create something great!
 |
 */
+
+//  ChatGPT
+Route::get('/chatgpt', function() {
+
+    /*
+    $response = Http::withoutVerifying()
+        ->withHeaders([
+            'Authorization' => 'Bearer ' . env('CHATGPT_API_KEY'),
+            'Content-Type' => 'application/json',
+        ])->post('https://api.openai.com/v1/chat/completions', [
+            "messages" => [
+                [
+                    "role" => "system",
+                    "system" => "Your name is Bonako Sales and you are an expert sales consultant assisting businesses in Botswana"
+                ]
+                [
+                    "role" => "user",
+                    "content" => "How can i start a business in Botswana?"
+                ]
+            ],
+            "model" => "gpt-3.5-turbo",
+            "max_tokens" => 500,
+            "temperature" => 0.7
+        ]);
+
+    return $response->json()['choices'][0]['text'];
+    */
+
+    $response = Http::withoutVerifying()
+        ->withHeaders([
+            'Authorization' => 'Bearer ' . env('CHATGPT_API_KEY'),
+            'Content-Type' => 'application/json',
+        ])->get('https://api.openai.com/v1/models');
+
+    return $response->json();
+});
 
 Route::get('/fix', function(){
 

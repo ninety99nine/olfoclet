@@ -9416,6 +9416,10 @@ class UssdService
 
                             $validationResponse = $this->applyValidationRule($target_value, $validation_rule, 'validateDateFormat'); break;
 
+                        case 'valiate_date_using_hyphen_format':
+
+                            $validationResponse = $this->applyValidationRule($target_value, $validation_rule, 'valiateDateUsingHyphenFormat'); break;
+
                         case 'equal_to':
 
                             $validationResponse = $this->applyValidationRule($target_value, $validation_rule, 'validateEqualTo'); break;
@@ -9688,15 +9692,117 @@ class UssdService
     public function validateDateFormat($target_value, $validation_rule)
     {
         //  Regex pattern
-        $pattern = '/^[0-9]{1,2}\/[0-9]{1,2}\/[0-9]{4}$/';
+        $pattern = "/^(0?[1-9]|[1-2][0-9]|3[0-1])\/(0?[1-9]|1[0-2])\/\d{4}$/";
 
         //  Convert to [String]
         $target_value = $this->convertToString($target_value);
 
         //  If the pattern was not matched exactly i.e validation failed
         if (empty($target_value) || !preg_match($pattern, $target_value)) {
+
             //  Handle the failed validation
             return $this->handleFailedValidation($validation_rule);
+
+        } else {
+
+            /// For dates "01/02/2030"
+            if(strlen($target_value) == 10) {
+
+                $dateFormat = 'd/m/Y';
+
+            /// For dates "1/2/2030", "01/2/2030" or "1/02/2030"
+            }else{
+
+
+                /// For dates "1/2/2030"
+                if(strlen(explode('/', $target_value)[0]) == 1 && strlen(explode('/', $target_value)[1]) == 1) {
+
+                    $dateFormat = 'j/n/Y';
+
+                /// For dates "01/2/2030"
+                }elseif(strlen(explode('/', $target_value)[0]) == 2) {
+
+                    $dateFormat = 'd/n/Y';
+
+                /// For dates "1/02/2030"
+                }elseif(strlen(explode('/', $target_value)[1]) == 2) {
+
+                    $dateFormat = 'j/m/Y';
+
+                }
+
+            }
+
+            $date = \Carbon\Carbon::createFromFormat($dateFormat, $target_value);
+
+            ///  If the date is not valid
+            if (($date && $date->format($dateFormat) == $target_value) == false) {
+
+                //  Handle the failed validation
+                return $this->handleFailedValidation($validation_rule);
+
+            }
+
+        }
+    }
+
+    /** This method validates to make sure the target input
+     *  is a valid date format e.g DD-MM-YYYY.
+     */
+    public function valiateDateUsingHyphenFormat($target_value, $validation_rule)
+    {
+        //  Regex pattern
+        $pattern = '/^(0?[1-9]|[1-2][0-9]|3[0-1])-(0?[1-9]|1[0-2])-\d{4}$/';
+
+        //  Convert to [String]
+        $target_value = $this->convertToString($target_value);
+
+        //  If the pattern was not matched exactly i.e validation failed
+        if (empty($target_value) || !preg_match($pattern, $target_value)) {
+
+            //  Handle the failed validation
+            return $this->handleFailedValidation($validation_rule);
+
+        } else {
+
+            /// For dates "01-02-2030"
+            if(strlen($target_value) == 10) {
+
+                $dateFormat = 'd-m-Y';
+
+            /// For dates "1-2-2030", "01-2-2030" or "1-02-2030"
+            }else{
+
+
+                /// For dates "1-2-2030"
+                if(strlen(explode('-', $target_value)[0]) == 1 && strlen(explode('-', $target_value)[1]) == 1) {
+
+                    $dateFormat = 'j-n-Y';
+
+                /// For dates "01-2-2030"
+                }elseif(strlen(explode('-', $target_value)[0]) == 2) {
+
+                    $dateFormat = 'd-n-Y';
+
+                /// For dates "1-02-2030"
+                }elseif(strlen(explode('-', $target_value)[1]) == 2) {
+
+                    $dateFormat = 'j-m-Y';
+
+                }
+
+            }
+
+            $date = \Carbon\Carbon::createFromFormat($dateFormat, $target_value);
+
+            ///  If the date is not valid
+            if (($date && $date->format($dateFormat) == $target_value) == false) {
+
+                //  Handle the failed validation
+                return $this->handleFailedValidation($validation_rule);
+
+            }
+
         }
     }
 
