@@ -9705,33 +9705,17 @@ class UssdService
 
         } else {
 
-            /// For dates "01/02/2030"
-            if(strlen($target_value) == 10) {
-
-                $dateFormat = 'd/m/Y';
-
-            /// For dates "1/2/2030", "01/2/2030" or "1/02/2030"
-            }else{
-
-
-                /// For dates "1/2/2030"
-                if(strlen(explode('/', $target_value)[0]) == 1 && strlen(explode('/', $target_value)[1]) == 1) {
-
-                    $dateFormat = 'j/n/Y';
-
-                /// For dates "01/2/2030"
-                }elseif(strlen(explode('/', $target_value)[0]) == 2) {
-
-                    $dateFormat = 'd/n/Y';
-
-                /// For dates "1/02/2030"
-                }elseif(strlen(explode('/', $target_value)[1]) == 2) {
-
-                    $dateFormat = 'j/m/Y';
-
-                }
-
-            }
+            /**
+             *  Determine date format based on length of day and month parts:
+             *
+             *  1. If day and month parts are 1 character long, use 'j/n/Y' format e.g 1/2/2030
+             *  2. If day and month parts are 2 characters long, use 'd/m/Y' format e.g 01/02/2030
+             *  3. If day part is 1 character long and month part is 2 characters long, use 'j/m/Y' format e.g 1/02/2030
+             *  4. If day part is 2 characters long and month part is 1 character long, use 'd/n/Y' format e.g 01/2/2030
+             */
+            $dayLength = strlen(substr($target_value, 0, strpos($target_value, '/')));
+            $monthLength = strlen(substr($target_value, strpos($target_value, '/') + 1, strrpos($target_value, '/') - strpos($target_value, '/') - 1));
+            $dateFormat = ($dayLength == 1 ? 'j' : 'd') . '/' . ($monthLength == 1 ? 'n' : 'm') . '/Y';
 
             $date = \Carbon\Carbon::createFromFormat($dateFormat, $target_value);
 
@@ -9765,33 +9749,17 @@ class UssdService
 
         } else {
 
-            /// For dates "01-02-2030"
-            if(strlen($target_value) == 10) {
-
-                $dateFormat = 'd-m-Y';
-
-            /// For dates "1-2-2030", "01-2-2030" or "1-02-2030"
-            }else{
-
-
-                /// For dates "1-2-2030"
-                if(strlen(explode('-', $target_value)[0]) == 1 && strlen(explode('-', $target_value)[1]) == 1) {
-
-                    $dateFormat = 'j-n-Y';
-
-                /// For dates "01-2-2030"
-                }elseif(strlen(explode('-', $target_value)[0]) == 2) {
-
-                    $dateFormat = 'd-n-Y';
-
-                /// For dates "1-02-2030"
-                }elseif(strlen(explode('-', $target_value)[1]) == 2) {
-
-                    $dateFormat = 'j-m-Y';
-
-                }
-
-            }
+            /**
+             *  Determine date format based on length of day and month parts:
+             *
+             *  1. If day and month parts are 1 character long, use 'j-n-Y' format e.g 1-2-2030
+             *  2. If day and month parts are 2 characters long, use 'd-m-Y' format e.g 01-02-2030
+             *  3. If day part is 1 character long and month part is 2 characters long, use 'j-m-Y' format e.g 1-02-2030
+             *  4. If day part is 2 characters long and month part is 1 character long, use 'd-n-Y' format e.g 01-2-2030
+             */
+            $dayLength = strlen(substr($target_value, 0, strpos($target_value, '-')));
+            $monthLength = strlen(substr($target_value, strpos($target_value, '-') + 1, strrpos($target_value, '-') - strpos($target_value, '-') - 1));
+            $dateFormat = ($dayLength == 1 ? 'j' : 'd') . '-' . ($monthLength == 1 ? 'n' : 'm') . '-Y';
 
             $date = \Carbon\Carbon::createFromFormat($dateFormat, $target_value);
 
