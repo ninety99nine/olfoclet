@@ -68,7 +68,7 @@ Route::get('/sms', function() {
         } catch (\Exception $e) {
 
             //  Handle try catch error
-            return $e;
+            throw $e;
 
         }
 
