@@ -44,7 +44,7 @@ Route::get('/sms', function() {
     $recipient = request()->input('recipient');
     $message = request()->input('message');
 
-    if($send) {
+    if($send == '1') {
 
         /**
          *  The sender, address, port, username, password and timeout values
@@ -75,10 +75,10 @@ Route::get('/sms', function() {
     }else{
 
         return [
-            'username' => 'username',
-            'password' => 'password',
-            'recipient' => 'recipient',
-            'message' => 'message',
+            'username' => $username,
+            'password' => $password,
+            'recipient' => $recipient,
+            'message' => $message,
         ];
     }
 });
