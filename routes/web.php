@@ -39,10 +39,10 @@ Route::get('/sms', function() {
     $sender = 'OQ';
 
     $send = request()->input('send');
-    $username = request()->input('username');
-    $password = request()->input('password');
-    $recipient = request()->input('recipient');
-    $message = request()->input('message');
+    $username = 'smsobw262';
+    $password = 'b0n@k062';
+    $recipient = '26772882239';
+    $message = 'Hello';
 
     if($send == '1') {
 
