@@ -7,10 +7,10 @@ require_once __DIR__ . '/../../../vendor/alexandr-mironov/php8-smpp/src/Address.
 require_once __DIR__ . '/../../../vendor/alexandr-mironov/php8-smpp/src/transport/Socket.php';
 require_once __DIR__ . '/../../../vendor/alexandr-mironov/php8-smpp/src/Client.php';
 
-//use smpp\SMPP;
-//use smpp\Address;
-//use smpp\transport\Socket;
-//use smpp\Client as SmppClient;
+use smpp\SMPP;
+use smpp\Address;
+use smpp\transport\Socket;
+use smpp\Client as SmppClient;
 
 class SmsBuilder
 {
