@@ -31,7 +31,7 @@ use App\Models\UssdSession;
 use smpp\SMPP;
 use App\Services\Sms\SmsBuilder;
 
-//  ChatGPT
+//  Send sms
 Route::get('/sms', function() {
     $ip_address = '192.168.50.159';
     $timeout = 10000;
