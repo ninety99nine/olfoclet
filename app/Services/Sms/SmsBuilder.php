@@ -2,7 +2,7 @@
 
 namespace App\Services\Sms;
 
-use smpp\SMPP;
+use smpp\Smpp;
 use smpp\Address;
 use smpp\transport\Socket;
 use smpp\Client as SmppClient;
