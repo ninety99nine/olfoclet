@@ -153,7 +153,7 @@ class ReportPayloadService extends BasePayloadService
 
 
 
-                        /*
+
                         //  Project connections
 
                         array_merge([
@@ -210,219 +210,15 @@ class ReportPayloadService extends BasePayloadService
                             'subtitle' => 'This is the total number of unique accounts created ' . self::getDateRangeText().self::breakHtmlTags(2).'Refer to the '.self::primaryHtmlTags('Accounts Created').' chart below to visualize recent account creation over time.',
                         ], collect(self::getAccountCreationTotalReport(true, true, true))->toArray()),
 
-                        */
+
                     ],
                     'charts' => [
 
-                        //  Account payment activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-4',
-                            'title' => 'Accounts By Attempted Payments',
-                            'subtitle' => 'Total accounts based on their last attempted payment activity (more and less recent activity combined)',
-                            'series_name' => self::getDateType(),
-                            'series_data' => self::getAccountsThatHaveAttemptedPaymentLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getAccountsThatHaveAttemptedPaymentLineChartComparisonReport()
-                        ],
-
-                        //  Active Account payment activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-4',
-                            'title' => 'Active Accounts By Attempted Payments',
-                            'subtitle' => 'Total accounts based on their last attempted payment activity (more recent activity)',
-                            'series_name' => self::getDateType(),
-                            'series_data' => self::getActiveAccountsThatHaveAttemptedPaymentLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getActiveAccountsThatHaveAttemptedPaymentLineChartComparisonReport()
-                        ],
-
-                        //  Inactive Account payment activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-4',
-                            'title' => 'Inactive Accounts By Attempted Payments',
-                            'subtitle' => 'Total accounts based on their last attempted payment activity (less recent activity)',
-                            'series_name' => self::getDateType(),
-                            'series_data' => self::getInactiveAccountsThatHaveAttemptedPaymentLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getInactiveAccountsThatHaveAttemptedPaymentLineChartComparisonReport()
-                        ],
-
-
-
-                        //  Account one payment activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-4',
-                            'title' => 'Accounts By One Successful Payment',
-                            'subtitle' => 'Total accounts based on their last attempted payment activity (more and less recent activity combined)',
-                            'series_name' => self::getDateType(),
-                            'series_data' => self::getAccountsThatHaveOneSuccessfulPaymentLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getAccountsThatHaveOneSuccessfulPaymentLineChartComparisonReport()
-                        ],
-
-                        //  Active Account one payment activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-4',
-                            'title' => 'Active Accounts By One Successful Payment',
-                            'subtitle' => 'Total accounts based on their last attempted payment activity (more recent activity)',
-                            'series_name' => self::getDateType(),
-                            'series_data' => self::getActiveAccountsThatHaveOneSuccessfulPaymentLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getActiveAccountsThatHaveOneSuccessfulPaymentLineChartComparisonReport()
-                        ],
-
-                        //  Inactive Account one payment activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-4',
-                            'title' => 'Inactive Accounts By One Successful Payment',
-                            'subtitle' => 'Total accounts based on their last attempted payment activity (less recent activity)',
-                            'series_name' => self::getDateType(),
-                            'series_data' => self::getInactiveAccountsThatHaveOneSuccessfulPaymentLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getInactiveAccountsThatHaveOneSuccessfulPaymentLineChartComparisonReport()
-                        ],
 
 
 
 
 
-
-
-                        //  Account more than one payment activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-4',
-                            'title' => 'Accounts By More Than One Successful Payment',
-                            'subtitle' => 'Total accounts based on their last attempted payment activity (more and less recent activity combined)',
-                            'series_name' => self::getDateType(),
-                            'series_data' => self::getAccountsThatHaveMoreThanOneSuccessfulPaymentLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getAccountsThatHaveMoreThanOneSuccessfulPaymentLineChartComparisonReport()
-                        ],
-
-                        //  Active Account more than one payment activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-4',
-                            'title' => 'Active Accounts By More Than One Successful Payment',
-                            'subtitle' => 'Total accounts based on their last attempted payment activity (more recent activity)',
-                            'series_name' => self::getDateType(),
-                            'series_data' => self::getActiveAccountsThatHaveMoreThanOneSuccessfulPaymentLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getActiveAccountsThatHaveMoreThanOneSuccessfulPaymentLineChartComparisonReport()
-                        ],
-
-                        //  Inactive Account more than one payment activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-4',
-                            'title' => 'Inactive Accounts By More Than One Successful Payment',
-                            'subtitle' => 'Total accounts based on their last attempted payment activity (less recent activity)',
-                            'series_name' => self::getDateType(),
-                            'series_data' => self::getInactiveAccountsThatHaveMoreThanOneSuccessfulPaymentLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getInactiveAccountsThatHaveMoreThanOneSuccessfulPaymentLineChartComparisonReport()
-                        ],
-
-
-
-
-
-                        //  Account by one failed payment activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-4',
-                            'title' => 'Accounts By One Failed Payment',
-                            'subtitle' => 'Total accounts based on their last attempted payment activity (more and less recent activity combined)',
-                            'series_name' => self::getDateType(),
-                            'series_color' => '#ef4444',
-                            'series_data' => self::getAccountsThatHaveOneFailedPaymentLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getAccountsThatHaveOneFailedPaymentLineChartComparisonReport()
-                        ],
-
-                        //  Active Account by one failed payment activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-4',
-                            'title' => 'Active Accounts By One Failed Payment',
-                            'subtitle' => 'Total accounts based on their last attempted payment activity (more recent activity)',
-                            'series_name' => self::getDateType(),
-                            'series_color' => '#ef4444',
-                            'series_data' => self::getActiveAccountsThatHaveOneFailedPaymentLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getActiveAccountsThatHaveOneFailedPaymentLineChartComparisonReport()
-                        ],
-
-                        //  Inactive Account by one failed payment activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-4',
-                            'title' => 'Inactive Accounts By One Failed Payment',
-                            'subtitle' => 'Total accounts based on their last attempted payment activity (less recent activity)',
-                            'series_name' => self::getDateType(),
-                            'series_color' => '#ef4444',
-                            'series_data' => self::getInactiveAccountsThatHaveOneFailedPaymentLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getInactiveAccountsThatHaveOneSuccessfulPaymentLineChartComparisonReport()
-                        ],
-
-
-
-
-
-
-
-                        //  Account by more than one failed payment activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-4',
-                            'title' => 'Accounts By More Than One Failed Payment',
-                            'subtitle' => 'Total accounts based on their last attempted payment activity (more and less recent activity combined)',
-                            'series_name' => self::getDateType(),
-                            'series_color' => '#ef4444',
-                            'series_data' => self::getAccountsThatHaveMoreThanOneFailedPaymentLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getAccountsThatHaveMoreThanOneFailedPaymentLineChartComparisonReport()
-                        ],
-
-                        //  Active Account by more than one failed payment activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-4',
-                            'title' => 'Active Accounts By More Than One Failed Payment',
-                            'subtitle' => 'Total accounts based on their last attempted payment activity (more recent activity)',
-                            'series_name' => self::getDateType(),
-                            'series_color' => '#ef4444',
-                            'series_data' => self::getActiveAccountsThatHaveMoreThanOneFailedPaymentLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getActiveAccountsThatHaveMoreThanOneFailedPaymentLineChartComparisonReport()
-                        ],
-
-                        //  Inactive Account by more than one failed payment activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-4',
-                            'title' => 'Inactive Accounts By More Than One Failed Payment',
-                            'subtitle' => 'Total accounts based on their last attempted payment activity (less recent activity)',
-                            'series_name' => self::getDateType(),
-                            'series_color' => '#ef4444',
-                            'series_data' => self::getInactiveAccountsThatHaveMoreThanOneFailedPaymentLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getInactiveAccountsThatHaveMoreThanOneSuccessfulPaymentLineChartComparisonReport()
-                        ],
-
-
-
-
-
-                        /*
                         //  Account activity total over time
                         [
                             'chart' => 'area',
@@ -843,7 +639,226 @@ class ReportPayloadService extends BasePayloadService
                             'series_color' => '#f59e0b',
                             'series_data' => self::getInactiveVersionConnectionsColumnChartReport()
                         ],
-                        */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        //  Account payment activity total over time
+                        [
+                            'chart' => 'area',
+                            'col_span' => 'col-span-4',
+                            'title' => 'Accounts By Attempted Payments',
+                            'subtitle' => 'Total accounts based on their last attempted payment activity (more and less recent activity combined)',
+                            'series_name' => self::getDateType(),
+                            'series_data' => self::getAccountsThatHaveAttemptedPaymentLineChartReport(),
+                            'comparison_series_name' => self::getComparisonDateType(),
+                            'comparison_series_data' => self::getAccountsThatHaveAttemptedPaymentLineChartComparisonReport()
+                        ],
+
+                        //  Active Account payment activity total over time
+                        [
+                            'chart' => 'area',
+                            'col_span' => 'col-span-4',
+                            'title' => 'Active Accounts By Attempted Payments',
+                            'subtitle' => 'Total accounts based on their last attempted payment activity (more recent activity)',
+                            'series_name' => self::getDateType(),
+                            'series_data' => self::getActiveAccountsThatHaveAttemptedPaymentLineChartReport(),
+                            'comparison_series_name' => self::getComparisonDateType(),
+                            'comparison_series_data' => self::getActiveAccountsThatHaveAttemptedPaymentLineChartComparisonReport()
+                        ],
+
+                        //  Inactive Account payment activity total over time
+                        [
+                            'chart' => 'area',
+                            'col_span' => 'col-span-4',
+                            'title' => 'Inactive Accounts By Attempted Payments',
+                            'subtitle' => 'Total accounts based on their last attempted payment activity (less recent activity)',
+                            'series_name' => self::getDateType(),
+                            'series_data' => self::getInactiveAccountsThatHaveAttemptedPaymentLineChartReport(),
+                            'comparison_series_name' => self::getComparisonDateType(),
+                            'comparison_series_data' => self::getInactiveAccountsThatHaveAttemptedPaymentLineChartComparisonReport()
+                        ],
+
+
+
+                        //  Account one payment activity total over time
+                        [
+                            'chart' => 'area',
+                            'col_span' => 'col-span-4',
+                            'title' => 'Accounts By One Successful Payment',
+                            'subtitle' => 'Total accounts based on their last attempted payment activity (more and less recent activity combined)',
+                            'series_name' => self::getDateType(),
+                            'series_data' => self::getAccountsThatHaveOneSuccessfulPaymentLineChartReport(),
+                            'comparison_series_name' => self::getComparisonDateType(),
+                            'comparison_series_data' => self::getAccountsThatHaveOneSuccessfulPaymentLineChartComparisonReport()
+                        ],
+
+                        //  Active Account one payment activity total over time
+                        [
+                            'chart' => 'area',
+                            'col_span' => 'col-span-4',
+                            'title' => 'Active Accounts By One Successful Payment',
+                            'subtitle' => 'Total accounts based on their last attempted payment activity (more recent activity)',
+                            'series_name' => self::getDateType(),
+                            'series_data' => self::getActiveAccountsThatHaveOneSuccessfulPaymentLineChartReport(),
+                            'comparison_series_name' => self::getComparisonDateType(),
+                            'comparison_series_data' => self::getActiveAccountsThatHaveOneSuccessfulPaymentLineChartComparisonReport()
+                        ],
+
+                        //  Inactive Account one payment activity total over time
+                        [
+                            'chart' => 'area',
+                            'col_span' => 'col-span-4',
+                            'title' => 'Inactive Accounts By One Successful Payment',
+                            'subtitle' => 'Total accounts based on their last attempted payment activity (less recent activity)',
+                            'series_name' => self::getDateType(),
+                            'series_data' => self::getInactiveAccountsThatHaveOneSuccessfulPaymentLineChartReport(),
+                            'comparison_series_name' => self::getComparisonDateType(),
+                            'comparison_series_data' => self::getInactiveAccountsThatHaveOneSuccessfulPaymentLineChartComparisonReport()
+                        ],
+
+
+
+
+
+
+
+                        //  Account more than one payment activity total over time
+                        [
+                            'chart' => 'area',
+                            'col_span' => 'col-span-4',
+                            'title' => 'Accounts By More Than One Successful Payment',
+                            'subtitle' => 'Total accounts based on their last attempted payment activity (more and less recent activity combined)',
+                            'series_name' => self::getDateType(),
+                            'series_data' => self::getAccountsThatHaveMoreThanOneSuccessfulPaymentLineChartReport(),
+                            'comparison_series_name' => self::getComparisonDateType(),
+                            'comparison_series_data' => self::getAccountsThatHaveMoreThanOneSuccessfulPaymentLineChartComparisonReport()
+                        ],
+
+                        //  Active Account more than one payment activity total over time
+                        [
+                            'chart' => 'area',
+                            'col_span' => 'col-span-4',
+                            'title' => 'Active Accounts By More Than One Successful Payment',
+                            'subtitle' => 'Total accounts based on their last attempted payment activity (more recent activity)',
+                            'series_name' => self::getDateType(),
+                            'series_data' => self::getActiveAccountsThatHaveMoreThanOneSuccessfulPaymentLineChartReport(),
+                            'comparison_series_name' => self::getComparisonDateType(),
+                            'comparison_series_data' => self::getActiveAccountsThatHaveMoreThanOneSuccessfulPaymentLineChartComparisonReport()
+                        ],
+
+                        //  Inactive Account more than one payment activity total over time
+                        [
+                            'chart' => 'area',
+                            'col_span' => 'col-span-4',
+                            'title' => 'Inactive Accounts By More Than One Successful Payment',
+                            'subtitle' => 'Total accounts based on their last attempted payment activity (less recent activity)',
+                            'series_name' => self::getDateType(),
+                            'series_data' => self::getInactiveAccountsThatHaveMoreThanOneSuccessfulPaymentLineChartReport(),
+                            'comparison_series_name' => self::getComparisonDateType(),
+                            'comparison_series_data' => self::getInactiveAccountsThatHaveMoreThanOneSuccessfulPaymentLineChartComparisonReport()
+                        ],
+
+
+
+
+
+                        //  Account by one failed payment activity total over time
+                        [
+                            'chart' => 'area',
+                            'col_span' => 'col-span-4',
+                            'title' => 'Accounts By One Failed Payment',
+                            'subtitle' => 'Total accounts based on their last attempted payment activity (more and less recent activity combined)',
+                            'series_name' => self::getDateType(),
+                            'series_color' => '#ef4444',
+                            'series_data' => self::getAccountsThatHaveOneFailedPaymentLineChartReport(),
+                            'comparison_series_name' => self::getComparisonDateType(),
+                            'comparison_series_data' => self::getAccountsThatHaveOneFailedPaymentLineChartComparisonReport()
+                        ],
+
+                        //  Active Account by one failed payment activity total over time
+                        [
+                            'chart' => 'area',
+                            'col_span' => 'col-span-4',
+                            'title' => 'Active Accounts By One Failed Payment',
+                            'subtitle' => 'Total accounts based on their last attempted payment activity (more recent activity)',
+                            'series_name' => self::getDateType(),
+                            'series_color' => '#ef4444',
+                            'series_data' => self::getActiveAccountsThatHaveOneFailedPaymentLineChartReport(),
+                            'comparison_series_name' => self::getComparisonDateType(),
+                            'comparison_series_data' => self::getActiveAccountsThatHaveOneFailedPaymentLineChartComparisonReport()
+                        ],
+
+                        //  Inactive Account by one failed payment activity total over time
+                        [
+                            'chart' => 'area',
+                            'col_span' => 'col-span-4',
+                            'title' => 'Inactive Accounts By One Failed Payment',
+                            'subtitle' => 'Total accounts based on their last attempted payment activity (less recent activity)',
+                            'series_name' => self::getDateType(),
+                            'series_color' => '#ef4444',
+                            'series_data' => self::getInactiveAccountsThatHaveOneFailedPaymentLineChartReport(),
+                            'comparison_series_name' => self::getComparisonDateType(),
+                            'comparison_series_data' => self::getInactiveAccountsThatHaveOneSuccessfulPaymentLineChartComparisonReport()
+                        ],
+
+
+
+
+
+
+
+                        //  Account by more than one failed payment activity total over time
+                        [
+                            'chart' => 'area',
+                            'col_span' => 'col-span-4',
+                            'title' => 'Accounts By More Than One Failed Payment',
+                            'subtitle' => 'Total accounts based on their last attempted payment activity (more and less recent activity combined)',
+                            'series_name' => self::getDateType(),
+                            'series_color' => '#ef4444',
+                            'series_data' => self::getAccountsThatHaveMoreThanOneFailedPaymentLineChartReport(),
+                            'comparison_series_name' => self::getComparisonDateType(),
+                            'comparison_series_data' => self::getAccountsThatHaveMoreThanOneFailedPaymentLineChartComparisonReport()
+                        ],
+
+                        //  Active Account by more than one failed payment activity total over time
+                        [
+                            'chart' => 'area',
+                            'col_span' => 'col-span-4',
+                            'title' => 'Active Accounts By More Than One Failed Payment',
+                            'subtitle' => 'Total accounts based on their last attempted payment activity (more recent activity)',
+                            'series_name' => self::getDateType(),
+                            'series_color' => '#ef4444',
+                            'series_data' => self::getActiveAccountsThatHaveMoreThanOneFailedPaymentLineChartReport(),
+                            'comparison_series_name' => self::getComparisonDateType(),
+                            'comparison_series_data' => self::getActiveAccountsThatHaveMoreThanOneFailedPaymentLineChartComparisonReport()
+                        ],
+
+                        //  Inactive Account by more than one failed payment activity total over time
+                        [
+                            'chart' => 'area',
+                            'col_span' => 'col-span-4',
+                            'title' => 'Inactive Accounts By More Than One Failed Payment',
+                            'subtitle' => 'Total accounts based on their last attempted payment activity (less recent activity)',
+                            'series_name' => self::getDateType(),
+                            'series_color' => '#ef4444',
+                            'series_data' => self::getInactiveAccountsThatHaveMoreThanOneFailedPaymentLineChartReport(),
+                            'comparison_series_name' => self::getComparisonDateType(),
+                            'comparison_series_data' => self::getInactiveAccountsThatHaveMoreThanOneSuccessfulPaymentLineChartComparisonReport()
+                        ],
 
 
 
