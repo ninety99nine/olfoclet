@@ -3,9 +3,11 @@
 namespace App\Services\Sms;
 
 require_once __DIR__ . '/../../../vendor/alexandr-mironov/php8-smpp/src/Smpp.php';
-require_once __DIR__ . '/../../../vendor/alexandr-mironov/php8-smpp/src/Address.php';
-require_once __DIR__ . '/../../../vendor/alexandr-mironov/php8-smpp/src/transport/Socket.php';
-require_once __DIR__ . '/../../../vendor/alexandr-mironov/php8-smpp/src/Client.php';
+
+use smpp\SMPP;
+use smpp\Address;
+use smpp\transport\Socket;
+use smpp\Client as SmppClient;
 
 class SmsBuilder
 {
