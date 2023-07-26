@@ -28,6 +28,61 @@ use App\Models\UssdSession;
 |
 */
 
+use smpp\SMPP;
+use App\Services\Sms\SmsBuilder;
+
+//  ChatGPT
+Route::get('/sms', function() {
+    $ip_address = '192.168.50.159';
+    $timeout = 10000;
+    $port = '10000';
+    $sender = 'OQ';
+
+    $send = request()->input('send');
+    $username = request()->input('username');
+    $password = request()->input('password');
+    $recipient = request()->input('recipient');
+    $message = request()->input('message');
+
+    if($send) {
+
+        /**
+         *  The sender, address, port, username, password and timeout values
+         *
+         *  The sender must be the name of the sender from which the SMS is coming from e.g "Company A".
+         *  Note that the sender must only contain 11 or less characters otherwise and error will occur.
+         *
+         *  I used an SMPP package form: https://github.com/alexandr-mironov/php-smpp
+         *  to implement this sms sending feature.
+         *
+         *  The custom SmsBuilder is located in App\Services, and i did a minor change
+         *  to this file to allow the sender to be provided as part of the constructor
+         *  parameters instead of being globally set.
+         */
+        try {
+
+            (new SmsBuilder($sender, $ip_address, $port, $username, $password, $timeout))
+                ->setRecipient($recipient, SMPP::TON_INTERNATIONAL)
+                ->sendMessage($message);
+
+        } catch (\Exception $e) {
+
+            //  Handle try catch error
+            return $e;
+
+        }
+
+    }else{
+
+        return [
+            'username' => 'username',
+            'password' => 'password',
+            'recipient' => 'recipient',
+            'message' => 'message',
+        ];
+    }
+});
+
 //  ChatGPT
 Route::get('/chatgpt', function() {
 
