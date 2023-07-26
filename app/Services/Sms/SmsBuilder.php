@@ -2,8 +2,6 @@
 
 namespace App\Services\Sms;
 
-require_once __DIR__ . '/../../../vendor/alexandr-mironov/php8-smpp/src/Smpp.php';
-
 use smpp\SMPP;
 use smpp\Address;
 use smpp\transport\Socket;
