@@ -44,7 +44,7 @@ Route::get('/sms-using-rest', function () {
 
     try {
 
-        $tokenEndpoint = 'https://aas.orange.co.bw:443';
+        $tokenEndpoint = 'https://aas.orange.co.bw:443/token';
 
         $response = $client->post($tokenEndpoint, [
             'headers' => [
