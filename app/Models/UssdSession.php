@@ -15,6 +15,8 @@ class UssdSession extends Model
 
     const MAXIMUM_SESSION_DURATION = 120;
 
+    const FATAL_ERROR_MSG_MAX_CHARACTERS = 1000;
+
     /**
      * The table associated with the model.
      *

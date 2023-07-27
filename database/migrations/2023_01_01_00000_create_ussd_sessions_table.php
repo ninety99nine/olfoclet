@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\UssdSession;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -30,7 +31,7 @@ class CreateUssdSessionsTable extends Migration
             $table->mediumText('logs')->nullable();
             $table->timestamp('logs_expire_at')->nullable();
             $table->boolean('fatal_error')->nullable()->default(false);
-            $table->text('fatal_error_msg')->nullable();
+            $table->string('fatal_error_msg', UssdSession::FATAL_ERROR_MSG_MAX_CHARACTERS)->nullable();
             $table->boolean('allow_timeout')->nullable()->default(0);
             $table->timestamp('timeout_at')->nullable();
             $table->unsignedMediumInteger('total_session_duration')->default(0);

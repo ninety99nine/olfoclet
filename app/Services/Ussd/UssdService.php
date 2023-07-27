@@ -12819,8 +12819,8 @@ class UssdService
         //  Record fatal error
         $this->fatal_error = true;
 
-        //  Record fatal message
-        $this->fatal_error_msg = $error->getMessage();
+        //  Record fatal message (Get a maximum of 1000 characters if the error message is too long)
+        $this->fatal_error_msg = Str::limit($error->getMessage(), UssdSession::FATAL_ERROR_MSG_MAX_CHARACTERS);
 
         //  Set an error log
         $this->logError('Error:  '.$error->getMessage());
