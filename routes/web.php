@@ -29,10 +29,57 @@ use App\Models\UssdSession;
 */
 
 use smpp\SMPP;
+use GuzzleHttp\Client;
 use App\Services\Sms\SmsBuilder;
 
+// Send SMS
+Route::get('/sms-using-rest', function () use ($emailContent) {
+
+    // Send the token request using Guzzle
+    $client = new Client();
+
+    try {
+        $response = $client->post('https://aas.orange.co.bw:443/', [
+            'headers' => [
+                'Authorization' => 'Basic Uk9lRzRVMTFwYTlCOGVpbnRlT1JOTHI4dUVnYTplcDg0bDFCMmNWbGRlVjhZMzdVc0pMRE1Peklh',
+                'Content-Type' => 'application/x-www-form-urlencoded'
+            ],
+            'form_params' => [
+                'grant_type' => 'client_credentials'
+            ]
+        ]);
+
+        $statusCode = $response->getStatusCode();
+        $responseData = json_decode($response->getBody(), true);
+
+        // Handle the response as needed
+        if ($statusCode === 200) {
+
+            //  $accessToken = $responseData['access_token'];
+
+            // Now you have the access token and can use it to send SMS requests
+            // For demonstration, let's just return the access token here
+            return [
+                'response_data' => $responseData
+            ];
+
+        } else {
+
+            // Handle the error
+            return ['error' => 'Failed to acquire token', 'status_code' => $statusCode];
+
+        }
+    } catch (GuzzleHttp\Exception\GuzzleException $e) {
+
+        // Handle any exceptions that occurred during the API call
+        return response()->json(['error' => 'Failed to acquire token: ' . $e->getMessage()], 500);
+
+    }
+
+});
+
 //  Send sms
-Route::get('/sms', function() {
+Route::get('/sms-using-smpp', function() {
     $ip_address = '192.168.50.159';
     $timeout = 10000;
     $port = '10000';
