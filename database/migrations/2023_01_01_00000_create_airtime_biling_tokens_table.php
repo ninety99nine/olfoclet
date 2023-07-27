@@ -16,7 +16,7 @@ class CreateAirtimeBillingTokensTable extends Migration
         Schema::create('airtime_billing_tokens', function (Blueprint $table) {
 
             $table->id();
-            $table->unsignedInteger('msisdn');
+            $table->string('msisdn');
             $table->string('access_token');
             $table->timestamp('expiry_date');
             $table->timestamps();
