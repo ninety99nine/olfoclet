@@ -42,24 +42,16 @@ __webpack_require__.r(__webpack_exports__);
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   var _component_TextOrCodeEditor = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("TextOrCodeEditor");
-  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_TextOrCodeEditor, {
-    modelValue: $data.useVersionBuilder.builder.sms_connection.username,
+  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createBlock)(_component_TextOrCodeEditor, {
+    modelValue: $data.useVersionBuilder.builder.sms_connection.client_credentials,
     "onUpdate:modelValue": _cache[0] || (_cache[0] = function ($event) {
-      return $data.useVersionBuilder.builder.sms_connection.username = $event;
+      return $data.useVersionBuilder.builder.sms_connection.client_credentials = $event;
     }),
-    label: "Username",
-    placeholder: "Enter account username",
+    label: "Client Credentials",
+    placeholder: "Enter client credentials",
     showCode: true,
     "class": "mb-6"
-  }, null, 8 /* PROPS */, ["modelValue"]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_TextOrCodeEditor, {
-    modelValue: $data.useVersionBuilder.builder.sms_connection.password,
-    "onUpdate:modelValue": _cache[1] || (_cache[1] = function ($event) {
-      return $data.useVersionBuilder.builder.sms_connection.password = $event;
-    }),
-    label: "Password",
-    placeholder: "Enter account password",
-    showCode: true
-  }, null, 8 /* PROPS */, ["modelValue"])], 64 /* STABLE_FRAGMENT */);
+  }, null, 8 /* PROPS */, ["modelValue"]);
 }
 
 /***/ }),

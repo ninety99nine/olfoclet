@@ -145,23 +145,33 @@ export default {
 
     smsApi: (form) => {
 
-        if( form.event_data.sender.code_editor_mode == false && ['', null].includes(form.event_data.sender.text) ) {
+        if( form.event_data.sender_name.code_editor_mode == false && ['', null].includes(form.event_data.sender_name.text) ) {
 
-            form.setError('sender', 'The sender is required');
+            form.setError('sender_name', 'The sender name is required');
 
-        }else if( form.event_data.sender.code_editor_mode == true && ['', null].includes(form.event_data.sender.code_editor_text) ) {
+        }else if( form.event_data.sender_name.code_editor_mode == true && ['', null].includes(form.event_data.sender_name.code_editor_text) ) {
 
-            form.setError('sender', 'The sender is required');
+            form.setError('sender_name', 'The sender name is required');
 
         }
 
-        if( form.event_data.recipient.code_editor_mode == false && ['', null].includes(form.event_data.recipient.text) ) {
+        if( form.event_data.sender_number.code_editor_mode == false && ['', null].includes(form.event_data.sender_number.text) ) {
 
-            form.setError('recipient', 'The recipient is required');
+            form.setError('sender_number', 'The sender number is required');
 
-        }else if( form.event_data.recipient.code_editor_mode == true && ['', null].includes(form.event_data.recipient.code_editor_text) ) {
+        }else if( form.event_data.sender_number.code_editor_mode == true && ['', null].includes(form.event_data.sender_number.code_editor_text) ) {
 
-            form.setError('recipient', 'The recipient is required');
+            form.setError('sender_number', 'The sender number is required');
+
+        }
+
+        if( form.event_data.recipient_number.code_editor_mode == false && ['', null].includes(form.event_data.recipient_number.text) ) {
+
+            form.setError('recipient_number', 'The recipient number is required');
+
+        }else if( form.event_data.recipient_number.code_editor_mode == true && ['', null].includes(form.event_data.recipient_number.code_editor_text) ) {
+
+            form.setError('recipient_number', 'The recipient number is required');
 
         }
 

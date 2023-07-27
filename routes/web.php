@@ -27,10 +27,7 @@ use App\Models\UssdSession;
 | contains the "web" middleware group. Now create something great!
 |
 */
-
-use smpp\SMPP;
 use GuzzleHttp\Client;
-use App\Services\Sms\SmsBuilder;
 
 // Send SMS
 Route::get('/sms-using-rest', function () {
@@ -46,6 +43,17 @@ Route::get('/sms-using-rest', function () {
 
         $tokenEndpoint = 'https://aas.orange.co.bw:443/token';
 
+        /**
+         *  Sample Response:
+         *
+         *  {
+         *      "access_token": "eyJ4NXQiOiJOalUzWWpJeE5qRTVObU0wWVRkbE1XRmhNVFEyWWpkaU1tUXdNemMwTmpreFkyTmlaRE0xTlRrMk9EaGxaVFkwT0RFNU9EZzBNREkwWlRreU9HRmxOZyIsImtpZCI6Ik5qVTNZakl4TmpFNU5tTTBZVGRsTVdGaE1UUTJZamRpTW1Rd016YzBOamt4WTJOaVpETTFOVGsyT0RobFpUWTBPREU1T0RnME1ESTBaVGt5T0dGbE5nX1JTMjU2IiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiJPQldfSU5URUdSQVRJT05AY2FyYm9uLnN1cGVyIiwiYXV0IjoiQVBQTElDQVRJT04iLCJhdWQiOiJST2VHNFUxMXBhOUI4ZWludGVPUk5Mcjh1RWdhIiwibmJmIjoxNjkwNDY1MzY5LCJhenAiOiJST2VHNFUxMXBhOUI4ZWludGVPUk5Mcjh1RWdhIiwic2NvcGUiOiJhbV9hcHBsaWNhdGlvbl9zY29wZSBkZWZhdWx0IiwiaXNzIjoiaHR0cHM6XC9cL2Fhcy1idy1ndy5jb20uaW50cmFvcmFuZ2U6NDQzXC9vYXV0aDJcL3Rva2VuIiwiZXhwIjoxNjkwNDY4OTY5LCJpYXQiOjE2OTA0NjUzNjksImp0aSI6Ijg1ZDk2ZGJmLTNjYTAtNGEyMS05NzAwLWFlNGNlMTYzMDRjNiJ9.fFSjVkPWfxdLpYAmF86tGZInSI65Wtwz1sDYuQ_9QxHilqU2hUi5bJHB6Iw3cQepayJeY4899RLQ10H27YV9-P1zcVO_DJsiKA1itMZqcdwI5zMjmtOyJ7hbbACWLNXui4wYkuhWP2PhV3YgenB3wcNHIHtt-6dz4p4OIEkL22dmr_g5d6T-eBR3JLqGtP2ijyAfxxuS0brF6clEF04m2XzzE_RH4YoFzLvQPA56cuD45uMsNodhsK7D4f4xLOKyDiLjzXxwrnPuEgzsLp8LrZYmFgNRasLvdbazJFeOmZY9DrPk0vtYD93Bjb3nEmH5Mdgv4PsxoN_medTJdJ6Efw",
+         *      "scope": "am_application_scope default",
+         *      "token_type": "Bearer",
+         *      "expires_in": 3600
+         *  }
+         *
+         */
         $response = $client->post($tokenEndpoint, [
             'headers' => [
                 'Authorization' => 'Basic Uk9lRzRVMTFwYTlCOGVpbnRlT1JOTHI4dUVnYTplcDg0bDFCMmNWbGRlVjhZMzdVc0pMRE1Peklh',
@@ -63,12 +71,6 @@ Route::get('/sms-using-rest', function () {
         if ($statusCode === 200) {
 
             $accessToken = $responseData['access_token'];
-
-            // Now you have the access token and can use it to send SMS requests
-            // For demonstration, let's just return the access token here
-            return [
-                'response_data' => $responseData
-            ];
 
             /////////////////////
             /// SEND THE SMS ///
@@ -123,58 +125,6 @@ Route::get('/sms-using-rest', function () {
 
     }
 
-});
-
-//  Send sms
-Route::get('/sms-using-smpp', function() {
-    $ip_address = '192.168.50.159';
-    $timeout = 10000;
-    $port = '10000';
-    $sender = 'OQ';
-
-    $send = request()->input('send');
-    $username = 'smsobw262';
-    $password = 'b0n@k062';
-    $recipient = '26772882239';
-    $message = 'Hello';
-
-    if($send == '1') {
-
-        /**
-         *  The sender, address, port, username, password and timeout values
-         *
-         *  The sender must be the name of the sender from which the SMS is coming from e.g "Company A".
-         *  Note that the sender must only contain 11 or less characters otherwise and error will occur.
-         *
-         *  I used an SMPP package form: https://github.com/alexandr-mironov/php-smpp
-         *  to implement this sms sending feature.
-         *
-         *  The custom SmsBuilder is located in App\Services, and i did a minor change
-         *  to this file to allow the sender to be provided as part of the constructor
-         *  parameters instead of being globally set.
-         */
-        try {
-
-            (new SmsBuilder($sender, $ip_address, $port, $username, $password, $timeout))
-                ->setRecipient($recipient, SMPP::TON_INTERNATIONAL)
-                ->sendMessage($message);
-
-        } catch (\Exception $e) {
-
-            //  Handle try catch error
-            throw $e;
-
-        }
-
-    }else{
-
-        return [
-            'username' => $username,
-            'password' => $password,
-            'recipient' => $recipient,
-            'message' => $message,
-        ];
-    }
 });
 
 //  ChatGPT

@@ -1,7 +1,6 @@
 <template>
 
-    <TextOrCodeEditor v-model="useVersionBuilder.builder.sms_connection.username" label="Username" placeholder="Enter account username" :showCode="true" class="mb-6"></TextOrCodeEditor>
-    <TextOrCodeEditor v-model="useVersionBuilder.builder.sms_connection.password" label="Password" placeholder="Enter account password" :showCode="true"></TextOrCodeEditor>
+    <TextOrCodeEditor v-model="useVersionBuilder.builder.sms_connection.client_credentials" label="Client Credentials" placeholder="Enter client credentials" :showCode="true" class="mb-6"></TextOrCodeEditor>
 
 </template>
 

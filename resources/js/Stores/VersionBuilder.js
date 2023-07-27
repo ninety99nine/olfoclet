@@ -1193,12 +1193,17 @@ export const useVersionBuilder = defineStore('version_builder', {
 
             return {
                 event_data: {
-                    sender: {
+                    sender_name: {
                         text: '',
                         code_editor_text: '',
                         code_editor_mode: false
                     },
-                    recipient: {
+                    sender_number: {
+                        text: '{{ ussd.msisdn }}',
+                        code_editor_text: '',
+                        code_editor_mode: false
+                    },
+                    recipient_number: {
                         text: '{{ ussd.msisdn }}',
                         code_editor_text: '',
                         code_editor_mode: false

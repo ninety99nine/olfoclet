@@ -2,17 +2,26 @@
 
     <div>
 
-        <!-- Sender -->
-        <TextOrCodeEditor v-model="form.event_data.sender" label="Sender" placeholder="Company XYZ" note="Must be less than 11 characters" :error="form.errors.sender" class="mb-6">
+        <!-- Sender Name -->
+        <TextOrCodeEditor v-model="form.event_data.sender_name" label="Sender Name" placeholder="Company XYZ" note="Must be 20 or less characters" :error="form.errors.sender_name" class="mb-6">
             <template #info>
                 <span>
-                    This is the name of the sender of this SMS e.g Company XYZ. The sender name must not exceed 11 characters
+                    This is the name of the sender of this SMS e.g Company XYZ. The sender name must not exceed 20 characters
                 </span>
             </template>
         </TextOrCodeEditor>
 
-        <!-- Recipient -->
-        <TextOrCodeEditor v-model="form.event_data.recipient" label="Recipient" placeholder="{{ ussd.msisdn }}" note="Mobile number" :error="form.errors.recipient" class="mb-6">
+        <!-- Sender Mobile Number -->
+        <TextOrCodeEditor v-model="form.event_data.sender_number" label="Sender Mobile" placeholder="{{ ussd.msisdn }}" note="From" :error="form.errors.sender_number" class="mb-6">
+            <template #info>
+                <span>
+                    This is the mobile number of the sender this SMS e.g 26772123456
+                </span>
+            </template>
+        </TextOrCodeEditor>
+
+        <!-- Recipient Mobile Number -->
+        <TextOrCodeEditor v-model="form.event_data.recipient_number" label="Recipient Mobile" placeholder="{{ ussd.msisdn }}" note="To" :error="form.errors.recipient_number" class="mb-6">
             <template #info>
                 <span>
                     This is the mobile number to send this SMS e.g 26772123456

@@ -6,7 +6,6 @@
     "license": "MIT",
     "require": {
         "php": "^8.1",
-        "alexandr-mironov/php8-smpp": "dev-main",
         "appwrite/appwrite": "^7.2",
         "bmatovu/laravel-xml": "^3.2",
         "guzzlehttp/guzzle": "^7.2",
@@ -66,6 +65,6 @@
             "php-http/discovery": true
         }
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "prefer-stable": true
 }

@@ -183,9 +183,31 @@ __webpack_require__.r(__webpack_exports__);
         }, {
           text: 'to setup the '
         }, {
-          highlight: 'SMPP Account Credentials '
+          highlight: 'SMS REST API Client Credentials '
         }, {
           text: 'in order to send SMS '
+        }, {
+          "break": 2
+        }, {
+          text: 'These client credentials are provided by the MNO to perform OAUTH2 using the '
+        }, {
+          highlight: 'Client Credentials grant type'
+        }, {
+          "break": 2
+        }, {
+          text: 'Learn more about this type of authentication by referring to '
+        }, {
+          link: {
+            text: 'video 1',
+            href: 'https://www.youtube.com/watch?v=P0RJQKAhs9g'
+          }
+        }, {
+          text: ' or '
+        }, {
+          link: {
+            text: 'video 2',
+            href: 'https://www.youtube.com/watch?v=gluOSZkze0g'
+          }
         }];
       } else if (this.title == 'Restrictions') {
         return [{

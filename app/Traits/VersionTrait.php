@@ -205,16 +205,11 @@ trait VersionTrait
                 ],
             ],
             'sms_connection' => [
-                'username' => [
+                'client_credentials' => [
                     'text' => '',
                     'code_editor_text' => '',
                     'code_editor_mode' => false
-                ],
-                'password' => [
-                    'text' => '',
-                    'code_editor_text' => '',
-                    'code_editor_mode' => false
-                ],
+                ]
             ],
             'airtime_billing_connection' => [
                 'client_id' => [
@@ -277,6 +272,32 @@ trait VersionTrait
 
                     //  Rename the event type
                     $events[$x]['type'] = 'REST API';
+
+                }
+
+                //  Fix issues related to the "SMS API" event handler
+                if ($event['type'] == 'SMS API') {
+
+                    //  If the "sender" property is set
+                    if( isset($events[$x]['event_data']['sender']) ) {
+
+                        //  Rename the "sender" property to "sender_name"
+                        $events[$x]['event_data']['sender_name'] = $events[$x]['event_data']['sender'];
+                        unset($events[$x]['event_data']['sender']);
+
+                        //  Add the "sender_number" property
+                        $events[$x]['event_data']['sender_number'] = '';
+
+                    }
+
+                    //  If the "recipient" property is set
+                    if( isset($events[$x]['event_data']['recipient']) ) {
+
+                        //  Rename the "recipient" property to "recipient_number"
+                        $events[$x]['event_data']['recipient_number'] = $events[$x]['event_data']['recipient'];
+                        unset($events[$x]['event_data']['recipient']);
+
+                    }
 
                 }
 
@@ -594,7 +615,7 @@ trait VersionTrait
 
             }
 
-            if( empty($builder['sms_connection']['username']['text']) ){
+            if( isset($builder['sms_connection']['username']) || isset($builder['sms_connection']['password']) ) {
 
                 $builder['sms_connection'] = $builderTemplate['sms_connection'];
 

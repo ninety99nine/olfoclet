@@ -212,8 +212,7 @@
 
                     //  If the sms configuration are not set via the text editor (Not set)
                     if(
-                        this.useVersionBuilder.builder.sms_connection.username.code_editor_mode == false && [null, ''].includes(this.useVersionBuilder.builder.sms_connection.username.text) ||
-                        this.useVersionBuilder.builder.sms_connection.password.code_editor_mode == false && [null, ''].includes(this.useVersionBuilder.builder.sms_connection.password.text)
+                        this.useVersionBuilder.builder.sms_connection.client_credentials.code_editor_mode == false && [null, ''].includes(this.useVersionBuilder.builder.sms_connection.client_credentials.text)
                     ) {
                         var smsNote = {
                             type: 'Default',
@@ -222,8 +221,7 @@
 
                     //  If the sms configuration are set via the code editor (Verify credentials)
                     }else if(
-                        this.useVersionBuilder.builder.sms_connection.username.code_editor_mode == true ||
-                        this.useVersionBuilder.builder.sms_connection.password.code_editor_mode == true
+                        this.useVersionBuilder.builder.sms_connection.client_credentials.code_editor_mode == true
                     ) {
                         var smsNote = {
                             type: 'Primary',

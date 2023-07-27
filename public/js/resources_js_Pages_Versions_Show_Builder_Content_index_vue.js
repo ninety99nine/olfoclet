@@ -865,9 +865,31 @@ __webpack_require__.r(__webpack_exports__);
         }, {
           text: 'to setup the '
         }, {
-          highlight: 'SMPP Account Credentials '
+          highlight: 'SMS REST API Client Credentials '
         }, {
           text: 'in order to send SMS '
+        }, {
+          "break": 2
+        }, {
+          text: 'These client credentials are provided by the MNO to perform OAUTH2 using the '
+        }, {
+          highlight: 'Client Credentials grant type'
+        }, {
+          "break": 2
+        }, {
+          text: 'Learn more about this type of authentication by referring to '
+        }, {
+          link: {
+            text: 'video 1',
+            href: 'https://www.youtube.com/watch?v=P0RJQKAhs9g'
+          }
+        }, {
+          text: ' or '
+        }, {
+          link: {
+            text: 'video 2',
+            href: 'https://www.youtube.com/watch?v=gluOSZkze0g'
+          }
         }];
       } else if (this.title == 'Restrictions') {
         return [{
@@ -5947,24 +5969,16 @@ __webpack_require__.r(__webpack_exports__);
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   var _component_TextOrCodeEditor = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("TextOrCodeEditor");
-  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_TextOrCodeEditor, {
-    modelValue: $data.useVersionBuilder.builder.sms_connection.username,
+  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createBlock)(_component_TextOrCodeEditor, {
+    modelValue: $data.useVersionBuilder.builder.sms_connection.client_credentials,
     "onUpdate:modelValue": _cache[0] || (_cache[0] = function ($event) {
-      return $data.useVersionBuilder.builder.sms_connection.username = $event;
+      return $data.useVersionBuilder.builder.sms_connection.client_credentials = $event;
     }),
-    label: "Username",
-    placeholder: "Enter account username",
+    label: "Client Credentials",
+    placeholder: "Enter client credentials",
     showCode: true,
     "class": "mb-6"
-  }, null, 8 /* PROPS */, ["modelValue"]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_TextOrCodeEditor, {
-    modelValue: $data.useVersionBuilder.builder.sms_connection.password,
-    "onUpdate:modelValue": _cache[1] || (_cache[1] = function ($event) {
-      return $data.useVersionBuilder.builder.sms_connection.password = $event;
-    }),
-    label: "Password",
-    placeholder: "Enter account password",
-    showCode: true
-  }, null, 8 /* PROPS */, ["modelValue"])], 64 /* STABLE_FRAGMENT */);
+  }, null, 8 /* PROPS */, ["modelValue"]);
 }
 
 /***/ }),

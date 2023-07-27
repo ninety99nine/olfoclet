@@ -2,9 +2,9 @@
 
 namespace App\Services\Ussd;
 
-use smpp\SMPP;
 use Carbon\Carbon;
 use App\Models\App;
+use GuzzleHttp\Client;
 use App\Models\Version;
 use App\Models\ShortCode;
 use App\Models\UssdAccount;
@@ -13,11 +13,10 @@ use Illuminate\Support\Str;
 use App\Models\UssdSession;
 use Illuminate\Http\Request;
 use App\Models\DatabaseEntry;
-use App\Models\UssdAccountConnection;
-use App\Services\Sms\SmsBuilder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Cache;
+use App\Models\UssdAccountConnection;
 
 //  AppWrite Support
 use \Appwrite\AppwriteException;
@@ -6831,7 +6830,7 @@ class UssdService
     public function callGuzzleHttp($method, $url, $request_options)
     {
         //  Create a new Http Guzzle Client
-        $httpClient = new \GuzzleHttp\Client();
+        $httpClient = new Client();
 
         //  Set an info log that we are performing REST API call
         $this->logInfo('Run API call to: '.$this->wrapAsSuccessHtml($url));
@@ -7480,36 +7479,52 @@ class UssdService
         if ($this->event) {
 
             /***************************
-             * Set Sender              *
+             * Set Sender Name         *
              **************************/
-            $outputResponse = $this->convertValueStructureIntoDynamicData($this->event['event_data']['sender']);
+            $outputResponse = $this->convertValueStructureIntoDynamicData($this->event['event_data']['sender_name']);
 
             //  If we have a screen to show return the response otherwise continue
             if ($this->shouldDisplayScreen($outputResponse)) {
                 return $outputResponse;
             }
 
-            $sender = $outputResponse;
+            $senderName = $outputResponse;
 
-            if(empty($sender)) $this->logWarning('The sender must be provided to send the sms');
+            if(empty($senderName)) $this->logWarning('The sender name must be provided to send the sms');
 
-            if(strlen($sender) > 11) $this->logWarning('The sender information must have 11 or less characters');
+            if(strlen($senderName) > 20) $this->logWarning('The sender name must have 20 or less characters');
+
+            /***************************
+             * Set Sender Number       *
+             **************************/
+            $outputResponse = $this->convertValueStructureIntoDynamicData($this->event['event_data']['sender_number']);
+
+            //  If we have a screen to show return the response otherwise continue
+            if ($this->shouldDisplayScreen($outputResponse)) {
+                return $outputResponse;
+            }
+
+            $senderNumber = $outputResponse;
+
+            if(empty($senderNumber)) $this->logWarning('The sender mobile number must be provided to send the sms');
+
+            if(strlen($senderNumber) != 11) $this->logWarning('The sender mobile number must have 11 characters e.g 26772000001');
 
             /***************************
              * Set Recipient           *
              **************************/
-            $outputResponse = $this->convertValueStructureIntoDynamicData($this->event['event_data']['recipient']);
+            $outputResponse = $this->convertValueStructureIntoDynamicData($this->event['event_data']['recipient_number']);
 
             //  If we have a screen to show return the response otherwise continue
             if ($this->shouldDisplayScreen($outputResponse)) {
                 return $outputResponse;
             }
 
-            $recipient = $outputResponse;
+            $recipientNumber = $outputResponse;
 
-            if(empty($recipient)) $this->logWarning('The recipient must be provided to send the sms');
+            if(empty($recipientNumber)) $this->logWarning('The recipient mobile number be provided to send the sms');
 
-            if(strlen($recipient) > 11) $this->logWarning('The recipient mobile number must have 11 or less characters');
+            if(strlen($recipientNumber) != 11) $this->logWarning('The recipient mobile number must have 11 characters e.g 26772000001');
 
             /***************************
              * Set Message             *
@@ -7523,11 +7538,29 @@ class UssdService
 
             $message = $outputResponse;
 
-            if(empty($message)) $this->logWarning('The message must be provided to send the sms');
+            /***************************
+             * Client Credentials      *
+             **************************/
+            $outputResponse = $this->convertValueStructureIntoDynamicData($this->version->builder['sms_connection']['client_credentials']);
 
-            if( !empty($sender) && !(strlen($sender) > 11) && !empty($recipient) && !(strlen($recipient) > 11) && !empty($message) ){
+            //  If we have a screen to show return the response otherwise continue
+            if ($this->shouldDisplayScreen($outputResponse)) {
+                return $outputResponse;
+            }
 
-                $this->sendSMS($sender, $recipient, $message);
+            $clientCredentials = $outputResponse;
+
+            if(empty($clientCredentials)) $this->logWarning('The SMS client credentials must be provided to send the sms');
+
+            if(
+                !empty($senderName) && !(strlen($senderName) > 20) &&
+                !empty($senderNumber) && (strlen($senderNumber) == 11) &&
+                !empty($recipientNumber) && (strlen($recipientNumber) == 11) &&
+                !empty($clientCredentials) &&
+                !empty($message)
+            ){
+
+                $this->sendSms($senderName, $senderNumber, $recipientNumber, $message, $clientCredentials);
 
             }else{
 
@@ -7538,152 +7571,175 @@ class UssdService
         }
     }
 
-    public function sendSMS($sender, $recipient, $message){
+    public function sendSms($senderName, $senderNumber, $recipientNumber, $message, $clientCredentials) {
+        /**
+         *  Send the SMS:
+         *
+         *  Because we can have issues trying to send the SMS, try atleast 20 times before
+         *  we stop. Also make sure that we never take longer than 20 seconds so that we
+         *  do not keep the subscriber waiting to long.
+         *
+         *  Additionally it would be great that we set the SMS on a queued job that can
+         *  be handled by the queue worker at a later time.
+         */
+        $x = 0;
 
-        /***************************
-         * Set Username            *
-         **************************/
-        $outputResponse = $this->convertValueStructureIntoDynamicData($this->version->builder['sms_connection']['username']);
+        $then = now();
 
-        //  If we have a screen to show return the response otherwise continue
-        if ($this->shouldDisplayScreen($outputResponse)) {
-            return $outputResponse;
+        $smsSentStatus = false;
+
+        /**
+         *  Attempt to send the SMS if
+         *
+         *  (1) Its the first attempt
+         *  (2) Its another attempt less than 20 total attempts
+         *  (3) If the total time passed is less than 20 seconds
+         */
+        while( $x == 0 || ( !$smsSentStatus && $x < 20 && now()->diffInSeconds($then) < 20 ) ) {
+
+            //  Increment the attempt number
+            $x++;
+
+            //  Capture the response (If any)
+            $response = $this->sendSmsViaOrangeUsingREST($senderName, $senderNumber, $recipientNumber, $message, $clientCredentials, $x);
+
+            break;
+
+            //  $response will return "true" for successful attempt or "false" for unsuccessful attempt
+            if( $response ) {
+
+                $smsSentStatus = true;
+
+            }
+
         }
 
-        $username = $outputResponse;
+        //  If we succeeded to send the SMS
+        if( $smsSentStatus ) {
 
-        if(empty($username)) $this->logWarning('The SMPP username must be provided to send the sms (Provide your SMPP account username)');
-
-        /***************************
-         * Set Password            *
-         **************************/
-        $outputResponse = $this->convertValueStructureIntoDynamicData($this->version->builder['sms_connection']['password']);
-
-        //  If we have a screen to show return the response otherwise continue
-        if ($this->shouldDisplayScreen($outputResponse)) {
-            return $outputResponse;
-        }
-
-        $password = $outputResponse;
-
-        if(empty($password)) $this->logWarning('The SMPP password must be provided to send the sms (Provide your SMPP account password)');
-
-        if( !empty($username) && !empty($password) ){
-
-            /**
-             *  Send the SMS:
-             *
-             *  Because we can have issues trying to send the SMS, try atleast 20 times before
-             *  we stop. Also make sure that we never take longer than 20 seconds so that we
-             *  do not keep the subscriber waiting to long.
-             *
-             *  Additionally it would be great that we set the SMS on a queued job that can
-             *  be handled by the queue worker at a later time.
-             */
-            $x = 0;
-
-            $then = now();
-
-            $errorMessages = [];
-
-            $errorMessage = null;
-
-            $smsSentStatus = false;
-
-            /**
-             *  Attempt to send the SMS if
-             *
-             *  (1) Its the first attempt
-             *  (2) Its another attempt less than 20 total attempts
-             *  (3) If the total time passed is less than 20 seconds
-             */
-            while( $x == 0 || ( !$smsSentStatus && $x < 20 && now()->diffInSeconds($then) < 20 ) ){
-
-                //  Increment the attempt number
-                $x++;
-
-                //  Capture the response (If any)
-                $response = $this->sendSMSViaOrange($sender, $recipient, $message, $username, $password);
-
-                if( !empty($response) ) {
-
-                    //  Capture the error message
-                    $errorMessage = $response->getMessage();
-                    array_push($errorMessages, $errorMessage);
-
-                }else{
-
-                    $smsSentStatus = true;
-
-                }
-
-            }
-
-            //  If we have errors
-            if( !empty($errorMessages) ) {
-
-                foreach($errorMessages as $index => $errorMessage) {
-
-                    $attemptNumber = $index + 1;
-
-                    $this->logWarning('SMS Attempt #'.$attemptNumber.': '.$this->wrapAsErrorHtml($errorMessage));
-
-                }
-
-            }
-
-            //  If we succeeded to send the SMS
-            if( $smsSentStatus ) {
-
-                $this->logInfo($this->wrapAsSuccessHtml('💬 SMS sent successfully after '. $x . ($x == 1 ? ' attempt' : ' attempts')));
-
-            //  If we failed to send the SMS
-            }else{
-
-                $this->logWarning('Failed to send the SMS: ' . $this->wrapAsPrimaryHtml($message));
-
-            }
-
-        }else{
-
-            $this->logWarning('SMS could not be sent due to missing values (Missing SMPP Account username or password)');
+            $this->logInfo($this->wrapAsSuccessHtml('💬 SMS sent successfully after '. $x . ($x == 1 ? ' attempt' : ' attempts')));
 
         }
 
     }
 
-    public function sendSMSViaOrange($sender, $recipient, $message, $username, $password)
+    public function sendSmsViaOrangeUsingREST($senderName, $senderNumber, $recipientNumber, $message, $clientCredentials, $attemptNumber)
     {
-        $ip_address = '192.168.50.159';
-        $timeout = 10000;
-        $port = '10000';
-
-        /**
-         *  The sender, address, port, username, password and timeout values
-         *
-         *  The sender must be the name of the sender from which the SMS is coming from e.g "Company A".
-         *  Note that the sender must only contain 11 or less characters otherwise and error will occur.
-         *
-         *  I used an SMPP package form: https://github.com/alexandr-mironov/php-smpp
-         *  to implement this sms sending feature.
-         *
-         *  The custom SmsBuilder is located in App\Services, and i did a minor change
-         *  to this file to allow the sender to be provided as part of the constructor
-         *  parameters instead of being globally set.
-         */
         try {
 
-            (new SmsBuilder($sender, $ip_address, $port, $username, $password, $timeout))
-                ->setRecipient($recipient, SMPP::TON_INTERNATIONAL)
-                ->sendMessage($message);
+            /// Log the SMS Attempts
+            $this->logInfo('SMS Attempt '.$this->wrapAsPrimaryHtml('#'.$attemptNumber));
 
-        } catch (\Exception $e) {
+            //////////////////////////
+            /// GENERATE SMS TOKEN ///
+            //////////////////////////
 
-            //  Handle try catch error
-            return $e;
+            $tokenEndpoint = 'https://aas.orange.co.bw:443/token';
+
+            /**
+             *  Sample Response:
+             *
+             *  {
+             *      "access_token": "eyJ4NXQiOiJOalUzWWpJeE5qRTVObU0wWVRkbE1XRmhNVFEyWWpkaU1tUXdNemMwTmpreFkyTmlaRE0xTlRrMk9EaGxaVFkwT0RFNU9EZzBNREkwWlRreU9HRmxOZyIsImtpZCI6Ik5qVTNZakl4TmpFNU5tTTBZVGRsTVdGaE1UUTJZamRpTW1Rd016YzBOamt4WTJOaVpETTFOVGsyT0RobFpUWTBPREU1T0RnME1ESTBaVGt5T0dGbE5nX1JTMjU2IiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiJPQldfSU5URUdSQVRJT05AY2FyYm9uLnN1cGVyIiwiYXV0IjoiQVBQTElDQVRJT04iLCJhdWQiOiJST2VHNFUxMXBhOUI4ZWludGVPUk5Mcjh1RWdhIiwibmJmIjoxNjkwNDY1MzY5LCJhenAiOiJST2VHNFUxMXBhOUI4ZWludGVPUk5Mcjh1RWdhIiwic2NvcGUiOiJhbV9hcHBsaWNhdGlvbl9zY29wZSBkZWZhdWx0IiwiaXNzIjoiaHR0cHM6XC9cL2Fhcy1idy1ndy5jb20uaW50cmFvcmFuZ2U6NDQzXC9vYXV0aDJcL3Rva2VuIiwiZXhwIjoxNjkwNDY4OTY5LCJpYXQiOjE2OTA0NjUzNjksImp0aSI6Ijg1ZDk2ZGJmLTNjYTAtNGEyMS05NzAwLWFlNGNlMTYzMDRjNiJ9.fFSjVkPWfxdLpYAmF86tGZInSI65Wtwz1sDYuQ_9QxHilqU2hUi5bJHB6Iw3cQepayJeY4899RLQ10H27YV9-P1zcVO_DJsiKA1itMZqcdwI5zMjmtOyJ7hbbACWLNXui4wYkuhWP2PhV3YgenB3wcNHIHtt-6dz4p4OIEkL22dmr_g5d6T-eBR3JLqGtP2ijyAfxxuS0brF6clEF04m2XzzE_RH4YoFzLvQPA56cuD45uMsNodhsK7D4f4xLOKyDiLjzXxwrnPuEgzsLp8LrZYmFgNRasLvdbazJFeOmZY9DrPk0vtYD93Bjb3nEmH5Mdgv4PsxoN_medTJdJ6Efw",
+             *      "scope": "am_application_scope default",
+             *      "token_type": "Bearer",
+             *      "expires_in": 3600
+             *  }
+             *
+             */
+            $response = $this->callGuzzleHttp('POST', $tokenEndpoint, [
+                'headers' => [
+                    'Authorization' => 'Basic '.$clientCredentials,
+                    'Content-Type' => 'application/x-www-form-urlencoded'
+                ],
+                'form_params' => [
+                    'grant_type' => 'client_credentials'
+                ]
+            ]);
+
+            $jsonString = $response->getBody();
+            $statusCode = $response->getStatusCode();
+            $responseData = json_decode($jsonString, true);
+
+            // Handle the response as needed
+            if ($statusCode === 200) {
+
+                /// Get the access token
+                $accessToken = $responseData['access_token'];
+
+                /// Log the SMS Access Token
+                $this->logInfo('SMS access token: ' . $this->wrapAsSuccessHtml($accessToken));
+
+                /// Log the SMS Access Token
+                $this->logInfo('Attempting to send message: ' .$this->wrapAsSuccessHtml($message). ' to ' .$this->wrapAsSuccessHtml($recipientNumber). ' from '.$this->wrapAsSuccessHtml($senderNumber). ' (+'.$senderNumber.')');
+
+                /////////////////////
+                /// SEND THE SMS ///
+                ////////////////////
+
+                //  urlencode will encode the "+" symbol, otherwise this call will fail
+                $smsEndpoint = 'https://aas.orange.co.bw:443/smsmessaging/v1/outbound/tel%3A%2B'.$senderNumber.'/requests';
+
+                $response = $this->callGuzzleHttp('POST', $smsEndpoint, [
+                    'headers' => [
+                        'Authorization' => 'Bearer ' . $accessToken,
+                        'Content-Type' => 'application/json',
+                        'accept' => 'application/json'
+                    ],
+                    'json' => [
+                        'outboundSMSMessageRequest' => [
+                            'address' => ['tel:+'.$recipientNumber],        //  Recepient number to send the SMS message
+                            'senderAddress' => 'tel:+'.$senderNumber,       //  Sender number that will be displayed if senderName is not included
+                            'senderName' => $senderName,                    //  Sender name e.g "Company XYZ"
+                            'outboundSMSTextMessage' => [
+                                'message' => $message
+                            ],
+                            'clientCorrelator' => $this->session_id         // A unique id to identify this SMS
+                        ]
+                    ]
+                ]);
+
+                $jsonString = $response->getBody();
+                $statusCode = $response->getStatusCode();
+                $responseData = json_decode($jsonString, true);
+
+                // Handle the response as needed
+                if ($statusCode === 201) {
+
+                    /// Return true that we succeeded to send the SMS
+                    return true;
+
+                } else {
+
+                    // Handle the error
+                    $this->logError('Failed to send SMS');
+                    $this->logError('Response Body: '.$jsonString);
+                    $this->logError('Status Code: '.$statusCode);
+
+                }
+
+
+            } else {
+
+                // Handle the error
+                $this->logError('Failed to acquire SMS Accesss Token');
+                $this->logError('Response Body: '.$jsonString);
+                $this->logError('Status Code: '.$statusCode);
+
+            }
+
+            /// Return false that we failed to send the SMS
+            return false;
+
+        } catch (\GuzzleHttp\Exception\GuzzleException $e) {
+
+            // Handle any exceptions that occurred during the API call
+            $this->logError('Failed to acquire token - Error Message: '.$e->getMessage());
+
+            /// Return false that we failed to send the SMS
+            return false;
 
         }
-
     }
 
     /**
