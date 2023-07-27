@@ -35,11 +35,18 @@ use App\Services\Sms\SmsBuilder;
 // Send SMS
 Route::get('/sms-using-rest', function () {
 
-    // Send the token request using Guzzle
+    //////////////////////////
+    /// GENERATE SMS TOKEN ///
+    //////////////////////////
+
+    // Create a new Guzzle
     $client = new Client();
 
     try {
-        $response = $client->post('https://aas.orange.co.bw:443/', [
+
+        $tokenEndpoint = 'https://aas.orange.co.bw:443';
+
+        $response = $client->post($tokenEndpoint, [
             'headers' => [
                 'Authorization' => 'Basic Uk9lRzRVMTFwYTlCOGVpbnRlT1JOTHI4dUVnYTplcDg0bDFCMmNWbGRlVjhZMzdVc0pMRE1Peklh',
                 'Content-Type' => 'application/x-www-form-urlencoded'
@@ -55,7 +62,7 @@ Route::get('/sms-using-rest', function () {
         // Handle the response as needed
         if ($statusCode === 200) {
 
-            //  $accessToken = $responseData['access_token'];
+            $accessToken = $responseData['access_token'];
 
             // Now you have the access token and can use it to send SMS requests
             // For demonstration, let's just return the access token here
@@ -63,12 +70,52 @@ Route::get('/sms-using-rest', function () {
                 'response_data' => $responseData
             ];
 
+            /////////////////////
+            /// SEND THE SMS ///
+            ////////////////////
+
+            $smsEndpoint = 'https://aas-bw.com.intraorange:443/smsmessaging/v1/outbound/tel%3A%2B26712345/requests';
+
+            $response = $client->post($smsEndpoint, [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $accessToken,
+                    'Content-Type' => 'application/json',
+                    'accept' => 'application/json'
+                ],
+                'json' => [
+                    'outboundSMSMessageRequest' => [
+                        'address' => ['tel:+26712345'],
+                        'senderAddress' => 'tel:+26712345', // will be displayed if senderName is not included
+                        'senderName' => 'Bonako',           // any string of choice
+                        'outboundSMSTextMessage' => [
+                            'message' => 'Hello world.'
+                        ],
+                        'clientCorrelator' => 'cf9d467d-2131-4280-b996-dddc5eb70eb2' // a unique id
+                    ]
+                ]
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            $responseData = json_decode($response->getBody(), true);
+
+            // Handle the response as needed
+            if ($statusCode === 201) {
+                // SMS sent successfully
+                return response()->json(['message' => 'SMS sent successfully']);
+            } else {
+                // Handle the error
+                return response()->json(['error' => 'Failed to send SMS'], $statusCode);
+            }
+
+
         } else {
 
             // Handle the error
             return ['error' => 'Failed to acquire token', 'status_code' => $statusCode];
 
         }
+
+
     } catch (GuzzleHttp\Exception\GuzzleException $e) {
 
         // Handle any exceptions that occurred during the API call
