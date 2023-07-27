@@ -33,7 +33,7 @@ use GuzzleHttp\Client;
 use App\Services\Sms\SmsBuilder;
 
 // Send SMS
-Route::get('/sms-using-rest', function () use ($emailContent) {
+Route::get('/sms-using-rest', function () {
 
     // Send the token request using Guzzle
     $client = new Client();
