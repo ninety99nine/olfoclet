@@ -32,7 +32,6 @@ class CreateAirtimeBillingPaymentsTable extends Migration
             $table->string('response_reference_name');
 
             $table->unsignedInteger('ussd_account_id')->index();
-            $table->unsignedInteger('ussd_session_id')->index();
             $table->string('ussd_session_id')->index();
             $table->unsignedInteger('version_id')->index();
             $table->unsignedInteger('project_id')->index();
