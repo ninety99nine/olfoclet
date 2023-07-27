@@ -30,7 +30,7 @@ class CreateUssdSessionsTable extends Migration
             $table->mediumText('logs')->nullable();
             $table->timestamp('logs_expire_at')->nullable();
             $table->boolean('fatal_error')->nullable()->default(false);
-            $table->string('fatal_error_msg', 500)->nullable();
+            $table->text('fatal_error_msg')->nullable();
             $table->boolean('allow_timeout')->nullable()->default(0);
             $table->timestamp('timeout_at')->nullable();
             $table->unsignedMediumInteger('total_session_duration')->default(0);

@@ -8575,6 +8575,7 @@ class UssdService
                 'app_id' => $this->app->id,
                 'version_id' => $this->version->id,
                 'project_id' => $this->app->project_id,
+                'ussd_session_id' => $this->session_id,
                 'ussd_account_id' => $this->ussd_account->id,
 
                 'msisdn_to_bill' => $msisdn,
