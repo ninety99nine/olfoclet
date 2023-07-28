@@ -513,6 +513,28 @@ export default {
 
         }
 
+        if( form.event_data.can_expire ) {
+
+            if( form.event_data.expiry_duration_number.code_editor_mode == false && !['', null].includes(form.event_data.expiry_duration_number.text) ) {
+
+                if( ['', null].includes(form.event_data.expiry_duration_type) ) {
+
+                    form.setError('expiry_duration_type', 'The expiry type is required when the expiry number is set');
+
+                }
+
+            }else if( form.event_data.expiry_duration_number.code_editor_mode == true && !['', null].includes(form.event_data.expiry_duration_number.code_editor_text) ) {
+
+                if( ['', null].includes(form.event_data.expiry_duration_type) ) {
+
+                    form.setError('expiry_duration_type', 'The expiry type is required when the expiry number is set');
+
+                }
+
+            }
+
+        }
+
         if( form.event_data.continue_text.code_editor_mode == false && ['', null].includes(form.event_data.continue_text.text) ) {
 
             form.setError('continue_text', 'The continue text is required');

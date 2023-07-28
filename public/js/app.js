@@ -7913,15 +7913,48 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var _components_TextOrCodeEditor_TextOrCodeEditor__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @components/TextOrCodeEditor/TextOrCodeEditor */ "./resources/js/Components/TextOrCodeEditor/TextOrCodeEditor.vue");
+/* harmony import */ var _components_Switch_DefaultSwitch__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @components/Switch/DefaultSwitch */ "./resources/js/Components/Switch/DefaultSwitch.vue");
+/* harmony import */ var _components_Select_DefaultSelect__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @components/Select/DefaultSelect */ "./resources/js/Components/Select/DefaultSelect.vue");
+/* harmony import */ var _components_TextOrCodeEditor_TextOrCodeEditor__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @components/TextOrCodeEditor/TextOrCodeEditor */ "./resources/js/Components/TextOrCodeEditor/TextOrCodeEditor.vue");
+
+
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   props: ['form'],
   components: {
-    TextOrCodeEditor: _components_TextOrCodeEditor_TextOrCodeEditor__WEBPACK_IMPORTED_MODULE_0__["default"]
+    DefaultSwitch: _components_Switch_DefaultSwitch__WEBPACK_IMPORTED_MODULE_0__["default"],
+    DefaultSelect: _components_Select_DefaultSelect__WEBPACK_IMPORTED_MODULE_1__["default"],
+    TextOrCodeEditor: _components_TextOrCodeEditor_TextOrCodeEditor__WEBPACK_IMPORTED_MODULE_2__["default"]
   },
   data: function data() {
-    return {};
+    return {
+      expiryDurationTypeOptions: [{
+        label: 'None',
+        value: ''
+      }, {
+        label: 'Seconds',
+        value: 'Seconds'
+      }, {
+        label: 'Minutes',
+        value: 'Minutes'
+      }, {
+        label: 'Days',
+        value: 'Days'
+      }, {
+        label: 'Months',
+        value: 'Months'
+      }],
+      displaySessionTypeOptions: [{
+        label: 'Any Session',
+        value: 'Any Session'
+      }, {
+        label: 'Same Session',
+        value: 'Same Session'
+      }, {
+        label: 'Next Session',
+        value: 'Next Session'
+      }]
+    };
   }
 });
 
@@ -19016,10 +19049,23 @@ __webpack_require__.r(__webpack_exports__);
 
 var _hoisted_1 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, " This is the mobile number to receive the notification e.g 26772123456 ", -1 /* HOISTED */);
 var _hoisted_2 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, " This is the notification message ", -1 /* HOISTED */);
-var _hoisted_3 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, " This is the continue text to close the notification ", -1 /* HOISTED */);
+var _hoisted_3 = {
+  key: 0,
+  "class": "grid grid-cols-12 gap-8 mb-6 items-end"
+};
+var _hoisted_4 = {
+  "class": "col-span-9"
+};
+var _hoisted_5 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, " This is the number until expiry e.g 1, 2, 3, e.t.c ", -1 /* HOISTED */);
+var _hoisted_6 = {
+  "class": "col-span-3"
+};
+var _hoisted_7 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, " This is the type until expiry e.g seconds, minutes, hours, e.t.c ", -1 /* HOISTED */);
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   var _component_TextOrCodeEditor = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("TextOrCodeEditor");
+  var _component_DefaultSwitch = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("DefaultSwitch");
+  var _component_DefaultSelect = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("DefaultSelect");
   return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" MSISDN "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_TextOrCodeEditor, {
     modelValue: $props.form.event_data.msisdn,
     "onUpdate:modelValue": _cache[0] || (_cache[0] = function ($event) {
@@ -19043,16 +19089,53 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     label: "Message",
     placeholder: "Hi {{ first_name }}, your account was created!",
     error: $props.form.errors.message,
-    te_height: "lg",
+    te_height: "md",
     "class": "mb-6"
   }, {
     info: (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
       return [_hoisted_2];
     }),
     _: 1 /* STABLE */
-  }, 8 /* PROPS */, ["modelValue", "error"]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Continue Text "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_TextOrCodeEditor, {
-    modelValue: $props.form.event_data.continue_text,
+  }, 8 /* PROPS */, ["modelValue", "error"]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Expiry Switch "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_DefaultSwitch, {
+    modelValue: $props.form.event_data.can_expire,
     "onUpdate:modelValue": _cache[2] || (_cache[2] = function ($event) {
+      return $props.form.event_data.can_expire = $event;
+    }),
+    note: "Determine whether this notification can expire or not",
+    "class": "mb-6"
+  }, null, 8 /* PROPS */, ["modelValue"]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Expiry Settings "), $props.form.event_data.can_expire ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_3, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_4, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Expiry Duration Number "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_TextOrCodeEditor, {
+    modelValue: $props.form.event_data.expiry_duration_number,
+    "onUpdate:modelValue": _cache[3] || (_cache[3] = function ($event) {
+      return $props.form.event_data.expiry_duration_number = $event;
+    }),
+    label: "Expiry Number",
+    placeholder: "30",
+    error: $props.form.errors.expiry_duration_number
+  }, {
+    info: (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
+      return [_hoisted_5];
+    }),
+    _: 1 /* STABLE */
+  }, 8 /* PROPS */, ["modelValue", "error"])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_6, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Expiry Duration Type "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_DefaultSelect, {
+    modelValue: $props.form.event_data.expiry_duration_type,
+    "onUpdate:modelValue": _cache[4] || (_cache[4] = function ($event) {
+      return $props.form.event_data.expiry_duration_type = $event;
+    }),
+    options: $data.expiryDurationTypeOptions,
+    label: "Expiry Type",
+    placeholder: "Seconds"
+  }, null, 8 /* PROPS */, ["modelValue", "options"])])])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Display Session Type "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_DefaultSelect, {
+    modelValue: $props.form.event_data.display_session_type,
+    "onUpdate:modelValue": _cache[5] || (_cache[5] = function ($event) {
+      return $props.form.event_data.display_session_type = $event;
+    }),
+    options: $data.displaySessionTypeOptions,
+    label: "Display Session Type",
+    placeholder: "Any Session",
+    "class": "mb-6"
+  }, null, 8 /* PROPS */, ["modelValue", "options"]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Continue Text "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_TextOrCodeEditor, {
+    modelValue: $props.form.event_data.continue_text,
+    "onUpdate:modelValue": _cache[6] || (_cache[6] = function ($event) {
       return $props.form.event_data.continue_text = $event;
     }),
     label: "Continue Text",
@@ -19060,7 +19143,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     error: $props.form.errors.continue_text
   }, {
     info: (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
-      return [_hoisted_3];
+      return [_hoisted_7];
     }),
     _: 1 /* STABLE */
   }, 8 /* PROPS */, ["modelValue", "error"])]);
@@ -21982,6 +22065,17 @@ __webpack_require__.r(__webpack_exports__);
     } else if (form.event_data.message.code_editor_mode == true && ['', null].includes(form.event_data.message.code_editor_text)) {
       form.setError('message', 'The message is required');
     }
+    if (form.event_data.can_expire) {
+      if (form.event_data.expiry_duration_number.code_editor_mode == false && !['', null].includes(form.event_data.expiry_duration_number.text)) {
+        if (['', null].includes(form.event_data.expiry_duration_type)) {
+          form.setError('expiry_duration_type', 'The expiry type is required when the expiry number is set');
+        }
+      } else if (form.event_data.expiry_duration_number.code_editor_mode == true && !['', null].includes(form.event_data.expiry_duration_number.code_editor_text)) {
+        if (['', null].includes(form.event_data.expiry_duration_type)) {
+          form.setError('expiry_duration_type', 'The expiry type is required when the expiry number is set');
+        }
+      }
+    }
     if (form.event_data.continue_text.code_editor_mode == false && ['', null].includes(form.event_data.continue_text.text)) {
       form.setError('continue_text', 'The continue text is required');
     } else if (form.event_data.continue_text.code_editor_mode == true && ['', null].includes(form.event_data.continue_text.code_editor_text)) {
@@ -23424,6 +23518,14 @@ var useVersionBuilder = (0,pinia__WEBPACK_IMPORTED_MODULE_1__.defineStore)('vers
             code_editor_text: '',
             code_editor_mode: false
           },
+          can_expire: false,
+          expiry_duration_number: {
+            text: '30',
+            code_editor_text: '',
+            code_editor_mode: false
+          },
+          expiry_duration_type: 'Seconds',
+          display_session_type: 'Any Session',
           continue_text: {
             text: '1. Continue',
             code_editor_text: '',

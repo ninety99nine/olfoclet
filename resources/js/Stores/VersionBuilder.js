@@ -1572,6 +1572,14 @@ export const useVersionBuilder = defineStore('version_builder', {
                         code_editor_text: '',
                         code_editor_mode: false
                     },
+                    can_expire: false,
+                    expiry_duration_number: {
+                        text: '30',
+                        code_editor_text: '',
+                        code_editor_mode: false
+                    },
+                    expiry_duration_type: 'Seconds',
+                    display_session_type: 'Any Session',
                     continue_text: {
                         text: '1. Continue',
                         code_editor_text: '',

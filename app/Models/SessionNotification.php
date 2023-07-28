@@ -18,7 +18,8 @@ class SessionNotification extends Model
      */
     protected $casts = [
         'metadata' => 'array',
-        'showing_notification' => 'boolean',
+        'expiry_date' => 'datetime',
+        'marked_as_seen' => 'boolean',
     ];
 
     /**
@@ -30,7 +31,10 @@ class SessionNotification extends Model
 
         /*  Session Notification Details  */
         'ussd_account_id', 'session_id', 'type', 'name', 'message',
-        'continue_text', 'showing_notification',
+        'continue_text', 'marked_as_seen', 'display_session_type',
+
+        /* Validity Period */
+        'expiry_date',
 
         /*  Meta Data  */
         'metadata',

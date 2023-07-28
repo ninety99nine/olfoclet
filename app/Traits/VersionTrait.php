@@ -301,6 +301,47 @@ trait VersionTrait
 
                 }
 
+                //  Fix issues related to the "Notification" event handler
+                if ($event['type'] == 'Notification') {
+
+                    //  If the "can_expire" property is not set
+                    if( !isset($events[$x]['event_data']['can_expire']) ) {
+
+                        //  Add the "can_expire" property
+                        $events[$x]['event_data']['can_expire'] = false;
+
+                    }
+
+                    //  If the "expiry_duration_number" property is not set
+                    if( !isset($events[$x]['event_data']['expiry_duration_number']) ) {
+
+                        //  Add the "expiry_duration_number" property
+                        $events[$x]['event_data']['expiry_duration_number'] = [
+                            'text' => '30',
+                            'code_editor_text' => '',
+                            'code_editor_mode' => false
+                        ];
+
+                    }
+
+                    //  If the "expiry_duration_type" property is not set
+                    if( !isset($events[$x]['event_data']['expiry_duration_type']) ) {
+
+                        //  Add the "expiry_duration_type" property
+                        $events[$x]['event_data']['expiry_duration_type'] = 'Seconds';
+
+                    }
+
+                    //  If the "display_session_type" property is not set
+                    if( !isset($events[$x]['event_data']['display_session_type']) ) {
+
+                        //  Add the "display_session_type" property
+                        $events[$x]['event_data']['display_session_type'] = 'Any Session';
+
+                    }
+
+                }
+
                 //  Fix issues related to the "REST API" event handler
                 if ($event['type'] == 'REST API') {
 

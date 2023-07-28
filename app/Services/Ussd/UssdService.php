@@ -933,32 +933,30 @@ class UssdService
 
         } else {
 
-            /** Check if we have any notification that has been marked as "showing notification"
+            /**
+             *  Check if we have any notification that has been marked as "seen".
              *  This means that we had a notification message that was being displayed to the
-             *  user, and now the user responded to the notification e.g By responding with
-             *  the input "1", "2", "3" or even "0"... It really doesn't matter what the
+             *  user, and now the user saw and responded to the notification e.g By responding
+             *  with the input "1", "2", "3" or even "0"... It really doesn't matter what the
              *  exact user reply was, but as long as the user replied. Since the user was
-             *  replying to the notification and not the screen, we need to ignore this reply
-             *  by not recording it as a reply record, but instead we just need to delete this
-             *  notification since it has been seen by the user.
+             *  replying to the notification and not the screen, we need to ignore this
+             *  reply by not recording it as a reply record, but instead we just need
+             *  to delete this notification since it has been seen by the user.
              */
-            $notification = $this->getShowingNotification();
+            $seen_notification = $this->getLatestSeenNotification();
 
-            //  If we have a notification
-            if( $notification ){
+            //  If we have a notification that has been seen
+            if( $seen_notification ) {
 
                 $this->logInfo(
                     'Deleting notification with message: <br />'.
                     '<div style="white-space: pre-wrap;" class="bg-white border rounded-md p-4 mt-2">'.
-                        $this->wrapAsSuccessHtml($notification->message).
+                        $this->wrapAsSuccessHtml($seen_notification->message).
                     '</div>'
                 );
 
-                //  Set the notification id
-                $id = $notification->id;
-
-                //  Delete this session notification
-                DB::table('session_notifications')->where('id', $id)->delete();
+                //  Delete this notification that has been seen
+                DB::table('session_notifications')->where('id', $seen_notification->id) ->delete();
 
             }else{
 
@@ -2009,20 +2007,20 @@ class UssdService
             return $outputResponse;
         }
 
-        //  Get the notifications
-        $session_notifications = $this->getNotifications();
+        //  Get the latest unseen notification
+        $unseen_notifications = $this->getLatestUnseenNotifications();
 
-        //  If we have notifications
-        if( $session_notifications ){
+        foreach($unseen_notifications as $unseen_notification) {
 
-            //  Foreach notification
-            foreach( $session_notifications as $session_notification ){
-
-                //  Set the notification id
-                $id = $session_notification->id;
+            //  If we can show the notification
+            if(
+                ($unseen_notification->display_session_type == 'Any Session') ||
+                ($unseen_notification->display_session_type == 'Same Session' && $unseen_notification->session_id == $this->session_id) ||
+                ($unseen_notification->display_session_type == 'Next Session' && $unseen_notification->session_id != $this->session_id)
+             ) {
 
                 //  Set the notification message
-                $notification = $session_notification->message;
+                $notification = $unseen_notification->message;
 
                 $this->logInfo(
                     'Displaying notification message: <br />'.
@@ -2031,8 +2029,8 @@ class UssdService
                     '<div style="white-space: pre-wrap;" class="bg-white border rounded-md p-4 mt-2">'.$this->wrapAsSuccessHtml($response).'</div>'
                 );
 
-                //  Update database that we are showing this session notification
-                DB::table('session_notifications')->where('id', $id)->update(['showing_notification' => true]);
+                //  Update database that we are showing this notification (This now means that this notification has been seen)
+                DB::table('session_notifications')->where('id', $unseen_notification->id)->update(['marked_as_seen' => true]);
 
                 //  Return the notification content
                 return $this->showCustomScreen($notification);
@@ -2364,18 +2362,41 @@ class UssdService
         }
     }
 
-    public function getNotifications()
+    /**
+     *  Get the latest unseen notification. This is a notification that has not yet been displayed
+     *  to the user. This type of notification can be identified if "marked_as_seen" is set
+     *  to "true".
+     */
+    public function getLatestUnseenNotifications()
     {
-        return DB::table('session_notifications')->where([
-            'ussd_account_id' => $this->ussd_account->id,
-        ])->latest()->get();
+        return DB::table('session_notifications')
+            ->where([
+                'ussd_account_id' => $this->ussd_account->id,
+                'marked_as_seen' => false,
+                'app_id' => $this->app->id,
+            ])
+            ->where(function ($query) {
+                //  Make sure that this notification has not expired
+                $query->where('expiry_date', '>=', now())
+                    //  Or that this notification does not expire
+                    ->orWhereNull('expiry_date');
+            })
+            ->latest()
+            ->get();
     }
 
-    public function getShowingNotification()
+    /**
+     *  Get the latest seen notification. This is a notification that was displayed to the user
+     *  and then the user responded to that notification by replying with any character. The
+     *  exact reply does not matter, only that the user replied. This type of notification
+     *  can be identified if "marked_as_seen" is set to "true".
+     */
+    public function getLatestSeenNotification()
     {
         return DB::table('session_notifications')->where([
             'ussd_account_id' => $this->ussd_account->id,
-            'showing_notification' => true
+            'marked_as_seen' => true,
+            'app_id' => $this->app->id
         ])->latest()->first();
     }
 
@@ -11807,6 +11828,45 @@ class UssdService
             //  Get the generated output - Convert to [String]
             $message = $this->convertToString($outputResponse);
 
+            /******************
+             *  CAN EXPIRE    *
+             *****************/
+
+            //  Get the can expire status
+            $can_expire = $this->event['event_data']['can_expire'];
+
+            /*******************************
+             *  EXPIRY DURATION NUMBER     *
+             ******************************/
+
+            //  Get the expiry duration number
+            $expiry_duration_number = $this->event['event_data']['expiry_duration_number'];
+
+            //  Convert the "expiry_duration_number" into its associated dynamic value
+            $outputResponse = $this->convertValueStructureIntoDynamicData($expiry_duration_number);
+
+            //  If we have a screen to show return the response otherwise continue
+            if ($this->shouldDisplayScreen($outputResponse)) {
+                return $outputResponse;
+            }
+
+            //  Get the generated output - Convert to [Integer]
+            $expiry_duration_number = (int) $outputResponse;
+
+            /****************************
+             *  EXPIRY DURATION TYPE    *
+             ***************************/
+
+            //  Get the expiry duration type
+            $expiry_duration_type = $this->event['event_data']['expiry_duration_type'];
+
+            /****************************
+             *  DISPLAY SESSION TYPE    *
+             ***************************/
+
+            //  Get the display session type
+            $display_session_type = $this->event['event_data']['display_session_type'];
+
             /************************
              *  CONTINUE TEXT       *
              ***********************/
@@ -11828,13 +11888,53 @@ class UssdService
             //  Merge the message and continue text
             $message = $message."\n".($continue_text ?? '1. Ok');
 
+            /***************************
+             *  CALCULATE EXPIRY DATE  *
+             **************************/
+
+            $expiry_date = null;
+            $expiry_duration_type_options = ['Seconds', 'Minutes', 'Days', 'Months'];
+
+            if($can_expire) {
+
+                if(is_int($expiry_duration_number) && in_array($expiry_duration_type, $expiry_duration_type_options)) {
+
+                    $expiry_date = now();
+
+                    if($expiry_duration_type == 'Seconds') {
+
+                        $expiry_date = $expiry_date->addSeconds($expiry_duration_number);
+
+                    }else if($expiry_duration_type == 'Minutes') {
+
+                        $expiry_date = $expiry_date->addMinutes($expiry_duration_number);
+
+                    }else if($expiry_duration_type == 'Days') {
+
+                        $expiry_date = $expiry_date->addDays($expiry_duration_number);
+
+                    }else if($expiry_duration_type == 'Months') {
+
+                        $expiry_date = $expiry_date->addMonths($expiry_duration_number);
+
+                    }
+
+                }else{
+
+                    if(!empty($expiry_duration_number) && !is_int($expiry_duration_number)) $this->logWarning('The notification expiry duration must be a number e.g 1, 2 or 3');
+                    if(!empty($expiry_duration_type) && !in_array($expiry_duration_type, $expiry_duration_type_options)) $this->logWarning('The notification expiry duration type must be seconds, minutes, days or months');
+
+                }
+
+            }
+
             //  Create the notification message
-            $this->create_notification_message($message);
+            $this->create_notification_message($message, $display_session_type, $expiry_date);
 
         }
     }
 
-    public function create_notification_message($message = null)
+    public function create_notification_message($message = null, $display_session_type, $expiry_date = null)
     {
         if( $message ){
 
@@ -11852,9 +11952,11 @@ class UssdService
 
                 //  Update/Create using the following information
                 [
+                    'display_session_type' => $display_session_type,
                     'ussd_account_id' => $this->ussd_account->id,
                     'version_id' => $this->version->id,
                     'session_id' => $this->session_id,
+                    'expiry_date' => $expiry_date,
                     'app_id' => $this->app->id,
                     'message' => $message,
                     'created_at' => now(),

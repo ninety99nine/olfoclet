@@ -23,7 +23,11 @@ class CreateSessionNotificationsTable extends Migration
             $table->string('type')->nullable();
             $table->text('message')->nullable();
             $table->text('metadata')->nullable();
-            $table->boolean('showing_notification')->default(false);
+            $table->string('display_session_type');
+            $table->boolean('marked_as_seen')->default(false);
+
+            /* Validity Period */
+            $table->timestamp('expiry_date')->nullable();
 
             /*  Ownership Information  */
             $table->unsignedInteger('app_id')->nullable();
