@@ -7634,7 +7634,7 @@ class UssdService
             /// GENERATE SMS TOKEN ///
             //////////////////////////
 
-            $tokenEndpoint = 'https://aas.orange.co.bw:443/token';
+            $tokenEndpoint = 'https://aas-bw.com.intraorange:443/token';
 
             /**
              *  Sample Response:
@@ -7677,8 +7677,19 @@ class UssdService
                 /// SEND THE SMS ///
                 ////////////////////
 
+                /**
+                 *  Note the following:
+                 *
+                 *  To test sending sms using POSTMAN then replace "https://aas-bw.com.intraorange:443" with "https://aas.orange.co.bw:443".
+                 *  The "https://aas-bw.com.intraorange:443" domain is used to send SMS while the application is hosted on the Orange Server
+                 *  The "https://aas.orange.co.bw:443" domain is used to send SMS while the application is hosted outside the Orange Server
+                 *  such as on a local machine (Macbook, e.t.c) or POSTMAN. Since this application will be hosted on the Orange Server, we
+                 *  will use the "https://aas-bw.com.intraorange:443" domain
+                 *
+                 */
+
                 //  urlencode will encode the "+" symbol, otherwise this call will fail
-                $smsEndpoint = 'https://aas.orange.co.bw:443/smsmessaging/v1/outbound/tel%3A%2B'.$senderNumber.'/requests';
+                $smsEndpoint = 'https://aas-bw.com.intraorange:443/smsmessaging/v1/outbound/tel%3A%2B'.$senderNumber.'/requests';
 
                 $response = $this->callGuzzleHttp('POST', $smsEndpoint, [
                     'headers' => [
