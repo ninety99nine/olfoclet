@@ -7709,7 +7709,7 @@ class UssdService
                             'clientCorrelator' => $this->session_id         // A unique id to identify this SMS
                         ]
                     ],
-                    'verify' => true,
+                    'verify' => false,  // Disable SSL certificate verification
                 ]);
 
                 $jsonString = $response->getBody();
