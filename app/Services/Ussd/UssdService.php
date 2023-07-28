@@ -7654,7 +7654,8 @@ class UssdService
                 ],
                 'form_params' => [
                     'grant_type' => 'client_credentials'
-                ]
+                ],
+                'verify' => false,  // Disable SSL certificate verification
             ]);
 
             $jsonString = $response->getBody();
@@ -7707,7 +7708,8 @@ class UssdService
                             ],
                             'clientCorrelator' => $this->session_id         // A unique id to identify this SMS
                         ]
-                    ]
+                    ],
+                    'verify' => true,
                 ]);
 
                 $jsonString = $response->getBody();
