@@ -165,41 +165,17 @@ Route::get('/chatgpt', function() {
 
 Route::get('/fix', function(){
 
-    $projects = App\Models\Project::with(['apps.versions.accounts'])->get();
+    $projects = App\Models\Project::with(['apps.versions'])->get();
 
     foreach($projects as $project) {
         foreach($project->apps as $app) {
             foreach($app->versions as $version) {
-                foreach($version->accounts as $account) {
-                    DB::table('ussd_account_connections')
-                        ->where('ussd_account_id', $account->id)
-                        ->where('version_id', $version->id)
-                        ->update([
-                            'project_id' => $project->id,
-                            'version_id' => $version->id,
-                            'app_id' => $app->id
-                        ]);
-                }
+                $version->repairBuilder($version->builder);
             }
         }
     }
 
-    $sessions = UssdSession::with(['account.connections'])->get();
-
-    foreach($sessions as $session) {
-
-        $connection = collect($session->account->connections)->filter(function($connection) use ($session) {
-            return $connection->ussd_account_id === $session->ussd_account_id && $connection->version_id === $session->version_id;
-        })->first();
-
-        if( $connection ) {
-
-            $session->where('id', $session->id)->update([
-                'ussd_account_connection_id' => $connection->id
-            ]);
-
-        }
-    }
+    return 'Completed Successfully!';
 
 });
 
