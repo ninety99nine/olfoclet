@@ -1614,7 +1614,15 @@ export const useVersionBuilder = defineStore('version_builder', {
         },
         get_Terminate_Session_Event(){
 
-            return {}
+            return {
+                event_data: {
+                    message: {
+                        text: '',
+                        code_editor_text: '',
+                        code_editor_mode: false
+                    }
+                }
+            }
 
         },
         getClonedEvent(event){

@@ -633,6 +633,25 @@ trait VersionTrait
 
                 }
 
+                //  Fix issues related to the "Terminate Session" event handler
+                if ($event['type'] == 'Terminate Session') {
+
+                    //  If the "event_data" property has not been set
+                    if(!isset($events[$x]['event_data'])) {
+
+                        //  Set the "event_data" property
+                        $events[$x]['event_data'] = [
+                            'message' => [
+                                'text' => '',
+                                'code_editor_text' => '',
+                                'code_editor_mode' => false
+                            ],
+                        ];
+
+                    }
+
+                }
+
                 //  Check if the event supports comments
                 if( !isset($events[$x]['comment']) ) {
 

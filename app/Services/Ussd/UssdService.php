@@ -12062,18 +12062,44 @@ class UssdService
     {
         if ($this->event) {
 
+            /***************
+             * MESSAGE     *
+             ***************/
+
+            //  Get the message
+            $message = $this->event['event_data']['message'];
+
+            //  Convert the "value" into its associated dynamic value
+            $outputResponse = $this->convertValueStructureIntoDynamicData($message);
+
+            //  If we have a screen to show return the response otherwise continue
+            if ($this->shouldDisplayScreen($outputResponse)) {
+                return $outputResponse;
+            }
+
+            //  Get the generated output - Convert to [String]
+            $message = $this->convertToString($outputResponse);
+
             //  Set the event request type to terminate the session
-            $this->terminate_session();
+            return $this->terminate_session($message);
 
         }
     }
 
     /** This method terminates the current session
      */
-    public function terminate_session()
+    public function terminate_session($message)
     {
         //  Set the event request type to terminate the session
         $this->event_request_type = '3';
+
+        if(!empty($message)) {
+
+            return $this->showCustomScreen($message);;
+
+        }
+
+        return null;
     }
 
     /******************************************

@@ -569,7 +569,6 @@ export default {
 
     terminateSession: (form) => {
 
-
     },
 
     database: (form) => {

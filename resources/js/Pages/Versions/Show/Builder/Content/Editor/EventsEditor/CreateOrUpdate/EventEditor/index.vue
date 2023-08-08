@@ -54,6 +54,9 @@
                 <!-- Notification -->
                 <NotificationEvent v-if="event.type == 'Notification'" :selectedTab="selectedTab" :updateTabs="updateTabs" :form="form"></NotificationEvent>
 
+                <!-- Terminate Session -->
+                <TerminateSessionEvent v-if="event.type == 'Terminate Session'" :selectedTab="selectedTab" :updateTabs="updateTabs" :form="form"></TerminateSessionEvent>
+
                 <!-- Collection -->
                 <CollectionEvent v-if="event.type == 'Event Collection'" :selectedTab="selectedTab" :updateTabs="updateTabs" :form="form"></CollectionEvent>
 
@@ -92,6 +95,7 @@
     import DefaultTabs from '@components/Tabs/DefaultTabs';
     import SetPropertyEvent from './EventTypes/SetProperty';
     import NotificationEvent from './EventTypes/Notification';
+    import TerminateSessionEvent from './EventTypes/TerminateSession';
     import OrangeMoneyApiEvent from './EventTypes/Apis/OrangeMoneyApi';
     import AirtimeBillingApiEvent from './EventTypes/Apis/AirtimeBillingApi';
     import AppWriteConnectionEvent from './EventTypes/ThirdPartyIntegration/AppWrite';
@@ -102,7 +106,7 @@
         components: {
             General, RevisitEvent, RedirectEvent, AutoLinkEvent, SmsApiEvent, AutoReplyEvent, CollectionEvent, RestApiEvent,
             EmailApiEvent, DefaultTabs, SetPropertyEvent, NotificationEvent, FormattingEvent, ValidationEvent, CustomCodeEvent,
-            OrangeMoneyApiEvent, DatabaseEvent, AirtimeBillingApiEvent, AppWriteConnectionEvent, FirebaseConnectionEvent
+            OrangeMoneyApiEvent, TerminateSessionEvent, DatabaseEvent, AirtimeBillingApiEvent, AppWriteConnectionEvent, FirebaseConnectionEvent
         },
         data() {
             return {
