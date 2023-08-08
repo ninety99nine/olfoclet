@@ -170,7 +170,8 @@ Route::get('/fix', function(){
     foreach($projects as $project) {
         foreach($project->apps as $app) {
             foreach($app->versions as $version) {
-                $version->repairBuilder($version->builder);
+                $version->builder = $version->repairBuilder($version->builder);
+                $version->save();
             }
         }
     }
