@@ -980,7 +980,7 @@ class UssdService
         $this->timeout_limit_in_seconds = $this->getTimeoutLimitInSeconds();
 
         //  If the existing session has timeout
-        if ($this->existing_session->has_timed_out) {
+        if ($this->test_mode && $this->existing_session->has_timed_out) {
 
             //  Handle timeout
             $this->sessionResponse = $this->handleTimeout();
