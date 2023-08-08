@@ -563,6 +563,9 @@ export const useVersionBuilder = defineStore('version_builder', {
                         code_editor_mode: false
                     },
 
+                    enable_instruction_emoji: false,
+                    enable_action_emoji: false,
+
                     //  Display action settings
                     action: {
                         selected_type: 'no_action',  //  no_action, input_value, select_option

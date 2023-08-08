@@ -3924,6 +3924,7 @@ class UssdService
 
         //  Set the instruction
         $this->display_instructions = $this->convertToString($instructionsBuildResponse);
+        if($this->display['content']['enable_instruction_emoji'] == false) $this->display_instructions = $this->removeEmojis($this->display_instructions);
 
         //  Build the display actions (E.g Select options)
         $actionBuildResponse = $this->buildDisplayActions();
@@ -3935,6 +3936,7 @@ class UssdService
 
         //  Set the action
         $this->display_actions = $this->convertToString($actionBuildResponse);
+        if($this->display['content']['enable_action_emoji'] == false) $this->display_actions = $this->removeEmojis($this->display_actions);
 
         //  Combine the display instruction and action as the display content
         $this->display_content = $this->display_instructions.$this->display_actions;
@@ -3998,6 +4000,38 @@ class UssdService
                 return $this->getCodeSelectOptions('string');
             }
         }
+    }
+
+    public function removeEmojis($string)
+    {    // Match Enclosed Alphanumeric Supplement
+        $regex_alphanumeric = '/[\x{1F100}-\x{1F1FF}]/u';
+        $clear_string = preg_replace($regex_alphanumeric, '', $string);
+
+        // Match Miscellaneous Symbols and Pictographs
+        $regex_symbols = '/[\x{1F300}-\x{1F5FF}]/u';
+        $clear_string = preg_replace($regex_symbols, '', $clear_string);
+
+        // Match Emoticons
+        $regex_emoticons = '/[\x{1F600}-\x{1F64F}]/u';
+        $clear_string = preg_replace($regex_emoticons, '', $clear_string);
+
+        // Match Transport And Map Symbols
+        $regex_transport = '/[\x{1F680}-\x{1F6FF}]/u';
+        $clear_string = preg_replace($regex_transport, '', $clear_string);
+
+        // Match Supplemental Symbols and Pictographs
+        $regex_supplemental = '/[\x{1F900}-\x{1F9FF}]/u';
+        $clear_string = preg_replace($regex_supplemental, '', $clear_string);
+
+        // Match Miscellaneous Symbols
+        $regex_misc = '/[\x{2600}-\x{26FF}]/u';
+        $clear_string = preg_replace($regex_misc, '', $clear_string);
+
+        // Match Dingbats
+        $regex_dingbats = '/[\x{2700}-\x{27BF}]/u';
+        $clear_string = preg_replace($regex_dingbats, '', $clear_string);
+
+        return $clear_string;
     }
 
     /** This method gets the type of action to build for the current display
@@ -7708,11 +7742,46 @@ class UssdService
                  *  such as on a local machine (Macbook, e.t.c) or POSTMAN. Since this application will be hosted on the Orange Server, we
                  *  will use the "https://aas-bw.com.intraorange:443" domain
                  *
+                 *  Note that "tel:+" converts to "tel%3A%2B" after being encoded
+                 *
                  */
-
-                //  urlencode will encode the "+" symbol, otherwise this call will fail
                 $smsEndpoint = 'https://aas-bw.com.intraorange:443/smsmessaging/v1/outbound/tel%3A%2B'.$senderNumber.'/requests';
 
+                /**
+                 *  Sample Response:
+                 *
+                 * {
+                 *      "outboundSMSMessageRequest": {
+                 *      "address": [
+                 *           "tel:+26772882239"
+                 *      ],
+                 *      "senderAddress": "tel:+26772882239",
+                 *      "senderName": "Bonako",
+                 *      "outboundSMSTextMessage": {
+                 *          "message": "Welcome to Bonako Dial2Buy"
+                 *      },
+                 *      "clientCorrelator": "cf9d467d-2131-4280-b996-dddc5eb70eb2",
+                 *      "resourceURL": "/smsmessaging/v1/outbound/tel:+26772882239/requests/req64c2c5261bc1c442747dd2ff",
+                 *      "link": [
+                 *          {
+                 *               "rel": "Date",
+                 *               "href": "2023-07-27T19:27:34.612Z"
+                 *          }
+                 *      ],
+                 *      "deliveryInfoList": {
+                 *          "resourceURL": "/smsmessaging/v1/outbound/tel:+26772882239/requests/req64c2c5261bc1c442747dd2ff/deliveryInfos",
+                 *          "link": [],
+                 *          "deliveryInfo": [
+                 *              {
+                 *                  "address": "tel:+26772882239",
+                 *                  "deliveryStatus": "MessageWaiting",
+                 *                  "link": []
+                 *              }
+                 *          ]
+                 *      }
+                 *  }
+                 * }
+                 */
                 $response = $this->callGuzzleHttp('POST', $smsEndpoint, [
                     'headers' => [
                         'Authorization' => 'Bearer ' . $accessToken,
@@ -7727,7 +7796,7 @@ class UssdService
                             'outboundSMSTextMessage' => [
                                 'message' => $message
                             ],
-                            'clientCorrelator' => $this->session_id         // A unique id to identify this SMS
+                            'clientCorrelator' => $this->session_id.'-'.now()   // A unique id to identify this SMS
                         ]
                     ],
                     'verify' => false,  // Disable SSL certificate verification
@@ -9202,8 +9271,8 @@ class UssdService
                     'purchaseCategoryCode' => (isset($purchase_category_code) && !empty($purchase_category_code)) ? $purchase_category_code : null,
                 ],
                 ],
-                'clientCorrelator' => 'clientCorrelator-'.now(),  //	'unique-technical-id',
-                'referenceCode' => 'referenceCode-'.now(),        //	'Service_provider_payment_reference',
+                'clientCorrelator' => $this->session_id.'-'.now(),  //	'unique-technical-id',
+                'referenceCode' => 'referenceCode-'.now(),          //	'Service_provider_payment_reference',
                 'transactionOperationStatus' => 'Charged',
             ],
             ];
@@ -11934,7 +12003,7 @@ class UssdService
         }
     }
 
-    public function create_notification_message($message = null, $display_session_type, $expiry_date = null)
+    public function create_notification_message($message = null, $display_session_type = 'Same Session', $expiry_date = null)
     {
         if( $message ){
 

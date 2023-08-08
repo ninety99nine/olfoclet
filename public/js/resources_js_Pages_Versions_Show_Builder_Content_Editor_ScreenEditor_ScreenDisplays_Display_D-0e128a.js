@@ -81,8 +81,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     }),
     label: "Incorrect Option Message",
     placeholder: "Incorrect option selected",
-    showCode: false,
-    "class": "mb-6"
+    showCode: false
   }, null, 8 /* PROPS */, ["modelValue"])]);
 }
 

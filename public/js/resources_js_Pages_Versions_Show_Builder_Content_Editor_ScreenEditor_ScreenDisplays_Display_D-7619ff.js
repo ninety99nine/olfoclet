@@ -813,8 +813,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     }),
     label: "Incorrect Option Message",
     placeholder: "Incorrect option selected",
-    showCode: false,
-    "class": "mb-6"
+    showCode: false
   }, null, 8 /* PROPS */, ["modelValue"])]);
 }
 
@@ -942,8 +941,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     }),
     label: "Incorrect Option Message",
     placeholder: "Incorrect option selected",
-    showCode: false,
-    "class": "mb-6"
+    showCode: false
   }, null, 8 /* PROPS */, ["modelValue"])]);
 }
 
@@ -1526,8 +1524,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     }),
     label: "Incorrect Option Message",
     placeholder: "Incorrect option selected",
-    showCode: false,
-    "class": "mb-6"
+    showCode: false
   }, null, 8 /* PROPS */, ["modelValue"])]);
 }
 
@@ -1569,6 +1566,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   var _component_StaticOptions = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("StaticOptions");
   var _component_DynamicOptions = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("DynamicOptions");
   var _component_CodeOptions = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("CodeOptions");
+  var _component_el_checkbox = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("el-checkbox");
   return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_1, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_2, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_DefaultSelect, {
     modelValue: $props.display.content.action.selected_type,
     "onUpdate:modelValue": _cache[0] || (_cache[0] = function ($event) {
@@ -1607,7 +1605,14 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   }, null, 8 /* PROPS */, ["display"])) : $props.display.content.action.select_option.selected_type == 'code_editor_options' ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createBlock)(_component_CodeOptions, {
     key: 2,
     display: $props.display
-  }, null, 8 /* PROPS */, ["display"])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]);
+  }, null, 8 /* PROPS */, ["display"])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $props.display.content.action.selected_type != 'no_action' ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createBlock)(_component_el_checkbox, {
+    key: 2,
+    modelValue: $props.display.content.enable_action_emoji,
+    "onUpdate:modelValue": _cache[3] || (_cache[3] = function ($event) {
+      return $props.display.content.enable_action_emoji = $event;
+    }),
+    label: "Allow Emojis 🙂"
+  }, null, 8 /* PROPS */, ["modelValue"])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]);
 }
 
 /***/ }),

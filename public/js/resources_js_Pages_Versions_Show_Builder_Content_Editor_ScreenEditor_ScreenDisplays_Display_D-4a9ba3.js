@@ -36,7 +36,8 @@ __webpack_require__.r(__webpack_exports__);
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   var _component_TextOrCodeEditor = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("TextOrCodeEditor");
-  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createBlock)(_component_TextOrCodeEditor, {
+  var _component_el_checkbox = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("el-checkbox");
+  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_TextOrCodeEditor, {
     modelValue: $props.display.content.instruction,
     "onUpdate:modelValue": _cache[0] || (_cache[0] = function ($event) {
       return $props.display.content.instruction = $event;
@@ -45,7 +46,13 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     placeholder: "Welcome to {{ company }}, how may we help you today?",
     te_height: "lg",
     showCode: false
-  }, null, 8 /* PROPS */, ["modelValue"]);
+  }, null, 8 /* PROPS */, ["modelValue"]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_el_checkbox, {
+    modelValue: $props.display.content.enable_instruction_emoji,
+    "onUpdate:modelValue": _cache[1] || (_cache[1] = function ($event) {
+      return $props.display.content.enable_instruction_emoji = $event;
+    }),
+    label: "Allow Emojis 🙂"
+  }, null, 8 /* PROPS */, ["modelValue"])]);
 }
 
 /***/ }),

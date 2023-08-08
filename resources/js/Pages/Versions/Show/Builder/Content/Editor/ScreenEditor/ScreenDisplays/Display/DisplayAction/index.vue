@@ -64,6 +64,8 @@
 
         </div>
 
+        <el-checkbox v-if="display.content.action.selected_type != 'no_action'" v-model="display.content.enable_action_emoji" label="Allow Emojis 🙂" />
+
     </div>
 
 </template>

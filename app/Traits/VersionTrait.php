@@ -1039,6 +1039,20 @@ trait VersionTrait
 
                 }
 
+                //  Set the "enable_instruction_emoji" property if it does not already exist
+                if(!isset($builder['screens'][$s_key]['displays'][$d_key]['content']['enable_instruction_emoji'])) {
+
+                    $builder['screens'][$s_key]['displays'][$d_key]['content']['enable_instruction_emoji'] = false;
+
+                }
+
+                //  Set the "enable_action_emoji" property if it does not already exist
+                if(!isset($builder['screens'][$s_key]['displays'][$d_key]['content']['enable_action_emoji'])) {
+
+                    $builder['screens'][$s_key]['displays'][$d_key]['content']['enable_action_emoji'] = false;
+
+                }
+
             }
 
 

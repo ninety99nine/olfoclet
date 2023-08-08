@@ -55,7 +55,7 @@
         <TextOrCodeEditor v-model="display.content.action.select_option.dynamic_options.no_results_message" label="No Options Message" placeholder="No options found" :showCode="false" class="mb-6"></TextOrCodeEditor>
 
         <!-- Incorrect Option Message -->
-        <TextOrCodeEditor v-model="display.content.action.select_option.dynamic_options.incorrect_option_selected_message" label="Incorrect Option Message" placeholder="Incorrect option selected" :showCode="false" class="mb-6"></TextOrCodeEditor>
+        <TextOrCodeEditor v-model="display.content.action.select_option.dynamic_options.incorrect_option_selected_message" label="Incorrect Option Message" placeholder="Incorrect option selected" :showCode="false"></TextOrCodeEditor>
 
     </div>
 
