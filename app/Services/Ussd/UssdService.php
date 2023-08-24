@@ -9576,6 +9576,10 @@ class UssdService
 
                             $validationResponse = $this->applyValidationRule($target_value, $validation_rule, 'validateDateFormat'); break;
 
+                        case 'valiate_date_using_slash_format':
+
+                            $validationResponse = $this->applyValidationRule($target_value, $validation_rule, 'valiateDateUsingSlashFormat'); break;
+
                         case 'valiate_date_using_hyphen_format':
 
                             $validationResponse = $this->applyValidationRule($target_value, $validation_rule, 'valiateDateUsingHyphenFormat'); break;
@@ -9626,7 +9630,7 @@ class UssdService
                     }
 
                     //  If we have a screen to show return the response otherwise continue
-                    if ($this->shouldDisplayScreen($validationResponse)) {
+                    if (isset($validationResponse) && $this->shouldDisplayScreen($validationResponse)) {
                         return $validationResponse;
                     }
                 }
@@ -9846,10 +9850,84 @@ class UssdService
         }
     }
 
-    /** This method validates to make sure the target input
-     *  is a valid date format e.g DD/MM/YYYY.
+    /**
+     *  This method validates to make sure the target input
+     *  is a valid date format e.g DDMMYYYY.
+     *
+     *  Dates that should pass validation:
+     *
+     *  01012023
+     *  12031999
+     *  07072005
+     *  31082021
+     *
+     *  Dates that should fail validation:
+     *
+     *  12345678 (Invalid day and month)
+     *  00122020 (Invalid day)
+     *  31132020 (Invalid month)
+     *  29022021 (2021 is not a leap year, so February 29th is invalid)
+     *  25001999 (Invalid day and month)
      */
     public function validateDateFormat($target_value, $validation_rule)
+    {
+        // Regex pattern for validation
+        $pattern = "/^(0?[1-9]|[1-2][0-9]|3[0-1])(0?[1-9]|1[0-2])\d{4}$/";
+
+        // Convert to [String]
+        $target_value = $this->convertToString($target_value);
+
+        // If the pattern was not matched exactly i.e validation failed
+        if (empty($target_value) || !preg_match($pattern, $target_value)) {
+
+            // Handle the failed validation
+            return $this->handleFailedValidation($validation_rule);
+
+        } else {
+
+            // Extract day, month, and year from the input
+            $day = substr($target_value, 0, 2);
+            $month = substr($target_value, 2, 2);
+            $year = substr($target_value, 4);
+
+            // Create a Carbon instance and validate the date
+            try {
+                $date = \Carbon\Carbon::create($year, $month, $day);
+            } catch (\Exception $e) {
+                // Handle the failed validation
+                return $this->handleFailedValidation($validation_rule);
+            }
+
+            // Check if the parsed date matches the input
+            if ($date->format('dmY') !== $target_value) {
+                // Handle the failed validation
+                return $this->handleFailedValidation($validation_rule);
+            }
+        }
+    }
+
+    /**
+     *  This method validates to make sure the target input
+     *  is a valid date format e.g DD/MM/YYYY.
+     *
+     *  Dates that should pass validation:
+     *
+     *  01/01/2023
+     *  12/03/1999
+     *  07/07/2005
+     *  31/08/2021
+     *
+     *  Dates that should fail validation:
+     *
+     *  123/456/7890 (Invalid format)
+     *  00/12/2020   (Invalid day)
+     *  32/01/2022   (Invalid day)
+     *  29/02/2021   (2021 is not a leap year, so February 29th is invalid)
+     *  25/00/1999   (Invalid month)
+     *  01/13/2000   (Invalid month)
+     *  01/01/23     (Year should be in 4-digit format)
+     */
+    public function valiateDateUsingSlashFormat($target_value, $validation_rule)
     {
         //  Regex pattern
         $pattern = "/^(0?[1-9]|[1-2][0-9]|3[0-1])\/(0?[1-9]|1[0-2])\/\d{4}$/";
@@ -9890,8 +9968,24 @@ class UssdService
         }
     }
 
-    /** This method validates to make sure the target input
+    /**
+     *  This method validates to make sure the target input
      *  is a valid date format e.g DD-MM-YYYY.
+     *  Dates that should pass validation:
+     *
+     *  01-01-2023
+     *  12-03-1999
+     *  07-07-2005
+     *  31-08-2021
+     *  Dates that should fail validation:
+     *
+     *  123-456-7890 (Invalid format)
+     *  00-12-2020 (Invalid day)
+     *  32-01-2022 (Invalid day)
+     *  29-02-2021 (2021 is not a leap year, so February 29th is invalid)
+     *  25-00-1999 (Invalid month)
+     *  01-13-2000 (Invalid month)
+     *  01-01-23 (Year should be in 4-digit format)
      */
     public function valiateDateUsingHyphenFormat($target_value, $validation_rule)
     {
