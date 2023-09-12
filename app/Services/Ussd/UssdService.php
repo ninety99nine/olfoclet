@@ -7796,7 +7796,7 @@ class UssdService
                             'outboundSMSTextMessage' => [
                                 'message' => $message
                             ],
-                            'clientCorrelator' => $this->session_id.'-'.now()   // A unique id to identify this SMS
+                            'clientCorrelator' => $this->session_id.'-'.Str::random(40)     // A unique id to identify this SMS
                         ]
                     ],
                     'verify' => false,  // Disable SSL certificate verification
