@@ -116,6 +116,7 @@
                 useVersionBuilder: useVersionBuilder(),
                 app: this.$page.props.appPayload,
                 showingUssdPopup: false,
+                last_session_id: null,
                 ussdResponseMsg: '',
                 initialReplies: '',
                 loading: false,
@@ -275,6 +276,8 @@
                         let firstRequest = (self.form.request_type == 1);
                         let ussdResponse = response.data;
 
+                        self.last_session_id = ussdResponse.session_id;
+
                         self.ussdResponseMsg = ussdResponse.msg;
                         self.form.session_id = ussdResponse.session_id;
                         self.form.request_type = ussdResponse.request_type;
@@ -372,7 +375,7 @@
             },
             stopApiSimulationRequest() {
 
-                const url = route('stop.ussd.simulation', { session_id: this.form.session_id });
+                const url = route('stop.ussd.simulation', { session_id: this.last_session_id });
 
                 axios.post(url)
                     .then((response) => {

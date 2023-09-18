@@ -4250,6 +4250,7 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
       useVersionBuilder: (0,_stores_VersionBuilder__WEBPACK_IMPORTED_MODULE_2__.useVersionBuilder)(),
       app: this.$page.props.appPayload,
       showingUssdPopup: false,
+      last_session_id: null,
       ussdResponseMsg: '',
       initialReplies: '',
       loading: false,
@@ -4390,6 +4391,7 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
       }).then(function (response) {
         var firstRequest = self.form.request_type == 1;
         var ussdResponse = response.data;
+        self.last_session_id = ussdResponse.session_id;
         self.ussdResponseMsg = ussdResponse.msg;
         self.form.session_id = ussdResponse.session_id;
         self.form.request_type = ussdResponse.request_type;
@@ -4463,7 +4465,7 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
     stopApiSimulationRequest: function stopApiSimulationRequest() {
       var _this2 = this;
       var url = route('stop.ussd.simulation', {
-        session_id: this.form.session_id
+        session_id: this.last_session_id
       });
       axios__WEBPACK_IMPORTED_MODULE_5__["default"].post(url).then(function (response) {})["catch"](function (error) {
         var _message3;
