@@ -2919,8 +2919,6 @@ class UssdService
      */
     public function handleCurrentScreen()
     {
-        $this->logError('chained_screen_text:'.$this->chained_screen_metadata['text']);
-
         //  Add the current screen to the list of chained screens
         array_push($this->chained_screens, array_merge($this->screen, [
             //  Add metadata related to this chained screen
@@ -3773,8 +3771,6 @@ class UssdService
         //  Build the current screen display
         $builtDisplay = $this->buildCurrentDisplay();
 
-        $this->logError($this->display['name'].': '.($this->hasResponded() ? "Responded" : "Not Responded"));
-
         //  Check if the user has already responded to the current display screen
         if ($this->hasResponded()) {
 
@@ -3871,10 +3867,8 @@ class UssdService
     public function updateChainedScreenMetadata($reply)
     {
         if (empty($this->chained_screen_metadata['text'])) {
-            $this->logError('updateChainedScreenMetadata 1: '.$reply);
             $this->chained_screen_metadata['text'] = $reply;
         } else {
-            $this->logError('updateChainedScreenMetadata 2: '.$reply);
             $this->chained_screen_metadata['text'] .= '*'.$reply;
         }
     }
@@ -11337,8 +11331,6 @@ class UssdService
     {
         if ($this->event) {
 
-            $this->logError('Start event');
-
             //  Get the trigger type e.g "automatic", "manual"
             $trigger = $this->event['event_data']['trigger']['selected_type'];
 
@@ -11442,8 +11434,6 @@ class UssdService
 
                     if (!$this->hasResponded()) {
 
-                        $this->logError('Add auto link');
-
                         /**************************************************
                          *  SAVE THE AUTO LINK REPLIES AS REPLY RECORDS   *
                          *************************************************/
@@ -11500,8 +11490,6 @@ class UssdService
 
                 }
             }
-
-            $this->logError('End event');
         }
     }
 
@@ -11726,10 +11714,6 @@ class UssdService
 
     public function handleScreenRevisit($screen_or_display, $type = null, $automatic_replies_text = '')
     {
-
-        $this->logError('$this->text');
-        $this->logError($this->text);
-
         //  Empty the existing reply records
         $this->emptyReplyRecords();
 
@@ -11738,25 +11722,16 @@ class UssdService
         } elseif ($type == 'display') {
             $chained_screens_or_displays = $this->chained_displays;
         }
-        $this->logError(count($chained_screens_or_displays));
 
         foreach ($chained_screens_or_displays as $chained_screen_or_display) {
 
-            $this->logError($chained_screen_or_display['metadata']);
             if ($chained_screen_or_display['id'] == $screen_or_display['id']) {
-
-                $this->logError('matched: '.$chained_screen_or_display['name']);
 
                 //  Get the user responses leading on to this screen/display as "text"
                 $text = $chained_screen_or_display['metadata']['text'];
 
-                $this->logError('$text: '.$text);
-
                 //  Convert the user responses from "text" to an "array" of responses
                 $replies = $this->getUserResponses($text);
-
-                $this->logError('$replies');
-                $this->logError($replies);
 
                 //  If we have any user replies
                 if (count($replies)) {
@@ -11812,8 +11787,6 @@ class UssdService
             $this->logInfo('Revisiting display '.$this->wrapAsPrimaryHtml($screen_or_display['name']).': '.$this->wrapAsSuccessHtml($service_code));
         }
 
-        $this->logError('handleMarkedRevisit');
-
         return $this->handleRevisit();
     }
 
@@ -11821,8 +11794,6 @@ class UssdService
     {
         //  Empty the existing reply records
         $this->emptyReplyRecords();
-
-        $this->logError('handleMarkedRevisit');
 
         if ($type == 'screen') {
             $chained_screens_or_displays = $this->chained_screens;
@@ -11835,13 +11806,8 @@ class UssdService
                 //  Get the user responses leading on to this screen/display as "text"
                 $text = $chained_screen_or_display['metadata']['text'];
 
-                $this->logError('chained text: '.$text);
-
                 //  Convert the user responses from "text" to an "array" of responses
                 $replies = $this->getUserResponses($text);
-
-                $this->logError('$replies');
-                $this->logError($replies);
 
                 //  If we have any user replies
                 if (count($replies)) {
