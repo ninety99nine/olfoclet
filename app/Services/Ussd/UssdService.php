@@ -14,6 +14,7 @@ use App\Models\UssdSession;
 use Illuminate\Http\Request;
 use App\Models\DatabaseEntry;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Cache;
 use App\Models\UssdAccountConnection;
@@ -7925,11 +7926,7 @@ class UssdService
 
             if( !empty($sender_name) && !empty($sender_email) && !empty($recipient_email) && !empty($subject) && !empty($message) ){
 
-                $this->logInfo('Attempting to send email');
-                $this->logInfo('Email Subject: ' . $this->wrapAsSuccessHtml($subject));
-                $this->logInfo('Email Message: ' . $this->wrapAsSuccessHtml($message));
-
-                $response = Mail::to($recipient_email)->send(new \App\Mail\UssdSession(
+                $response = Mail::to($recipient_email)->send(new \App\Mail\UssdSessionEmail(
                     $sender_name, $sender_email, $subject, $message
                 ));
 
