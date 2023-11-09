@@ -8,6 +8,7 @@
     <GlobalPaginationEditor v-else-if="useVersionBuilder.selectedConfigMenu == 'Global Pagination'"></GlobalPaginationEditor>
     <GlobalVariablesEditor v-else-if="useVersionBuilder.selectedConfigMenu == 'Global Variables'"></GlobalVariablesEditor>
     <SmsConnectionEditor v-else-if="useVersionBuilder.selectedConfigMenu == 'Sms Connection'"></SmsConnectionEditor>
+    <GlobalHeadersEditor v-else-if="useVersionBuilder.selectedConfigMenu == 'Global Headers'"></GlobalHeadersEditor>
     <GlobalEventsEditor v-else-if="useVersionBuilder.selectedConfigMenu == 'Global Events'"></GlobalEventsEditor>
     <RestrictionEditor v-else-if="useVersionBuilder.selectedConfigMenu == 'Restrictions'"></RestrictionEditor>
     <ColorSchemeEditor v-else-if="useVersionBuilder.selectedConfigMenu == 'Color Scheme'"></ColorSchemeEditor>
@@ -21,6 +22,7 @@
     import RestrictionEditor from "./RestrictionEditor";
     import ColorSchemeEditor from "./ColorSchemeEditor";
     import GlobalEventsEditor from "./GlobalEventsEditor";
+    import GlobalHeadersEditor from "./GlobalHeadersEditor";
     import SmsConnectionEditor from "./SmsConnectionEditor";
     import { useVersionBuilder } from '@stores/VersionBuilder';
     import GlobalVariablesEditor from "./GlobalVariablesEditor";
@@ -32,7 +34,7 @@
     import AirtimeBillingConnectionEditor from "./AirtimeBillingConnectionEditor";
 
     export default {
-        components: { LogSettingsEditor, RestrictionEditor, ColorSchemeEditor, SmsConnectionEditor, GlobalVariablesEditor, GlobalPaginationEditor, GlobalEventsEditor, ConditionalScreenEditor, ApplicationEventsEditor, AirtimeBillingConnectionEditor, AppWriteConnectionEditor, FirebaseConnectionEditor },
+        components: { LogSettingsEditor, RestrictionEditor, ColorSchemeEditor, SmsConnectionEditor, GlobalVariablesEditor, GlobalPaginationEditor, GlobalEventsEditor, GlobalHeadersEditor, ConditionalScreenEditor, ApplicationEventsEditor, AirtimeBillingConnectionEditor, AppWriteConnectionEditor, FirebaseConnectionEditor },
         data(){
             return {
                 useVersionBuilder: useVersionBuilder()

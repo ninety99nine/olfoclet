@@ -7100,7 +7100,10 @@ class UssdService
 
     public function get_REST_Api_Headers()
     {
-        $headers = $this->event['event_data']['headers'] ?? [];
+        $headers = array_merge(
+            $this->version->builder['global_headers'],
+            $this->event['event_data']['headers']
+        );
 
         $data = [];
 

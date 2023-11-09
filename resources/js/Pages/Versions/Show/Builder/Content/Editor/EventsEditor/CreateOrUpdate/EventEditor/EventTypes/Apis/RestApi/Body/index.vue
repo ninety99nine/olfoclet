@@ -84,7 +84,7 @@
                         item-key="rest-api-body-params"
                         v-model="form.event_data.form_data.params">
                         <template v-for="(element, index) in form.event_data.form_data.params">
-                            <tr v-if="searchIndexes.includes(index)" :key="index" class="group border-b hover:bg-gray-50">
+                            <tr v-if="searchIndexes.includes(index)" :key="element.name" class="group border-b hover:bg-gray-50">
 
                                 <!-- Table Body Checkbox -->
                                 <td v-if="hasResults" class="w-4 p-4">

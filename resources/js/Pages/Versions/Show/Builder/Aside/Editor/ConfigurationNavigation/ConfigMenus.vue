@@ -41,6 +41,12 @@
                 },
                 deep: true
             },
+            'useVersionBuilder.builder.global_headers': {
+                handler: function (after, before) {
+                    this.configMenus = this.getConfigMenus();
+                },
+                deep: true
+            },
             'useVersionBuilder.builder.global_events': {
                 handler: function (after, before) {
                     this.configMenus = this.getConfigMenus();
@@ -107,6 +113,7 @@
                 try {
 
                     const totalGlobalEvents = this.useVersionBuilder.globalEvents.length;
+                    const totalGlobalHeaders = this.useVersionBuilder.globalHeaders.length;
                     const totalGlobalVariables = this.useVersionBuilder.globalVariables.length;
 
                     const totalApplicaitonEvents = this.useVersionBuilder.builder.application_events.on_start.collection.length
@@ -263,9 +270,14 @@
                             count: totalGlobalVariables,
                         },
                         {
+                            name: 'Global Headers',
+                            onClick: () => {},
+                            borders: ['b'],
+                            count: totalGlobalHeaders
+                        },
+                        {
                             name: 'Global Events',
                             onClick: () => {},
-                            borders: ['t'],
                             count: totalGlobalEvents
                         },
                         {

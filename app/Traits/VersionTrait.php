@@ -70,6 +70,7 @@ trait VersionTrait
                 ],
             ],
             'global_events' => [],
+            'global_headers' => [],
             'global_variables' => [],
             'global_pagination' => [
                 'active' => [

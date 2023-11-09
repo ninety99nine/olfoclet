@@ -56,6 +56,9 @@ export const useVersionBuilder = defineStore('version_builder', {
         //  Global event related getters
         globalEvents: (state) => state.builder.global_events ?? [],
 
+        //  Global headers related getters
+        globalHeaders: (state) => state.builder.global_headers ?? [],
+
         //  Event related getters
         screenEvents(state) {
             if(!state.selectedScreen) return [];
