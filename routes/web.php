@@ -127,42 +127,6 @@ Route::get('/sms-using-rest', function () {
 
 });
 
-//  ChatGPT
-Route::get('/chatgpt', function() {
-
-    /*
-    $response = Http::withoutVerifying()
-        ->withHeaders([
-            'Authorization' => 'Bearer ' . env('CHATGPT_API_KEY'),
-            'Content-Type' => 'application/json',
-        ])->post('https://api.openai.com/v1/chat/completions', [
-            "messages" => [
-                [
-                    "role" => "system",
-                    "system" => "Your name is Bonako Sales and you are an expert sales consultant assisting businesses in Botswana"
-                ]
-                [
-                    "role" => "user",
-                    "content" => "How can i start a business in Botswana?"
-                ]
-            ],
-            "model" => "gpt-3.5-turbo",
-            "max_tokens" => 500,
-            "temperature" => 0.7
-        ]);
-
-    return $response->json()['choices'][0]['text'];
-    */
-
-    $response = Http::withoutVerifying()
-        ->withHeaders([
-            'Authorization' => 'Bearer ' . env('CHATGPT_API_KEY'),
-            'Content-Type' => 'application/json',
-        ])->get('https://api.openai.com/v1/models');
-
-    return $response->json();
-});
-
 Route::get('/fix', function(){
 
     $projects = App\Models\Project::with(['apps.versions'])->get();
