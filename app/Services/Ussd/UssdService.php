@@ -864,6 +864,10 @@ class UssdService
                 return $this->showEndScreen('The app using the shortcode '.$this->service_code.' does not exist anymore. Please contact the service provider.');
             }
         } else {
+
+            Log::info('Request Headers #2');
+            Log::info(request()->headers()->all());
+
             //  Return a custom error (The showEndScreen will terminate the session)
             return $this->showEndScreen('The shortcode '.$this->service_code.' does not belong to any app. Please contact the service provider.');
         }
