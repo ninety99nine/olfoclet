@@ -869,7 +869,7 @@ class UssdService
             Log::info(request()->headers()->all());
 
             //  Return a custom error (The showEndScreen will terminate the session)
-            return $this->showEndScreen('The shortcode '.$this->service_code.' does not belong to any app. Please contact the service provider.');
+            return $this->showEndScreen('The shortcode '.$this->service_code.' does not belong to any app. Please contact the service provider - Telcoflo.');
         }
     }
 
