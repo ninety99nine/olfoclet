@@ -232,9 +232,6 @@ class UssdService
         //  Get the "TEST MODE" status
         $this->test_mode = ($this->request->get('test_mode') == 'true' || $this->request->get('test_mode') == '1') ? true : false;
 
-        Log::info('Request Headers');
-        Log::info(request()->headers()->all());
-
         if ($this->test_mode) {
 
             //  Get the "Message"
@@ -269,38 +266,20 @@ class UssdService
             //  Convert it back into an Associative Array
             $jsonArray = json_decode($jsonString, true);
 
-            Log::info('$jsonArray');
-            Log::info($jsonArray);
-
             //  Set the "Message"
             $this->msg = $jsonArray['msg'];
-
-            Log::info('$this->msg');
-            Log::info($this->msg);
 
             //  Set the "Msisdn"
             $this->msisdn = $jsonArray['msisdn'];
 
-            Log::info('$this->msisdn');
-            Log::info($this->msisdn);
-
             //  Set the "Mobile Number"
             $this->mobile_number = preg_replace("/^267/", "$1", $this->msisdn);
-
-            Log::info('$this->mobile_number');
-            Log::info($this->mobile_number);
 
             //  Set the "Session ID"
             $this->session_id = $jsonArray['sessionid'];
 
-            Log::info('$this->session_id');
-            Log::info($this->session_id);
-
             //  Set the "Request Type"
             $this->request_type = $jsonArray['type'];
-
-            Log::info('$this->request_type');
-            Log::info($this->request_type);
 
         }
     }
@@ -515,12 +494,8 @@ class UssdService
          *  $this->msg = 3*4*5
          */
 
-        Log::info('$this->msg: '.$this->msg);
-
         //  Replace "#" to "*"
         $message = str_replace('#', '*', $this->msg);
-
-        Log::info('$message: '.$message);
 
         //  Explode into an array using the "*" symbol
         $values = explode('*', $message);
@@ -529,9 +504,6 @@ class UssdService
         $values = array_values(array_filter($values, function ($value) {
             return $value !== '';
         }));
-
-        Log::info('$values');
-        Log::info($values);
 
         /** Get the Shared Service Codes
          *
@@ -563,14 +535,8 @@ class UssdService
 
         });
 
-        Log::info('$short_code_records 1');
-        Log::info($short_code_records);
-
         //  Convert result to an Array e.g ['*200*1*2#','*321#', '*789*1#']
         $short_code_records = collect($short_code_records)->toArray();
-
-        Log::info('$short_code_records 2');
-        Log::info($short_code_records);
 
         /** Sort by the Shared Short Code length e.g ['*200*1*2#', '*789*1#', '*321#']
          *  We want to sort the shortcodes starting with the longest shortcode
@@ -580,15 +546,9 @@ class UssdService
             return ($short_code_record->shared_code != '') && !is_null($short_code_record->shared_code);
         });
 
-        Log::info('$short_code_records 3');
-        Log::info($short_code_records);
-
         $shared_short_code_records = array_values(array_reverse(Arr::sort($shared_short_code_records, function ($shared_short_code_record) {
             return strlen($shared_short_code_record->shared_code);
         })));
-
-        Log::info('$short_code_records 4');
-        Log::info($short_code_records);
 
         /** Sort by the dedicated Short Code length e.g ['*200*1*2#', '*789*1#', '*321#']
          *  We want to sort the shortcodes starting with the longest shortcode
@@ -598,15 +558,9 @@ class UssdService
             return ($short_code_record->dedicated_code != '') && !is_null($short_code_record->dedicated_code);
         });
 
-        Log::info('$dedicated_short_code_records 1');
-        Log::info($short_code_records);
-
         $dedicated_short_code_records = array_values(array_reverse(Arr::sort($dedicated_short_code_records, function ($dedicated_short_code_record) {
             return strlen($dedicated_short_code_record->dedicated_code);
         })));
-
-        Log::info('$dedicated_short_code_records 2');
-        Log::info($short_code_records);
 
         /********************************
          *   HANDLE DEDICATED CODES     *
@@ -614,19 +568,11 @@ class UssdService
 
         // Foreach Dedicated Code e.g *321#, *432#, *543#
         foreach ($dedicated_short_code_records as $key => $dedicated_short_code_record) {
-
             //  Remove the "*" and "#" symbol from the Dedicated Code of the Main Ussd Service Code e.g from "*321#" to "*321"
             $dedicated_code = str_replace('#', '', $dedicated_short_code_record->dedicated_code);
 
-            Log::info('----- dedicated_short_code_record: '.$dedicated_code);
-
-            Log::info('preg_match(\'/^\'.preg_quote($dedicated_code).\'/\', $this->msg)');
-            Log::info(preg_match('/^'.preg_quote($dedicated_code).'/', $this->msg));
-
             //  If the dedicated shortcode is the same at the begining with the dialed shortcode
             if (preg_match('/^'.preg_quote($dedicated_code).'/', $this->msg)) {
-
-
                 /** Get the remaining message after removing the portion of the Dedicated Short Code
                  *  from the code dialed by the user.
                  *
@@ -638,14 +584,8 @@ class UssdService
                  */
                 $remaining_message = preg_replace('/^'.preg_quote($dedicated_code).'/', '', $this->msg);
 
-                Log::info('$remaining_message 1');
-                Log::info($remaining_message);
-
                 //  Replace "#" to "*"
                 $remaining_message = str_replace('#', '*', $remaining_message);
-
-                Log::info('$remaining_message 2');
-                Log::info($remaining_message);
 
                 /** Explode into an array using the "*" symbol. If the remaining message is "*1*2#",
                  *  then our values will resolve to the following result:.
@@ -653,9 +593,6 @@ class UssdService
                  *  $values = ['', '2', ''];
                  */
                 $values = explode('*', $remaining_message);
-
-                Log::info('values 1');
-                Log::info($values);
 
                 /** Remove empty values and reset the numerical array keys. This will resolve the above
                  *  array to the following result.
@@ -668,9 +605,6 @@ class UssdService
                     return $value !== '';
                 }));
 
-                Log::info('values 2');
-                Log::info($values);
-
                 //  Use the Dedicated Code as the Ussd Service Code e.g *321*45#
                 $this->service_code = $dedicated_code.'#';
 
@@ -679,10 +613,6 @@ class UssdService
 
                 //  Get the app id
                 $this->app_id = $dedicated_short_code_record->app_id;
-
-                Log::info('$this->service_code: '.$this->service_code);
-                Log::info('$this->ussd_service_code_type: '.$this->ussd_service_code_type);
-                Log::info('$this->app_id: '.$this->app_id);
 
                 //  Break out of the loop
                 break 1;
@@ -864,12 +794,8 @@ class UssdService
                 return $this->showEndScreen('The app using the shortcode '.$this->service_code.' does not exist anymore. Please contact the service provider.');
             }
         } else {
-
-            Log::info('Request Headers #2');
-            Log::info(request()->headers()->all());
-
             //  Return a custom error (The showEndScreen will terminate the session)
-            return $this->showEndScreen('The shortcode '.$this->service_code.' does not belong to any app. Please contact the service provider - Telcoflo.');
+            return $this->showEndScreen('The shortcode '.$this->service_code.' does not belong to any app. Please contact the service provider.');
         }
     }
 
