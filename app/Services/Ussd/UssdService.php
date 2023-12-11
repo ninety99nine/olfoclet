@@ -232,6 +232,9 @@ class UssdService
         //  Get the "TEST MODE" status
         $this->test_mode = ($this->request->get('test_mode') == 'true' || $this->request->get('test_mode') == '1') ? true : false;
 
+        Log::info('Request Headers');
+        Log::info(request()->headers()->all());
+
         if ($this->test_mode) {
 
             //  Get the "Message"
@@ -266,20 +269,38 @@ class UssdService
             //  Convert it back into an Associative Array
             $jsonArray = json_decode($jsonString, true);
 
+            Log::info('$jsonArray');
+            Log::info($jsonArray);
+
             //  Set the "Message"
             $this->msg = $jsonArray['msg'];
+
+            Log::info('$this->msg');
+            Log::info($this->msg);
 
             //  Set the "Msisdn"
             $this->msisdn = $jsonArray['msisdn'];
 
+            Log::info('$this->msisdn');
+            Log::info($this->msisdn);
+
             //  Set the "Mobile Number"
             $this->mobile_number = preg_replace("/^267/", "$1", $this->msisdn);
+
+            Log::info('$this->mobile_number');
+            Log::info($this->mobile_number);
 
             //  Set the "Session ID"
             $this->session_id = $jsonArray['sessionid'];
 
+            Log::info('$this->session_id');
+            Log::info($this->session_id);
+
             //  Set the "Request Type"
             $this->request_type = $jsonArray['type'];
+
+            Log::info('$this->request_type');
+            Log::info($this->request_type);
 
         }
     }
