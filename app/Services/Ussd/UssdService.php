@@ -494,8 +494,12 @@ class UssdService
          *  $this->msg = 3*4*5
          */
 
+        Log::info('$this->msg: '.$this->msg);
+
         //  Replace "#" to "*"
         $message = str_replace('#', '*', $this->msg);
+
+        Log::info('$message: '.$message);
 
         //  Explode into an array using the "*" symbol
         $values = explode('*', $message);
@@ -504,6 +508,9 @@ class UssdService
         $values = array_values(array_filter($values, function ($value) {
             return $value !== '';
         }));
+
+        Log::info('$values');
+        Log::info($values);
 
         /** Get the Shared Service Codes
          *
@@ -535,8 +542,14 @@ class UssdService
 
         });
 
+        Log::info('$short_code_records 1');
+        Log::info($short_code_records);
+
         //  Convert result to an Array e.g ['*200*1*2#','*321#', '*789*1#']
         $short_code_records = collect($short_code_records)->toArray();
+
+        Log::info('$short_code_records 2');
+        Log::info($short_code_records);
 
         /** Sort by the Shared Short Code length e.g ['*200*1*2#', '*789*1#', '*321#']
          *  We want to sort the shortcodes starting with the longest shortcode
@@ -546,9 +559,15 @@ class UssdService
             return ($short_code_record->shared_code != '') && !is_null($short_code_record->shared_code);
         });
 
+        Log::info('$short_code_records 3');
+        Log::info($short_code_records);
+
         $shared_short_code_records = array_values(array_reverse(Arr::sort($shared_short_code_records, function ($shared_short_code_record) {
             return strlen($shared_short_code_record->shared_code);
         })));
+
+        Log::info('$short_code_records 4');
+        Log::info($short_code_records);
 
         /** Sort by the dedicated Short Code length e.g ['*200*1*2#', '*789*1#', '*321#']
          *  We want to sort the shortcodes starting with the longest shortcode
@@ -558,9 +577,15 @@ class UssdService
             return ($short_code_record->dedicated_code != '') && !is_null($short_code_record->dedicated_code);
         });
 
+        Log::info('$dedicated_short_code_records 1');
+        Log::info($short_code_records);
+
         $dedicated_short_code_records = array_values(array_reverse(Arr::sort($dedicated_short_code_records, function ($dedicated_short_code_record) {
             return strlen($dedicated_short_code_record->dedicated_code);
         })));
+
+        Log::info('$dedicated_short_code_records 2');
+        Log::info($short_code_records);
 
         /********************************
          *   HANDLE DEDICATED CODES     *
@@ -568,11 +593,19 @@ class UssdService
 
         // Foreach Dedicated Code e.g *321#, *432#, *543#
         foreach ($dedicated_short_code_records as $key => $dedicated_short_code_record) {
+
             //  Remove the "*" and "#" symbol from the Dedicated Code of the Main Ussd Service Code e.g from "*321#" to "*321"
             $dedicated_code = str_replace('#', '', $dedicated_short_code_record->dedicated_code);
 
+            Log::info('----- dedicated_short_code_record: '.$dedicated_code);
+
+            Log::info('preg_match(\'/^\'.preg_quote($dedicated_code).\'/\', $this->msg)');
+            Log::info(preg_match('/^'.preg_quote($dedicated_code).'/', $this->msg));
+
             //  If the dedicated shortcode is the same at the begining with the dialed shortcode
             if (preg_match('/^'.preg_quote($dedicated_code).'/', $this->msg)) {
+
+
                 /** Get the remaining message after removing the portion of the Dedicated Short Code
                  *  from the code dialed by the user.
                  *
@@ -584,8 +617,14 @@ class UssdService
                  */
                 $remaining_message = preg_replace('/^'.preg_quote($dedicated_code).'/', '', $this->msg);
 
+                Log::info('$remaining_message 1');
+                Log::info($remaining_message);
+
                 //  Replace "#" to "*"
                 $remaining_message = str_replace('#', '*', $remaining_message);
+
+                Log::info('$remaining_message 2');
+                Log::info($remaining_message);
 
                 /** Explode into an array using the "*" symbol. If the remaining message is "*1*2#",
                  *  then our values will resolve to the following result:.
@@ -593,6 +632,9 @@ class UssdService
                  *  $values = ['', '2', ''];
                  */
                 $values = explode('*', $remaining_message);
+
+                Log::info('values 1');
+                Log::info($values);
 
                 /** Remove empty values and reset the numerical array keys. This will resolve the above
                  *  array to the following result.
@@ -605,6 +647,9 @@ class UssdService
                     return $value !== '';
                 }));
 
+                Log::info('values 2');
+                Log::info($values);
+
                 //  Use the Dedicated Code as the Ussd Service Code e.g *321*45#
                 $this->service_code = $dedicated_code.'#';
 
@@ -613,6 +658,10 @@ class UssdService
 
                 //  Get the app id
                 $this->app_id = $dedicated_short_code_record->app_id;
+
+                Log::info('$this->service_code: '.$this->service_code);
+                Log::info('$this->ussd_service_code_type: '.$this->ussd_service_code_type);
+                Log::info('$this->app_id: '.$this->app_id);
 
                 //  Break out of the loop
                 break 1;
