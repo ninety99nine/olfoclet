@@ -7191,6 +7191,22 @@ class UssdService
                 //  Get the generated output
                 $value = $this->convertToString($outputResponse);
 
+                /**
+                 *  Remove any url encoded values like "%20" for spaces " " e.g "https://example.com?filter=team%20members".
+                 *  Without using urldecode(), these values will be captured as literal values. This means that we convert:
+                 *
+                 *  https://example.com?filter=team%20members
+                 *
+                 *  Into:
+                 *
+                 *  https://example.com?filter=team members
+                 *
+                 *  Then Guzzle will run url encode itself to convert this back into:
+                 *
+                 *  https://example.com?filter=team%20members
+                 */
+                $value = urldecode($value);
+
                 $data[$query_param['name']] = $value;
             }
         }
