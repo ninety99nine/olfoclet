@@ -1281,8 +1281,12 @@ class UssdService
         //  Get the save approach (never, always, on_fail, on_success)
         $saveApproach = $this->test_mode ? $simulatorSaveApproach : $mobileSaveApproach;
 
+        $weShouldAlwaysSaveLogs = $saveApproach == 'always';
+        $weShouldOnlySaveLogsOnFail = $saveApproach == 'on_fail' && $this->fatal_error == true;
+        $weShouldOnlySaveLogsOnSuccess = $saveApproach == 'on_success' && $this->fatal_error == false;
+
         //  Check if we can save logs on this session
-        if( $saveApproach == 'always' || ($saveApproach == 'on_fail' && $this->fatal_error == true) || ($saveApproach == 'on_success' && $this->fatal_error == false) ) {
+        if( $weShouldAlwaysSaveLogs || $weShouldOnlySaveLogsOnFail || $weShouldOnlySaveLogsOnSuccess ) {
 
             //  Set the summarized logs
             Arr::set($data, 'logs', json_encode($this->summarized_logs));
@@ -13236,8 +13240,22 @@ class UssdService
      */
     public function addLog($data)
     {
-        //  Include the logs if required
-        if ($this->test_mode && $this->version->builder['simulator']['debugger']['return_logs']) {
+        //  Get the mobile log saving approach (never, always, on_fail, on_success)
+        $mobileSaveApproach = $this->version->builder['log_settings']['mobile']['save_logs'];
+
+        //  Get the simulator log saving approach (never, always, on_fail, on_success)
+        $simulatorSaveApproach = $this->version->builder['log_settings']['simulator']['save_logs'];
+
+        //  Get the save approach (never, always, on_fail, on_success)
+        $saveApproach = $this->test_mode ? $simulatorSaveApproach : $mobileSaveApproach;
+
+        $weShouldAlwaysSaveLogs = $saveApproach == 'always';
+        $weShouldOnlySaveLogsOnFail = $saveApproach == 'on_fail' && $this->fatal_error == true;
+        $weShouldOnlySaveLogsOnSuccess = $saveApproach == 'on_success' && $this->fatal_error == false;
+        $weShouldReturnSimulatorLogs = $this->test_mode && $this->version->builder['simulator']['debugger']['return_logs'];
+
+        //  Check if we are required to capture the log
+        if( $weShouldAlwaysSaveLogs || $weShouldOnlySaveLogsOnFail || $weShouldOnlySaveLogsOnSuccess || $weShouldReturnSimulatorLogs ) {
 
             //  Set additional information
             $data['level'] = $this->level ?? null;
@@ -13250,7 +13268,7 @@ class UssdService
             }
 
             //  If we want to return summarized logs
-            if( $this->version->builder['simulator']['debugger']['return_summarized_logs'] ){
+            if( $this->version->builder['simulator']['debugger']['return_summarized_logs'] ) {
 
                 /** When setting logs, its important to note that some logs are very repetitive
                  *  e.g logs of variable values and data types. This information may be necessary
