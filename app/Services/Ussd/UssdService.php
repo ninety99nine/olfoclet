@@ -89,6 +89,7 @@ class UssdService
     public $display_total_responses = [];
     public $session_execution_times = [];
     public $is_revisting_session = false;
+    public $requestXmlToJsonOutput = null;
     public $global_variables_to_save = [];
     public $ussd_account_connection = null;
     public $start_session_execution_time = 0;
@@ -261,17 +262,10 @@ class UssdService
             $xmlObject = simplexml_load_string($xml);
 
             //  Encode the SimpleXMLElement object into a JSON string.
-            $jsonString = json_encode($xmlObject);
-
-            $this->logInfo(
-                'Request XML to JSON output: <br />'.
-                '<div style="white-space: pre-wrap;" class="bg-white border rounded-md p-4 mt-2">'.
-                    $this->wrapAsSuccessHtml($jsonString).
-                '</div>'
-            );
+            $this->requestXmlToJsonOutput = json_encode($xmlObject);
 
             //  Convert it back into an Associative Array
-            $jsonArray = json_decode($jsonString, true);
+            $jsonArray = json_decode($this->requestXmlToJsonOutput, true);
 
             //  Set the "Message"
             $this->msg = $jsonArray['msg'];
@@ -790,6 +784,17 @@ class UssdService
                     if (!$this->version) {
                         //  Return a custom error (The showEndScreen will terminate the session)
                         return $this->showEndScreen('The app "'.$this->app->name.'" could not locate the version to run the service. Please contact the service provider.');
+                    }
+
+                    if($this->requestXmlToJsonOutput) {
+
+                        $this->logInfo(
+                            'Request XML to JSON output: <br />'.
+                            '<div style="white-space: pre-wrap;" class="bg-white border rounded-md p-4 mt-2">'.
+                                $this->wrapAsSuccessHtml($this->requestXmlToJsonOutput).
+                            '</div>'
+                        );
+
                     }
 
                 } else {
@@ -1539,6 +1544,25 @@ class UssdService
             'logs' => []
         ];
 
+        //  Set an info log of the ussd properties
+        $this->logInfo(
+            'USSD Properties: '.
+            '<div style="line-height:2.5em;margin:10px 0;">'.
+                $this->wrapAsDynamicDataHtml('{{ ussd.text }}').' = '.$this->wrapAsSuccessHtml($this->getDynamicData('ussd.text')).'<br>'.
+                $this->wrapAsDynamicDataHtml('{{ ussd.msisdn }}').' = '.$this->wrapAsSuccessHtml($this->getDynamicData('ussd.msisdn', 'None')).'<br>'.
+                $this->wrapAsDynamicDataHtml('{{ ussd.mobile_number }}').' = '.$this->wrapAsSuccessHtml($this->getDynamicData('ussd.mobile_number', 'None')).'<br>'.
+                $this->wrapAsDynamicDataHtml('{{ ussd.request_type }}').' = '.$this->wrapAsSuccessHtml($this->getDynamicData('ussd.request_type')).'<br>'.
+                $this->wrapAsDynamicDataHtml('{{ ussd.service_code }}').' = '.$this->wrapAsSuccessHtml($this->getDynamicData('ussd.service_code')).'<br>'.
+                $this->wrapAsDynamicDataHtml('{{ ussd.user_response }}').' = '.$this->wrapAsSuccessHtml($this->getDynamicData('ussd.user_response')).'<br>'.
+                $this->wrapAsDynamicDataHtml('{{ ussd.user_responses }}').' = '.$this->wrapAsSuccessHtml($this->convertToString($this->getDynamicData('ussd.user_responses'))).'<br>'.
+                $this->wrapAsDynamicDataHtml('{{ ussd.session_id }}').' = '.$this->wrapAsSuccessHtml($this->getDynamicData('ussd.session_id')).
+                $this->wrapAsDynamicDataHtml('{{ ussd.app.name }}').' = '.$this->wrapAsSuccessHtml($this->getDynamicData('ussd.app.name')).
+                $this->wrapAsDynamicDataHtml('{{ ussd.app.description }}').' = '.$this->wrapAsSuccessHtml($this->getDynamicData('ussd.app.description')).
+                $this->wrapAsDynamicDataHtml('{{ ussd.version.number }}').' = '.$this->wrapAsSuccessHtml($this->getDynamicData('ussd.version.number')).
+                $this->wrapAsDynamicDataHtml('{{ ussd.version.description }}').' = '.$this->wrapAsSuccessHtml($this->getDynamicData('ussd.version.description')).
+            '</div>'
+        );
+
         //  If we are on test mode
         if ( $this->test_mode ) {
 
@@ -1549,25 +1573,6 @@ class UssdService
 
             //  If we have the builder
             if ($this->version && is_array($this->version->builder)) {
-
-                //  Set an info log of the ussd properties
-                $this->logInfo(
-                    'USSD Properties: '.
-                    '<div style="line-height:2.5em;margin:10px 0;">'.
-                        $this->wrapAsDynamicDataHtml('{{ ussd.text }}').' = '.$this->wrapAsSuccessHtml($this->getDynamicData('ussd.text')).'<br>'.
-                        $this->wrapAsDynamicDataHtml('{{ ussd.msisdn }}').' = '.$this->wrapAsSuccessHtml($this->getDynamicData('ussd.msisdn', 'None')).'<br>'.
-                        $this->wrapAsDynamicDataHtml('{{ ussd.mobile_number }}').' = '.$this->wrapAsSuccessHtml($this->getDynamicData('ussd.mobile_number', 'None')).'<br>'.
-                        $this->wrapAsDynamicDataHtml('{{ ussd.request_type }}').' = '.$this->wrapAsSuccessHtml($this->getDynamicData('ussd.request_type')).'<br>'.
-                        $this->wrapAsDynamicDataHtml('{{ ussd.service_code }}').' = '.$this->wrapAsSuccessHtml($this->getDynamicData('ussd.service_code')).'<br>'.
-                        $this->wrapAsDynamicDataHtml('{{ ussd.user_response }}').' = '.$this->wrapAsSuccessHtml($this->getDynamicData('ussd.user_response')).'<br>'.
-                        $this->wrapAsDynamicDataHtml('{{ ussd.user_responses }}').' = '.$this->wrapAsSuccessHtml($this->convertToString($this->getDynamicData('ussd.user_responses'))).'<br>'.
-                        $this->wrapAsDynamicDataHtml('{{ ussd.session_id }}').' = '.$this->wrapAsSuccessHtml($this->getDynamicData('ussd.session_id')).
-                        $this->wrapAsDynamicDataHtml('{{ ussd.app.name }}').' = '.$this->wrapAsSuccessHtml($this->getDynamicData('ussd.app.name')).
-                        $this->wrapAsDynamicDataHtml('{{ ussd.app.description }}').' = '.$this->wrapAsSuccessHtml($this->getDynamicData('ussd.app.description')).
-                        $this->wrapAsDynamicDataHtml('{{ ussd.version.number }}').' = '.$this->wrapAsSuccessHtml($this->getDynamicData('ussd.version.number')).
-                        $this->wrapAsDynamicDataHtml('{{ ussd.version.description }}').' = '.$this->wrapAsSuccessHtml($this->getDynamicData('ussd.version.description')).
-                    '</div>'
-                );
 
                 //  Include the logs if required
                 if ($this->version->builder['simulator']['debugger']['return_logs']) {
