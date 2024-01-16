@@ -262,10 +262,12 @@ class UssdService
             $xmlObject = simplexml_load_string($xml);
 
             //  Encode the SimpleXMLElement object into a JSON string.
-            $this->requestXmlToJsonOutput = json_encode($xmlObject);
+            $requestXmlToJsonOutput = json_encode($xmlObject);
 
             //  Convert it back into an Associative Array
-            $jsonArray = json_decode($this->requestXmlToJsonOutput, true);
+            $jsonArray = json_decode($requestXmlToJsonOutput, true);
+
+            $this->requestXmlToJsonOutput =  $this->convertToString($jsonArray);
 
             //  Set the "Message"
             $this->msg = $jsonArray['msg'];
