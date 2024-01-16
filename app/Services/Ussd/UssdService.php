@@ -13281,8 +13281,8 @@ class UssdService
                 $data['description'] = json_encode($data['description']);
             }
 
-            //  If we want to return summarized logs
-            if( $this->version->builder['simulator']['debugger']['return_summarized_logs'] ) {
+            //  If we want to capture summarized logs
+            if( !$this->test_mode || ($this->test_mode && $this->version->builder['simulator']['debugger']['return_summarized_logs']) ) {
 
                 /** When setting logs, its important to note that some logs are very repetitive
                  *  e.g logs of variable values and data types. This information may be necessary
@@ -13305,7 +13305,7 @@ class UssdService
 
                 }
 
-            //  If we want to return detailed logs
+            //  If we want to capture detailed logs
             }else{
 
                 //  Push the latest log update
