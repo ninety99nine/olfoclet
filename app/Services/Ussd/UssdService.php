@@ -858,7 +858,7 @@ class UssdService
             $data = [
                 'ussd' => [
                     'type' => $this->response['request_type'],
-                    'msg' => htmlentities($this->response['msg'])
+                    'msg' => $this->response['msg']
                 ],
             ];
 
