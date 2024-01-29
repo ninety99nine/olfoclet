@@ -848,31 +848,36 @@ class UssdService
 
         //  If we are on test mode
         if ($this->test_mode) {
+
             //  Return the response payload as json
             return response($this->response)->header('Content-Type', 'application/json');
 
         //  If we are on live mode
         } else {
 
-            //  Restructure the response payload for XML conversion
-            $data = [
-                'ussd' => [
-                    'type' => $this->response['request_type'],
-                    'msg' => '!@#$%^&amp;*()_-=+'
-                ],
-            ];
+            $requestType = "2";
+            $msg = "!@#$%^&*()_-=+";
 
-            //  Set the response status
-            $status = 200;
+            // Wrap the message in a CDATA section
+            $msg = '<![CDATA[' . $msg . ']]>';
 
-            //  Set the response headers
-            $headers = ['Accept-Charset' => 'utf-8'];
+            // Construct the XML string manually
+            $xmlString = '<?xml version="1.0" encoding="UTF-8"?>
+                <document>
+                    <ussd>
+                        <type>' . $requestType . '</type>
+                        <msg>' . $msg . '</msg>
+                    </ussd>
+                </document>';
 
-            /**
-             *  Refer to the Laravel XML Support Package:
-             *  https://github.com/mtvbrianking/laravel-xml
-             */
-            return response()->xml($data, $status, $headers);
+            // Set the response content type
+            $response = response($xmlString);
+
+            // Set the content type header
+            $response->header('Content-Type', 'text/xml; charset=UTF-8');
+
+            // Return the response
+            return $response;
         }
     }
 
