@@ -858,7 +858,7 @@ class UssdService
             $data = [
                 'ussd' => [
                     'type' => $this->response['request_type'],
-                    'msg' => $this->response['msg']
+                    'msg' => '!@#$%^&amp;*()_-=+'
                 ],
             ];
 
