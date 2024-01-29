@@ -858,9 +858,6 @@ class UssdService
             $requestType = "2";
             $msg = "!@#$%^&*()_-=+";
 
-            // Wrap the message in a CDATA section
-            $msg = '<![CDATA[' . $msg . ']]>';
-
             // Construct the XML string manually
             $xmlString = '<?xml version="1.0" encoding="UTF-8"?>
                 <document>
