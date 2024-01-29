@@ -855,15 +855,12 @@ class UssdService
         //  If we are on live mode
         } else {
 
-            $requestType = "2";
-            $msg = "!@#$%^&*()_-=+🛍️".strlen("🛍️");
-
             // Construct the XML string manually
             $xmlString = '<?xml version="1.0" encoding="UTF-8"?>
                 <document>
                     <ussd>
-                        <type>' . $requestType . '</type>
-                        <msg>' . $msg . '</msg>
+                        <type>' . $this->response['request_type'] . '</type>
+                        <msg>' . $this->response['msg'] . '</msg>
                     </ussd>
                 </document>';
 
