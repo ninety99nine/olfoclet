@@ -856,7 +856,7 @@ class UssdService
         } else {
 
             $requestType = "2";
-            $msg = "!@#$%^&*()_-=+😃".strlen("😃");
+            $msg = "!@#$%^&*()_-=+🛍️".strlen("🛍️");
 
             // Construct the XML string manually
             $xmlString = '<?xml version="1.0" encoding="UTF-8"?>
