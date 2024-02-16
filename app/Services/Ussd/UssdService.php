@@ -7213,8 +7213,6 @@ class UssdService
     {
         $query_params = $this->event['event_data']['query_params'] ?? [];
 
-        $this->logError($query_params);
-
         $data = [];
 
         foreach ($query_params as $query_param) {
