@@ -7098,6 +7098,26 @@ class UssdService
                     //  Get the generated output
                     $value = $this->convertToString($outputResponse);
 
+                    /**
+                     *  Remove any url encoded values like "%20" for spaces " " e.g "https://example.com?filter=team%20members".
+                     *  Without using urldecode(), these values will be captured as literal values e.g "%20" and then these
+                     *  literal values will be encoded by Guzzle. This is result in double encoding which will produce
+                     *  incorrect results. To avoid double encoding, we can undo any url encoding that has already
+                     *  been implemented by using urldecode(), and allowing Guzzle to implement the url encoding
+                     *  iteself:
+                     *
+                     *  https://example.com?filter=team%20members
+                     *
+                     *  Into:
+                     *
+                     *  https://example.com?filter=team members
+                     *
+                     *  Then Guzzle will run url encode itself to convert this back into:
+                     *
+                     *  https://example.com?filter=team%20members
+                     */
+                    $value = urldecode($value);
+
                     //  $this->url_query_params['field_1'] = 'value_1';
                     $this->url_query_params[$name] = $value;
                 }
@@ -7193,10 +7213,13 @@ class UssdService
     {
         $query_params = $this->event['event_data']['query_params'] ?? [];
 
+        $this->logError($query_params);
+
         $data = [];
 
         foreach ($query_params as $query_param) {
             if (!empty($query_param['name'])) {
+
                 //  Convert the "query_param value" into its associated dynamic value
                 $outputResponse = $this->convertValueStructureIntoDynamicData($query_param['value']);
 
@@ -7210,7 +7233,11 @@ class UssdService
 
                 /**
                  *  Remove any url encoded values like "%20" for spaces " " e.g "https://example.com?filter=team%20members".
-                 *  Without using urldecode(), these values will be captured as literal values. This means that we convert:
+                 *  Without using urldecode(), these values will be captured as literal values e.g "%20" and then these
+                 *  literal values will be encoded by Guzzle. This is result in double encoding which will produce
+                 *  incorrect results. To avoid double encoding, we can undo any url encoding that has already
+                 *  been implemented by using urldecode(), and allowing Guzzle to implement the url encoding
+                 *  iteself:
                  *
                  *  https://example.com?filter=team%20members
                  *
@@ -7222,7 +7249,7 @@ class UssdService
                  *
                  *  https://example.com?filter=team%20members
                  */
-                $value = urldecode($value);
+            $value = urldecode($value);
 
                 $data[$query_param['name']] = $value;
             }
