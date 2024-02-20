@@ -2938,7 +2938,9 @@ class UssdService
     public function handleCurrentScreen()
     {
         //  Add the current screen to the list of chained screens
-        array_push($this->chained_screens, array_merge($this->screen, [
+        array_push($this->chained_screens, [
+            'id' => $this->screen['id'],
+            'markers' => $this->screen['markers'],
             //  Add metadata related to this chained screen
             'metadata' => [
                 /* This text value will allow us to know the order of responses that lead
@@ -2948,7 +2950,7 @@ class UssdService
                  */
                 'text' => $this->chained_screen_metadata['text'],
             ],
-        ]));
+        ]);
 
         //  Check if the current screen exists
         $doesNotExistResponse = $this->handleNonExistentScreen();
@@ -3658,7 +3660,11 @@ class UssdService
     public function handleCurrentDisplay()
     {
         //  Add the current display to the list of chained displays
-        array_push($this->chained_displays, array_merge($this->display, [
+        array_push($this->chained_displays, [
+            'id' => $this->display['id'],
+            'content' => [
+                'markers' => $this->display['content']['markers']
+            ],
             //  Add metadata related to this chained display
             'metadata' => [
                 /* This text value will allow us to know the order of responses that lead
@@ -3668,7 +3674,7 @@ class UssdService
                  */
                 'text' => $this->chained_display_metadata['text'],
             ],
-        ]));
+        ]);
 
         //  Reset pagination
         $this->resetPagination();
@@ -6120,6 +6126,32 @@ class UssdService
         return !empty($this->getScreenByMarker($marker)) ? true : false;
     }
 
+    /**
+     *  This method returns a chained screen if it exists by
+     *  searching based on the screen id provided.
+     */
+    public function getChainedScreenById($id)
+    {
+        return collect($this->chained_screens)->filter(function($screen) use ($id) {
+
+            return $screen['id'] == $id;
+
+        })->first();
+    }
+
+    /**
+     *  This method checks if a chained screen exists by
+     *  searching based on the screen id provided.
+     */
+    public function hasChainedScreenById($id)
+    {
+        return collect($this->chained_screens)->contains(function($screen) use ($id) {
+
+            return $screen['id'] == $id;
+
+        });
+    }
+
     /** This method returns a display if it exists by searching based on
      *  the display marker provided.
      */
@@ -6148,6 +6180,32 @@ class UssdService
     public function hasDisplayByMarker($marker = null)
     {
         return !empty($this->getDisplayByMarker($marker)) ? true : false;
+    }
+
+    /**
+     *  This method returns a chained display if it exists by
+     *  searching based on the display id provided.
+     */
+    public function getChainedDisplayById($id)
+    {
+        return collect($this->chained_displays)->filter(function($display) use ($id) {
+
+            return $display['id'] == $id;
+
+        })->first();
+    }
+
+    /**
+     *  This method checks if a chained display exists by
+     *  searching based on the display id provided.
+     */
+    public function hasChainedDisplayById($id)
+    {
+        return collect($this->chained_displays)->contains(function($display) use ($id) {
+
+            return $display['id'] == $id;
+
+        });
     }
 
     public function handleNavigation($type)
