@@ -35,6 +35,7 @@ class UssdService
 {
     public $app;
     public $msg;
+    public $ussd;
     public $text;
     public $event;
     public $screen;
@@ -45,6 +46,7 @@ class UssdService
     public $display;
     public $screens;
     public $request;
+    public $displays;
     public $app_name;
     public $response;
     public $logs = [];
@@ -92,6 +94,7 @@ class UssdService
     public $requestXmlToJsonOutput = null;
     public $global_variables_to_save = [];
     public $ussd_account_connection = null;
+    public $incorrect_option_selected = null;
     public $start_session_execution_time = 0;
     public $chained_screen_metadata = ['text' => ''];
     public $chained_display_metadata = ['text' => ''];
@@ -297,6 +300,7 @@ class UssdService
          *  started
          */
         if ($this->request_type == '1') {
+
             //  Handle a new session
             $this->response = $this->handleNewSession();
 
@@ -305,8 +309,10 @@ class UssdService
          *  continued
          */
         } elseif ($this->request_type == '2') {
+
             //  Handle existing session
             $this->response = $this->handleExistingSession();
+
         }
     }
 
@@ -939,11 +945,14 @@ class UssdService
             $this->addReplyRecord($reply_record['value'], $reply_record['origin'], $reply_record['removable']);
         }
 
-        //  If we are on TEST MODE and the existing session has timed out
-        if ( $this->test_mode && $this->existing_session->has_timed_out ) {
+        //  Set the timeout message
+        $allow_timeouts = $this->version->builder['simulator']['settings']['allow_timeouts'];
 
-            //  Prepare for timeout
-            $this->request_type = '4';
+        //  If the existing session has timeout
+        if($this->test_mode && $allow_timeouts && $this->existing_session->has_timed_out) {
+
+            //  Handle timeout
+            $this->sessionResponse = $this->handleTimeout();
 
         } else {
 
@@ -970,7 +979,7 @@ class UssdService
                 );
 
                 //  Delete this notification that has been seen
-                DB::table('session_notifications')->where('id', $seen_notification->id) ->delete();
+                DB::table('session_notifications')->where('id', $seen_notification->id)->delete();
 
             }else{
 
@@ -988,18 +997,6 @@ class UssdService
                 $this->user_response = $this->msg;
 
             }
-        }
-
-        //  Get the timeout limit in seconds e.g "120" to mean "timeout after 120 seconds"
-        $this->timeout_limit_in_seconds = $this->getTimeoutLimitInSeconds();
-
-        //  If the existing session has timeout
-        if ($this->test_mode && $this->existing_session->has_timed_out) {
-
-            //  Handle timeout
-            $this->sessionResponse = $this->handleTimeout();
-
-        } else {
 
             //  Handle the current session
             $this->sessionResponse = $this->handleSession();
@@ -1115,21 +1112,22 @@ class UssdService
 
     /** Update the existing USSD session from the database
      */
-    public function updateExistingSessionDatabaseRecord($data = [])
+    public function updateExistingSessionDatabaseRecord()
     {
-        if (empty($data)) {
-            $data = [
-                'text' => $this->text,
-                'request_type' => $this->request_type,
-                'fatal_error' => $this->fatal_error,
-                'fatal_error_msg' => $this->fatal_error_msg,
-                'reply_records' => json_encode($this->reply_records),
-                'updated_at' => now(),
-                'timeout_at' => (Carbon::now())->addSeconds($this->timeout_limit_in_seconds)->format('Y-m-d H:i:s'),
-                'app_id' => $this->app->id,
-                'version_id' => $this->version->id
-            ];
-        }
+        //  Get the timeout limit in seconds e.g "120" to mean "timeout after 120 seconds"
+        $this->timeout_limit_in_seconds = $this->getTimeoutLimitInSeconds();
+
+        $data = [
+            'text' => $this->text,
+            'request_type' => $this->request_type,
+            'fatal_error' => $this->fatal_error,
+            'fatal_error_msg' => $this->fatal_error_msg,
+            'reply_records' => json_encode($this->reply_records),
+            'updated_at' => now(),
+            'timeout_at' => (Carbon::now())->addSeconds($this->timeout_limit_in_seconds)->format('Y-m-d H:i:s'),
+            'app_id' => $this->app->id,
+            'version_id' => $this->version->id
+        ];
 
         //  Calculate the total session duration (The total seconds since the session started)
         $total_session_duration = Carbon::now()->diffInSeconds($this->existing_session->created_at, true);
@@ -1466,23 +1464,26 @@ class UssdService
     public function handleTimeout()
     {
         //  Set the timeout message
-        $timeout_msg = $this->version->builder['simulator']['settings']['timeout_message'];
+        $timeout_message = $this->version->builder['simulator']['settings']['timeout_message'];
 
         //  If the timeout message was not provided
-        if (empty($timeout_msg)) {
+        if (empty($timeout_message)) {
 
             //  Get the default timeout message found in "UssdSessionTrait" within "UssdSession"
-            $timeout_msg = (new UssdSession())->default_timeout_message;
+            $timeout_message = (new UssdSession())->default_timeout_message;
 
         }
 
         //  Get the session timeout date and time
         $timeout_date_time = (Carbon::parse($this->existing_session->timeout_at))->format('Y-m-d H:i:s');
 
+        //  Get the timeout limit in seconds e.g "120" to mean "timeout after 120 seconds"
+        $this->timeout_limit_in_seconds = $this->getTimeoutLimitInSeconds();
+
         //  Set a warning that the session timed out
         $this->logWarning('Session timed out after '.$this->timeout_limit_in_seconds.' seconds. The session timed out at exactly '.$timeout_date_time);
 
-        $response = $this->showTimeoutScreen($timeout_msg);
+        $response = $this->showTimeoutScreen($timeout_message);
 
         //  Build and return the final response
         return $response;
@@ -1494,7 +1495,7 @@ class UssdService
      */
     public function buildResponse($response)
     {
-        //  If we have a reponse set by a screen/display Event
+        //  If we have a response set by a screen/display Event
         if( $this->event_request_type != null ){
 
             //  Set the event response
@@ -1504,23 +1505,28 @@ class UssdService
         }else{
 
             if ($this->isContinueScreen($response)) {
+
                 //  Continue response
                 $this->request_type = '2';
 
             //  If the response indicates an ending screen
             } elseif ($this->isEndScreen($response)) {
+
                 //  End response
                 $this->request_type = '3';
 
             //  If the response indicates a timeout screen
             } elseif ($this->isTimeoutScreen($response)) {
+
                 //  Redirect response
                 $this->request_type = '4';
 
             //  If the response indicates a redirecting screen
             } elseif ($this->isRedirectScreen($response)) {
+
                 //  Redirect response
                 $this->request_type = '5';
+
             }
 
         }
@@ -8252,7 +8258,7 @@ class UssdService
             if( is_string($outputResponse) ){
 
                 //  Capture the "one" or "many" amounts
-                $amounts = collect( explode("|", $outputResponse) )->map(function($amount){
+                $amounts = collect( explode("|", $outputResponse) )->map(function($amount) {
 
                     //  Convert to money format (Convert to float with 2 decimal places)
                     return $this->convertToMoneyFormatFromAmount($amount);
@@ -8268,6 +8274,10 @@ class UssdService
                     return $this->convertToMoneyFormatFromAmount($amount);
 
                 })->toArray();
+
+            }else if( is_int($outputResponse) ){
+
+                $amounts = [ $this->convertToString($outputResponse) ];
 
             }else{
 
@@ -8298,7 +8308,7 @@ class UssdService
             })->toArray();
 
             $hasValidAmounts = collect($validAmounts)->count() > 0;
-            $hasAllValidAmounts = collect($validAmounts)->count() == collect($amounts)->count();
+            $hasAllValidAmounts = !empty($validAmounts) && !empty($amounts) && collect($validAmounts)->count() == collect($amounts)->count();
 
             if( $hasValidAmounts == false ){
 
@@ -8601,15 +8611,16 @@ class UssdService
             empty($access_token_from_db->expiry_date) || \Carbon\Carbon::parse($access_token_from_db->expiry_date)->isPast()){
 
             /**
-             *  Create a new token. The response will return "null"
-             *  on a failed request or the following structure:
+             *  Request the airtime billing access token.
+             *
+             *  The response will return "null" on a failed request or the following structure:
              *
              *  [
              *      'access_token' => "11e17a32-bc6c-37e2-8df1-e26df6551b7f"
              *      'expires_in' => 2600       //  Time to expiry in seconds
              *  ]
              */
-            $apiCallResponse = $this->requestNewAirtimeBillingAccessToken();
+            $apiCallResponse = $this->requestAirtimeBillingAccessToken();
 
             //  If we have a screen to show return the response otherwise continue
             if ($this->shouldDisplayScreen($apiCallResponse)) {
@@ -8749,62 +8760,54 @@ class UssdService
             //  If the account rating type is "Prepaid"
             if( $product_inventory['ratingType'] == 'Prepaid'){
 
-                //  Indicate that we need to check the account balance
-                $check_account_balance = true;
+                //  Indicate that this is a prepaid account (requires us checking the account balance)
+                $is_prepaid_account = true;
 
             }else{
 
-                //  Indicate that we do not need to check the account balance
-                $check_account_balance = false;
+                //  Indicate that this is not a prepaid account (does not require us checking the account balance)
+                $is_prepaid_account = false;
 
             }
 
             $this->logInfo('The mobile number '.$this->wrapAsSuccessHtml($msisdn).' is billed on a '.$this->wrapAsSuccessHtml($product_inventory['ratingType']).' account');
 
             //  If we are billing a Prepaid account and must check the account balance
-            if( $check_account_balance ){
+            if( $is_prepaid_account ){
 
                 //  Get the bucket with the id of "OCS-0" as it holds information about the "Main Balance"
                 $account_main_balance_bucket = collect($usage_consumption['bucket'])->firstWhere('id', 'OCS-0');
 
-                if( $account_main_balance_bucket ){
-
-                    //  Get the bucket balance
-                    $bucket_balance_array = $account_main_balance_bucket['bucketBalance'];
+                //  If the bucket with the id of "OCS-0" was extracted successfully
+                if( !empty($account_main_balance_bucket) ) {
 
                     //  Get the remaining value (The Airtime left that we can bill from the bucket balance)
-                    $remainingValue = collect($bucket_balance_array)->sum('remainingValue');
+                    $remainingValue = $account_main_balance_bucket['bucketBalance'][0]['remainingValue'];
 
                     $this->logInfo('The mobile number '.$this->wrapAsSuccessHtml($msisdn).' has a remaining balance of '.$this->wrapAsSuccessHtml($this->convertToString($remainingValue)));
 
-                    if( $remainingValue > 0){
+                    //  Foreach amount, check if the amount is less that the remaining airtime
+                    foreach($amounts as $amount){
 
-                        //  Foreach amount, check if the amount is less that the remaining airtime
-                        foreach($amounts as $amount){
+                        //  If the amount is sufficient
+                        if($remainingValue >= $amount) {
 
-                            //  If the amount is sufficient
-                            if($remainingValue >= $amount){
+                            $this->logInfo('The amount of '.$this->wrapAsSuccessHtml($amount).' will be billed since its equal to or less than the remaining Airtime balance of '.$this->wrapAsSuccessHtml($this->convertToString($remainingValue)));
 
-                                $this->logInfo('The amount of '.$this->wrapAsSuccessHtml($amount).' will be billed since its equal to or less than the remaining Airtime balance of '.$this->wrapAsSuccessHtml($this->convertToString($remainingValue)));
+                            //  Set as the amount to Bill
+                            $amount_to_bill = $amount;
 
-                                //  Set as the amount to Bill
-                                $amount_to_bill = $amount;
+                            //  Update that we do have enough funds
+                            $has_enough_funds = true;
 
-                                //  Update that we do have enough funds
-                                $has_enough_funds = true;
+                            //  Stop the loop
+                            break;
 
-                                //  Stop the loop
-                                break;
+                        }else{
 
-                            }else{
-
-                                $this->logInfo('The amount of '.$this->wrapAsSuccessHtml($amount).' cannot be billed since its greater than the remaining Airtime balance of '.$this->wrapAsSuccessHtml($this->convertToString($remainingValue)));
-
-                            }
+                            $this->logInfo('The amount of '.$this->wrapAsSuccessHtml($amount).' cannot be billed since its greater than the remaining Airtime balance of '.$this->wrapAsSuccessHtml($this->convertToString($remainingValue)));
 
                         }
-
-                    }else{
 
                     }
 
@@ -8855,10 +8858,10 @@ class UssdService
 
                 'msisdn_to_bill' => $msisdn,
                 'amount_to_bill' => $amount_to_bill,
-                'is_prepaid_account' => $check_account_balance,
                 'has_enough_funds' => $has_enough_funds,
-                'funds_before_deduction' => $check_account_balance ? $remainingValue : null,                    //  NULL indicates unlimited funds (Postpaid Account)
-                'funds_after_deduction' => $check_account_balance ? $remainingValue - $amount_to_bill : null,   //  NULL indicates unlimited funds (Postpaid Account)
+                'is_prepaid_account' => $is_prepaid_account,
+                'funds_before_deduction' => $is_prepaid_account ? $remainingValue : null,    //  NULL indicates unlimited funds (Postpaid Account)
+                'funds_after_deduction' => $is_prepaid_account ? ($has_enough_funds ? ($remainingValue - $amount_to_bill) : $remainingValue) : null,   //  NULL indicates unlimited funds (Postpaid Account)
 
                 'currency' => $currency,
                 'product_id' => $product_id,
@@ -8870,10 +8873,10 @@ class UssdService
             ];
 
             /**
-             *  If we don't need to check the account balance or we
-             *  have enough funds then continue to bill the customer
+             *  If this is a postpaid account or if this is a prepaid account and
+             *  this account has enough funds, then continue to bill the customer
              */
-            if( $check_account_balance == false || $has_enough_funds == true ){
+            if( $is_prepaid_account == false || $has_enough_funds == true ){
 
                 /*************************************
                  * Attempt To Bill Account           *
@@ -8994,9 +8997,9 @@ class UssdService
     }
 
     /**
-     *  This method requests a new airtime billing access token
+     *  This method requests the airtime billing access token
      */
-    public function requestNewAirtimeBillingAccessToken()
+    public function requestAirtimeBillingAccessToken()
     {
         /***************************
          * Set Client ID            *
@@ -9089,8 +9092,25 @@ class UssdService
 
                 }
 
-            //  If this is a bad status code e.g "400", "401", "500" e.t.c
+            //  If this is a bad status code e.g "400", "401", "403", "500" e.t.c
             } else {
+
+                /**
+                 *  If the request failed, e.g $statusCode == 403,
+                 *  The response will be as follows:
+                 *
+                 *  {
+                 *      requestError: {
+                 *          "serviceException: {
+                 *          "messageId": "SVC0005",
+                 *          "text": "duplicate correlatorId cc1d2d34",
+                 *              "variables: [
+                 *                  "cc1d2d34"
+                 *              ]
+                 *          }
+                 *      }
+                 *  }
+                 */
 
                 //  Set an info log of the response status code received
                 $this->logWarning('API response returned a status ('.$this->wrapAsSuccessHtml($status_code).') <br/> Status text: '.$this->wrapAsSuccessHtml($status_phrase));
@@ -10522,7 +10542,7 @@ class UssdService
     {
         try {
 
-            /*
+            /**
              *  Perform the validation method here e.g "validateOnlyLetters()" within the try/catch
              *  method and pass the validation rule e.g "$this->validateOnlyLetters($target_value, $validation_rule )"
              */
@@ -10532,14 +10552,14 @@ class UssdService
         } catch (\Throwable $e) {
 
             //  Handle failed validation
-            $this->handleFailedValidation($validation_rule);
+            $this->handleValidationFatalFail($validation_rule);
 
             throw $e;
 
         } catch (\Exception $e) {
 
             //  Handle failed validation
-            $this->handleFailedValidation($validation_rule);
+            $this->handleValidationFatalFail($validation_rule);
 
             throw $e;
 
@@ -10561,16 +10581,23 @@ class UssdService
             return $outputResponse;
         }
 
+        //  Set "0" as Auto Reply to automatically go back
+        $this->addReplyRecord('0', 'auto_reply', true);
+
         //  Get error message - Convert to [String]
-        $error_message = $this->convertToString($outputResponse) . "\n" .'---'. "\n" . '1. Ok';
+        $error_message = $this->convertToString($outputResponse);
 
         $this->logWarning('Validation failed using ('.$this->wrapAsSuccessHtml($validation_rule['name']).') with message: '.$this->wrapAsErrorHtml($error_message));
 
-        //  Create the notification message using the error message
-        $this->create_notification_message($error_message);
+        return $this->showCustomScreen($error_message);
+    }
 
-        //  Set "0" as Auto Reply to automatically go back
-        $this->addReplyRecord('0', 'auto_reply', true);
+    /** This method logs a warning with details about the failed validation rule
+     */
+    public function handleValidationFatalFail($validation_rule)
+    {
+        $this->logError('Validation failed for ('.$this->wrapAsSuccessHtml($validation_rule['name']).'). Make sure that the validation rule is correctly implemented.');
+        return $this->showCustomScreen('Validation failed for ('.$this->wrapAsSuccessHtml($validation_rule['name']).')');
     }
 
     /******************************************
@@ -11610,10 +11637,11 @@ class UssdService
     }
 
     /******************************************
-     *  REDIRECT EVENT METHODS                *
+     *  REVISIT EVENT METHODS                 *
      *****************************************/
 
-    /** This method gets all the revisit instructions of the current display. We then use these
+    /**
+     *  This method gets all the revisit instructions of the current display. We then use these
      *  revisit instructions to allow the current display to revisit a previous screen, marked
      *  screen or the first launched screen of the current USSD Service Code.
      */
@@ -12081,8 +12109,17 @@ class UssdService
         return $response;
     }
 
-    /** This method checks if we need to SET or GET a notification.
-     *  This notification
+    /******************************************
+     *  REDIRECT EVENT METHODS                *
+     *****************************************/
+
+    public function handle_Redirect_Event()
+    {
+
+    }
+
+    /**
+     *  This method checks if we need to SET or GET a notification.
      */
     public function handle_Notification_Event()
     {
@@ -12245,8 +12282,8 @@ class UssdService
         }
     }
 
-    /** This method  gets the collection of events then
-     *  runs through each event
+    /**
+     * This method gets the collection of events then runs through each event
      */
     public function handle_Event_Collection_Event()
     {
@@ -12265,7 +12302,8 @@ class UssdService
         }
     }
 
-    /** This method terminates the current session
+    /**
+     *  This method terminates the current session
      */
     public function handle_Terminate_Session_Event()
     {
@@ -12295,16 +12333,17 @@ class UssdService
         }
     }
 
-    /** This method terminates the current session
+    /**
+     *  This method terminates the current session
      */
-    public function terminate_session($message)
+    public function terminate_session($message = null)
     {
         //  Set the event request type to terminate the session
         $this->event_request_type = '3';
 
         if(!empty($message)) {
 
-            return $this->showCustomScreen($message);;
+            return $this->showCustomScreen($message);
 
         }
 

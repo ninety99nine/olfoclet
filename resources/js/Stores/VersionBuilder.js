@@ -1310,13 +1310,13 @@ export const useVersionBuilder = defineStore('version_builder', {
                     //  Optional fields (By Our platform)
                     response_reference_name: 'airtime_billing_response',
                     insufficient_funds_message: {
-                        text: '',
+                        text: 'You do not have enough funds to complete this payment',
                         code_editor_text: '',
                         code_editor_mode: false
                     },
                     show_successful_payment_message: 'yes_then_terminate',  //  yes_then_terminate, yes_then_do_not_terminate, no_then_terminate, no_then_do_not_terminate
                     successful_payment_message: {
-                        text: '',
+                        text: 'Payment successful. Thank you',
                         code_editor_text: '',
                         code_editor_mode: false
                     },
