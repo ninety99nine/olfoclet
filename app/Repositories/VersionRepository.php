@@ -50,10 +50,11 @@ class VersionRepository extends BaseRepository
             'clone_version_id' => in_array(request()->input('clone_version_id'), ['none', null]) ? [] : ['exists:versions,id'],
         ], [
             //  Custom messages
+            'number.unique' => 'This version number has already been taken (Also check your trashed versions). '
         ], [
             //  Custom attribute names
             'features.*' => 'feature',
-            'clone_version_id' => 'version to clone'
+            'clone_version_id' => 'version to clone',
         ]);
 
         if ($validator->fails()) {
