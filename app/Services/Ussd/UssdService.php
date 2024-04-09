@@ -2946,6 +2946,7 @@ class UssdService
         //  Add the current screen to the list of chained screens
         array_push($this->chained_screens, [
             'id' => $this->screen['id'],
+            'name' => $this->screen['name'],
             'markers' => $this->screen['markers'],
             //  Add metadata related to this chained screen
             'metadata' => [
@@ -3668,6 +3669,7 @@ class UssdService
         //  Add the current display to the list of chained displays
         array_push($this->chained_displays, [
             'id' => $this->display['id'],
+            'name' => $this->display['name'],
             'content' => [
                 'markers' => $this->display['content']['markers']
             ],
@@ -11701,7 +11703,7 @@ class UssdService
 
             //  If the event has been triggered
             if ($is_triggered) {
-                $this->logInfo('The '.$this->event['name'].' event has been triggered');
+                $this->logInfo('The '.$this->wrapAsSuccessHtml($this->event['name']).' event has been triggered');
 
                 /****************************
                  * BUILD AUTOMATIC REPLIES  *
