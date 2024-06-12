@@ -25,7 +25,7 @@ class CreateUssdSessionsTable extends Migration
             $table->string('service_code')->nullable();
             $table->string('type')->default('shared');
             $table->string('request_type')->default(1);
-            $table->string('text')->nullable();
+            $table->text('text')->nullable();
             $table->mediumText('reply_records')->nullable();
             $table->mediumText('inputs_and_outputs')->nullable();
             $table->mediumText('logs')->nullable();

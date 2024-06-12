@@ -11,8 +11,10 @@ class SimulationController extends BaseController
 {
     public function launchUssd()
     {
+        $isTestMode = in_array(request()->input('test_mode'), [true, 'true', '1'], true);
+
         //  If we are starting a new test session
-        if( request()->input('test_mode') == true && request()->input('request_type') == 1 ) {
+        if( $isTestMode ) {
 
             /**
              *  Close other running sessions.

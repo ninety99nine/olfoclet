@@ -234,28 +234,30 @@ class UssdService
     public function storeUssdGatewayValues()
     {
         //  Get the "TEST MODE" status
-        $this->test_mode = ($this->request->get('test_mode') == 'true' || $this->request->get('test_mode') == '1') ? true : false;
+        $this->test_mode = in_array($this->request->input('test_mode'), [true, 'true', '1'], true);
 
-        if ($this->test_mode) {
+        //  If this is a JSON request
+        if (request()->isJson()) {
 
             //  Get the "Message"
-            $this->msg = $this->request->get('msg');
+            $this->msg = $this->request->input('msg');
 
             //  Get the "Msisdn"
-            $this->msisdn = $this->request->get('msisdn');
+            $this->msisdn = $this->request->input('msisdn');
 
             //  Set the "Mobile Number"
             $this->mobile_number = preg_replace("/^267/", "$1", $this->msisdn);
 
             //  Get the "Session ID"
-            $this->session_id = $this->request->get('session_id');
+            $this->session_id = $this->request->input('session_id');
 
             //  Get the "Request Type"
-            $this->request_type = $this->request->get('request_type');
+            $this->request_type = $this->request->input('request_type');
 
             //  Get the app "Version ID" to target
-            $this->version_id = $this->request->get('version_id');
+            $this->version_id = $this->request->input('version_id');
 
+        //  If this is an XML request
         } else {
 
             //  Get the xml content from the request
@@ -852,13 +854,13 @@ class UssdService
             //  Redirect session
         }
 
-        //  If we are on test mode
-        if ($this->test_mode) {
+        //  If this is a JSON request
+        if (request()->isJson()) {
 
             //  Return the response payload as json
             return response($this->response)->header('Content-Type', 'application/json');
 
-        //  If we are on live mode
+        //  If this is an XML request
         } else {
 
             // Construct the XML string manually
@@ -1546,9 +1548,7 @@ class UssdService
             'request_type' => $this->request_type,
             'msisdn' => $this->msisdn,
             'text' => $this->text,
-            'msg' => $message,
-            'stats' => [],
-            'logs' => []
+            'msg' => $message
         ];
 
         //  Set an info log of the ussd properties
@@ -1591,6 +1591,11 @@ class UssdService
                         //  Set the logs on the response payload
                         $response['logs'] = $this->logs;
                     }
+
+                }else{
+
+                    //  Set the logs on the response payload
+                    $response['logs'] = [];
 
                 }
 
