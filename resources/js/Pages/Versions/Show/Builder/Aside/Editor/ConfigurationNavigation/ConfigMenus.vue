@@ -332,6 +332,10 @@
                             name: 'Color Scheme',
                             onClick: () => {},
                         },
+                        {
+                            name: 'Json File',
+                            onClick: () => {}
+                        },
                     ]
 
                 } catch (error) {

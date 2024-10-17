@@ -13,11 +13,13 @@
     <RestrictionEditor v-else-if="useVersionBuilder.selectedConfigMenu == 'Restrictions'"></RestrictionEditor>
     <ColorSchemeEditor v-else-if="useVersionBuilder.selectedConfigMenu == 'Color Scheme'"></ColorSchemeEditor>
     <LogSettingsEditor v-else-if="useVersionBuilder.selectedConfigMenu == 'Log Settings'"></LogSettingsEditor>
+    <JsonFileEditor v-else-if="useVersionBuilder.selectedConfigMenu == 'Json File'"></JsonFileEditor>
 
 </template>
 
 <script>
 
+    import JsonFileEditor from "./JsonFileEditor";
     import LogSettingsEditor from "./LogSettingsEditor";
     import RestrictionEditor from "./RestrictionEditor";
     import ColorSchemeEditor from "./ColorSchemeEditor";
@@ -34,7 +36,7 @@
     import AirtimeBillingConnectionEditor from "./AirtimeBillingConnectionEditor";
 
     export default {
-        components: { LogSettingsEditor, RestrictionEditor, ColorSchemeEditor, SmsConnectionEditor, GlobalVariablesEditor, GlobalPaginationEditor, GlobalEventsEditor, GlobalHeadersEditor, ConditionalScreenEditor, ApplicationEventsEditor, AirtimeBillingConnectionEditor, AppWriteConnectionEditor, FirebaseConnectionEditor },
+        components: { JsonFileEditor, LogSettingsEditor, RestrictionEditor, ColorSchemeEditor, SmsConnectionEditor, GlobalVariablesEditor, GlobalPaginationEditor, GlobalEventsEditor, GlobalHeadersEditor, ConditionalScreenEditor, ApplicationEventsEditor, AirtimeBillingConnectionEditor, AppWriteConnectionEditor, FirebaseConnectionEditor },
         data(){
             return {
                 useVersionBuilder: useVersionBuilder()

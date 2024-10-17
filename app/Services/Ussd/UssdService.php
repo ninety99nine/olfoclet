@@ -101,7 +101,6 @@ class UssdService
     public $allow_dynamic_content_highlighting = true;
     public $default_no_select_options_message = 'No options available';
     public $default_technical_difficulties_message = 'Sorry, we are experiencing technical difficulties';
-    public $default_incorrect_option_selected_message = 'You selected an incorrect option. Go back and try again';
 
     public function __construct(Request $request)
     {
@@ -4105,8 +4104,6 @@ class UssdService
          *
          *  [
          *      options => [
-         */
-        /**
          *          [
          *              name => [
          *                   text => '1. My Option',
@@ -4147,9 +4144,7 @@ class UssdService
          *               ],
          *               hexColor => '#CECECE',
          *               comment => ''
-         *           ].
-         */
-        /**
+         *           ]
          *      ],
          *      reference_name => '',
          *      no_results_message => [
@@ -5876,8 +5871,18 @@ class UssdService
                     return $outputResponse;
                 }
 
-                //  Get the generated output e.g "You selected an incorrect option" otherwise use the default message
-                $this->incorrect_option_selected = $outputResponse ?? $this->default_incorrect_option_selected_message;
+                //  If we have an output
+                if(!empty($outputResponse)) {
+
+                    //  Get the generated output e.g "You selected an incorrect option"
+                    $this->incorrect_option_selected = $outputResponse;
+
+                }else{
+
+                    //  Set "0" as Auto Reply to automatically go back
+                    $this->addReplyRecord('0', 'auto_reply', true);
+
+                }
             }
 
             //  If we don't have options to display

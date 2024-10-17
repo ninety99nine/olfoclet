@@ -198,6 +198,10 @@ __webpack_require__.r(__webpack_exports__);
     disabled: {
       type: Boolean,
       "default": false
+    },
+    paddingClasses: {
+      type: String,
+      "default": 'px-4 py-2'
     }
   }
 });
@@ -228,6 +232,10 @@ __webpack_require__.r(__webpack_exports__);
     disabled: {
       type: Boolean,
       "default": false
+    },
+    paddingClasses: {
+      type: String,
+      "default": 'px-4 py-2'
     }
   }
 });
@@ -258,6 +266,10 @@ __webpack_require__.r(__webpack_exports__);
     disabled: {
       type: Boolean,
       "default": false
+    },
+    paddingClasses: {
+      type: String,
+      "default": 'px-4 py-2'
     }
   }
 });
@@ -10833,7 +10845,7 @@ var _hoisted_1 = {
   "class": "text-xs"
 };
 function render(_ctx, _cache, $props, $setup, $data, $options) {
-  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", {
+  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", {
     key: $props.active,
     "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(['transition-all duration-500 inline-flex items-center py-1 px-2.5 ml-2 text-xs rounded-full font-semibold', $props.active ? $props.activeStyle : $props.inActiveStyle])
   }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_1, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($props.count), 1 /* TEXT */)], 2 /* CLASS */);
@@ -10855,7 +10867,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
-  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", {
+  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", {
     "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(['bg-orange-50 text-orange-500 border border-orange-500 text-xs px-2.5 py-0.5 rounded', {
       'cursor-pointer hover:bg-orange-100 active:bg-orange-200': $props.clickable
     }])
@@ -10878,7 +10890,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
-  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", {
+  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", {
     "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(['bg-blue-50 text-blue-500 border border-blue-500 text-xs px-2.5 py-0.5 rounded', {
       'cursor-pointer hover:bg-blue-100 active:bg-blue-200': $props.clickable
     }])
@@ -10901,7 +10913,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
-  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", {
+  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", {
     "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(['bg-green-50 text-green-500 border border-green-500 text-xs px-2.5 py-0.5 rounded', {
       'cursor-pointer hover:bg-green-100 active:bg-green-200': $props.clickable
     }])
@@ -10924,7 +10936,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
-  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", {
+  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", {
     "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(['bg-yellow-50 text-yellow-500 border border-yellow-500 text-xs px-2.5 py-0.5 rounded', {
       'cursor-pointer hover:bg-yellow-100 active:bg-yellow-200': $props.clickable
     }])
@@ -10971,7 +10983,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("button", {
     type: "button",
     disabled: $props.disabled,
-    "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(['text-white ' + ($props.disabled ? 'bg-red-300 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700 active:bg-red-800 cursor-pointer active:shadow-lg') + ' focus:outline-none font-medium rounded-md text-center inline-flex items-center text-' + $props.size + ' px-4 py-2'])
+    "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(['text-white ' + ($props.disabled ? 'bg-red-300 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700 active:bg-red-800 cursor-pointer active:shadow-lg') + ' focus:outline-none font-medium rounded-md text-center inline-flex items-center text-' + $props.size + ' ' + $props.paddingClasses])
   }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_2, [$props.loading ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("svg", _hoisted_3, _hoisted_6)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderSlot)(_ctx.$slots, "default")])], 10 /* CLASS, PROPS */, _hoisted_1);
 }
 
@@ -11015,7 +11027,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("button", {
     type: "button",
     disabled: $props.disabled,
-    "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(['text-gray-500 ' + ($props.disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white hover:bg-gray-100 active:bg-gray-200 active:border-gray-400 active:shadow-lg') + ' border border-gray-200 focus:outline-none font-medium rounded-md text-center inline-flex items-center text-' + $props.size + ' px-4 py-2'])
+    "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(['text-gray-500 ' + ($props.disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white hover:bg-gray-100 active:bg-gray-200 active:border-gray-400 active:shadow-lg') + ' border border-gray-200 focus:outline-none font-medium rounded-md text-center inline-flex items-center text-' + $props.size + ' ' + $props.paddingClasses])
   }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_2, [$props.loading ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("svg", _hoisted_3, _hoisted_6)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderSlot)(_ctx.$slots, "default")])], 10 /* CLASS, PROPS */, _hoisted_1);
 }
 
@@ -11059,7 +11071,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("button", {
     type: "button",
     disabled: $props.disabled,
-    "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(['text-white ' + ($props.disabled ? 'bg-blue-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 cursor-pointer active:shadow-lg') + ' focus:outline-none font-medium rounded-md text-center inline-flex items-center text-' + $props.size + ' px-4 py-2'])
+    "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(['text-white ' + ($props.disabled ? 'bg-blue-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 cursor-pointer active:shadow-lg') + ' focus:outline-none font-medium rounded-md text-center inline-flex items-center text-' + $props.size + ' ' + $props.paddingClasses])
   }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_2, [$props.loading ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("svg", _hoisted_3, _hoisted_6)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderSlot)(_ctx.$slots, "default")])], 10 /* CLASS, PROPS */, _hoisted_1);
 }
 
@@ -22891,7 +22903,7 @@ var useVersionBuilder = (0,pinia__WEBPACK_IMPORTED_MODULE_1__.defineStore)('vers
                   code_editor_mode: false
                 },
                 incorrect_option_selected_message: {
-                  text: 'You selected an incorrect option. Go back and try again',
+                  text: '',
                   code_editor_text: '',
                   code_editor_mode: false
                 }
@@ -22920,7 +22932,7 @@ var useVersionBuilder = (0,pinia__WEBPACK_IMPORTED_MODULE_1__.defineStore)('vers
                   code_editor_mode: false
                 },
                 incorrect_option_selected_message: {
-                  text: 'You selected an incorrect option. Go back and try again',
+                  text: '',
                   code_editor_text: '',
                   code_editor_mode: false
                 },
@@ -22939,7 +22951,7 @@ var useVersionBuilder = (0,pinia__WEBPACK_IMPORTED_MODULE_1__.defineStore)('vers
                   code_editor_mode: false
                 },
                 incorrect_option_selected_message: {
-                  text: 'You selected an incorrect option. Go back and try again',
+                  text: '',
                   code_editor_text: '',
                   code_editor_mode: false
                 }
@@ -33342,6 +33354,10 @@ var map = {
 	"./Versions/Show/Builder/Content/Editor/ConfigurationEditor/Header.vue": [
 		"./resources/js/Pages/Versions/Show/Builder/Content/Editor/ConfigurationEditor/Header.vue",
 		"resources_js_Pages_Versions_Show_Builder_Content_Editor_ConfigurationEditor_Header_vue"
+	],
+	"./Versions/Show/Builder/Content/Editor/ConfigurationEditor/JsonFileEditor/index.vue": [
+		"./resources/js/Pages/Versions/Show/Builder/Content/Editor/ConfigurationEditor/JsonFileEditor/index.vue",
+		"resources_js_Pages_Versions_Show_Builder_Content_Editor_ConfigurationEditor_JsonFileEditor_in-b22ed0"
 	],
 	"./Versions/Show/Builder/Content/Editor/ConfigurationEditor/LogSettingsEditor/index.vue": [
 		"./resources/js/Pages/Versions/Show/Builder/Content/Editor/ConfigurationEditor/LogSettingsEditor/index.vue",

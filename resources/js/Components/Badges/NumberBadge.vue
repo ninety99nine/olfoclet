@@ -1,8 +1,8 @@
 <template>
 
-    <span :key="active" :class="['transition-all duration-500 inline-flex items-center py-1 px-2.5 ml-2 text-xs rounded-full font-semibold', active ? activeStyle : inActiveStyle]">
+    <div :key="active" :class="['transition-all duration-500 inline-flex items-center py-1 px-2.5 ml-2 text-xs rounded-full font-semibold', active ? activeStyle : inActiveStyle]">
         <span class="text-xs">{{ count }}</span>
-    </span>
+    </div>
 
 </template>
 
@@ -28,7 +28,3 @@ export default {
     }
 }
 </script>
-
-<style>
-
-</style>>

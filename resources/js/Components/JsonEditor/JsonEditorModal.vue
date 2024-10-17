@@ -60,7 +60,7 @@
 
                 try {
 
-                    //  Get the JSON data
+                    //  Get the Json File
                     const validJson = JSON.parse(this.form.json);
 
                     if( validJson ) {

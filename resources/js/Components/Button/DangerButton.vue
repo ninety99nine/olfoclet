@@ -1,5 +1,5 @@
 <template>
-    <button type="button" :disabled="disabled" :class="['text-white '+(disabled ? 'bg-red-300 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700 active:bg-red-800 cursor-pointer active:shadow-lg')+' focus:outline-none font-medium rounded-md text-center inline-flex items-center text-'+size+' px-4 py-2']">
+    <button type="button" :disabled="disabled" :class="['text-white '+(disabled ? 'bg-red-300 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700 active:bg-red-800 cursor-pointer active:shadow-lg')+' focus:outline-none font-medium rounded-md text-center inline-flex items-center text-'+size+' '+paddingClasses]">
 
         <div class="flex justify-center items-center m-auto">
             <svg v-if="loading" role="status" class="mr-2 w-3 h-3 text-white animate-spin fill-red-500" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -25,6 +25,10 @@ export default {
         disabled: {
             type: Boolean,
             default: false
+        },
+        paddingClasses: {
+            type: String,
+            default: 'px-4 py-2'
         }
     }
 }

@@ -185,7 +185,7 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
         //  On load of the JSON file
         reader.onload = function (event) {
           try {
-            //  Get the JSON data
+            //  Get the Json File
             var builder = JSON.parse(event.target.result);
             var properties = Object.keys(builder);
 

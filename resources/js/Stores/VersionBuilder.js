@@ -646,7 +646,7 @@ export const useVersionBuilder = defineStore('version_builder', {
                                     code_editor_mode: false
                                 },
                                 incorrect_option_selected_message: {
-                                    text: 'You selected an incorrect option. Go back and try again',
+                                    text: '',
                                     code_editor_text: '',
                                     code_editor_mode: false
                                 }
@@ -675,7 +675,7 @@ export const useVersionBuilder = defineStore('version_builder', {
                                     code_editor_mode: false
                                 },
                                 incorrect_option_selected_message: {
-                                    text: 'You selected an incorrect option. Go back and try again',
+                                    text: '',
                                     code_editor_text: '',
                                     code_editor_mode: false
                                 },
@@ -694,7 +694,7 @@ export const useVersionBuilder = defineStore('version_builder', {
                                     code_editor_mode: false
                                 },
                                 incorrect_option_selected_message: {
-                                    text: 'You selected an incorrect option. Go back and try again',
+                                    text: '',
                                     code_editor_text: '',
                                     code_editor_mode: false
                                 }

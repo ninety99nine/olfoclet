@@ -177,7 +177,7 @@
 
                         try {
 
-                            //  Get the JSON data
+                            //  Get the Json File
                             const builder = JSON.parse(event.target.result);
 
                             const properties = Object.keys(builder);

@@ -27,6 +27,9 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
+            <svg v-else-if="title == 'Json File'" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" />
+            </svg>
 
             <!-- Title -->
             <h1 class="text-md font-semibold text-gray-600 ml-2">{{ title }}</h1>
@@ -401,6 +404,18 @@
                         },
                         {
                             text: ' to determine when to save the session logs'
+                        }
+                    ]
+                }else if( this.title == 'Json File' ) {
+                    return [
+                        {
+                            text: 'Use '
+                        },
+                        {
+                            highlight: 'Json File',
+                        },
+                        {
+                            text: ' to copy and paste the entire Builder JSON File'
                         }
                     ]
                 }
