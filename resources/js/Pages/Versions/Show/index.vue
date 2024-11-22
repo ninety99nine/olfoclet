@@ -53,7 +53,6 @@
             //  Reset the version builder before unmounting the component
             this.useVersionBuilder.$reset();
         },
-
     };
 
 </script>

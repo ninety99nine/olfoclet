@@ -3,7 +3,7 @@
     <div>
 
         <!-- Action Explainer -->
-        <WarningAlert v-if="useVersionBuilder.hasImportedBuilder" class="w-1/2 mb-6">
+        <WarningAlert v-if="useVersionBuilder.hasImportedBuilder || useVersionBuilder.hasUnsavedBuilderFromLocalStorage" class="w-1/2 mb-6">
 
             <span>
                 This builder has not been saved. Please <span class="font-semibold text-blue-500">Save Changes</span> so that the simulator can reflect the imported changes.
@@ -41,7 +41,7 @@
 
                 <Transition name="fade">
 
-                    <div v-if="!isSaving && !isDownloading" class="flex mr-4">
+                    <div v-if="!isSaving && !isDownloading" class="flex items-center mr-8">
 
                         <!-- Import Button -->
                         <ImportVersionModal :form="form"></ImportVersionModal>
@@ -53,9 +53,16 @@
 
                 </Transition>
 
-                <!-- Save Changes Button -->
-                <div>
+                <div class="flex items-center space-x-2">
+
+                    <!-- Undo Changes Button -->
+                    <div v-if="useVersionBuilder.hasUnsavedBuilderFromLocalStorage">
+                        <UndoChangesModal :form="form"></UndoChangesModal>
+                    </div>
+
+                    <!-- Save Changes Button -->
                     <PrimaryButton :disabled="isSaving || isDownloading" @click="updateVersion()">Save Changes</PrimaryButton>
+
                 </div>
 
             </div>
@@ -137,9 +144,11 @@
     import { useForm } from '@inertiajs/vue3';
     import DefaultError from "@components/Error/DefaultError";
     import WarningAlert from "@components/Alert/WarningAlert";
+    import WarningBadge from '@components/Badges/WarningBadge';
     import { useVersionBuilder } from '@stores/VersionBuilder';
     import DefaultButton from "@components/Button/DefaultButton";
     import PrimaryButton from "@components/Button/PrimaryButton";
+    import UndoChangesModal from './UndoChanges/UndoChangesModal';
     import ImportVersionModal from './ImportVersion/ImportVersionModal';
     import ExportVersionModal from './ExportVersion/ExportVersionModal';
     import DefaultProgressBar from "@components/ProgressBar/DefaultProgressBar";
@@ -148,10 +157,13 @@
         props: {
             showEditor: Boolean,
         },
-        components: { BackButton, DefaultError, WarningAlert, DefaultButton, PrimaryButton, ImportVersionModal, ExportVersionModal, DefaultProgressBar },
+        components: { BackButton, DefaultError, WarningAlert, WarningBadge, DefaultButton, PrimaryButton, UndoChangesModal, ImportVersionModal, ExportVersionModal, DefaultProgressBar },
         data(){
             return {
                 useVersionBuilder: useVersionBuilder(),
+                project: this.$page.props.projectPayload,
+                version: this.$page.props.versionPayload,
+                app: this.$page.props.appPayload,
                 downloadInSecondsInterval: null,
                 stillLoadingConversation: null,
                 progressPercentage: null,
@@ -161,6 +173,23 @@
                 form: useForm({}),
                 isSaving: false,
                 request: null
+            }
+        },
+        watch: {
+            // Watch the builder state and store it in localStorage on changes
+            'useVersionBuilder.builder': {
+                handler(newBuilder, oldBuilder) {
+
+                    // Only run if the oldBuilder is not an empty object
+                    if (!_.isEmpty(oldBuilder)) {
+
+                        // Update localStorage
+                        this.useVersionBuilder.setUnsavedBuilderOnLocalStorage(newBuilder);
+
+                    }
+
+                },
+                deep: true
             }
         },
         computed: {
@@ -208,8 +237,6 @@
 
                 //  Indicate that the builder has not been saved
                 this.useVersionBuilder.hasSavedBuilder = false;
-
-                this.useVersionBuilder.unselectEverything();
 
                 this.isSaving = true;
 
@@ -264,8 +291,8 @@
                             type: 'success'
                         });
 
-                        //  Select a screen by default
-                        this.useVersionBuilder.selectRecomendedScreen();
+                        //  Remove builder from local storage (Changes have been saved)
+                        this.useVersionBuilder.removeUnsavedBuilderFromLocalStorage();
 
                         //  Turn off indication that the builder has been imported
                         this.useVersionBuilder.hasImportedBuilder = false;
@@ -382,6 +409,11 @@
             this.stopConvo();
         },
         created(){
+
+            this.useVersionBuilder.project = this.project;
+            this.useVersionBuilder.version = this.version;
+            this.useVersionBuilder.app = this.app;
+
             this.downloadVersion();
         }
     };

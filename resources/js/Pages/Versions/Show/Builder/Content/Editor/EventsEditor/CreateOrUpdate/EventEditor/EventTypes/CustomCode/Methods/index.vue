@@ -106,14 +106,8 @@
                     },
                     {
                         type: 'String',
-                        name: 'Check Display Existence By Marker',
-                        code: '$this->hasDisplayByMarker(\'Main Menu\');',
-                        description: 'Check if the display with the given marker name exists'
-                    },
-                    {
-                        type: 'String',
                         name: 'Check Chained Screen Existence By Id',
-                        code: '$this->hasScreenByMarker(\'screen_1603621400274\');',
+                        code: '$this->hasChainedScreenById(\'screen_1603621400274\');',
                         description: 'Check if the screen with the given id exists on the chained screens'
                     },
                     {
@@ -124,8 +118,14 @@
                     },
                     {
                         type: 'String',
+                        name: 'Check Display Existence By Marker',
+                        code: '$this->hasDisplayByMarker(\'Main Menu\');',
+                        description: 'Check if the display with the given marker name exists'
+                    },
+                    {
+                        type: 'String',
                         name: 'Check Chained Display Existence By Id',
-                        code: '$this->hasDisplayByMarker(\'display_1603621400274\');',
+                        code: '$this->hasChainedDisplayById(\'display_1603621400274\');',
                         description: 'Check if the display with the given id exists on the chained displays'
                     },
                     {

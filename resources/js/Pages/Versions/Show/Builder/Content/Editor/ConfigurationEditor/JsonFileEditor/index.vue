@@ -36,9 +36,14 @@
                         <span>Reset</span>
                     </DefaultButton>
 
+                    <!-- Copy Original To Clipboard -->
+                    <CopyToClipboard :value="originalBuilderAsJsonString" message="Copied Original Json File" class="whitespace-nowrap">
+                        <DefaultBadge :clickable="true">Copy (Original) Json File</DefaultBadge>
+                    </CopyToClipboard>
+
                     <!-- Copy To Clipboard -->
-                    <CopyToClipboard :value="builderAsJsonString" message="Copied Json File" class="whitespace-nowrap">
-                        <PrimaryBadge :clickable="true">Copy Json File</PrimaryBadge>
+                    <CopyToClipboard v-if="mustSaveChanges" :value="builderAsJsonString" message="Copied Json File" class="whitespace-nowrap">
+                        <PrimaryBadge :clickable="true">Copy (Unsaved) Json File</PrimaryBadge>
                     </CopyToClipboard>
 
                 </div>
@@ -58,17 +63,18 @@
 <script>
 import { debounce } from "lodash";
 import CopyToClipboard from '@components/CopyToClipboard';
+import DefaultBadge from '@components/Badges/DefaultBadge';
 import PrimaryBadge from '@components/Badges/PrimaryBadge';
 import { useVersionBuilder } from '@stores/VersionBuilder';
 import DefaultButton from "@components/Button/DefaultButton";
 
 export default {
-    components: { CopyToClipboard, PrimaryBadge, DefaultButton },
+    components: { CopyToClipboard, DefaultBadge, PrimaryBadge, DefaultButton },
     data() {
         return {
             useVersionBuilder: useVersionBuilder(),
+            originalBuilderAsJsonString: '',
             builderAsJsonString: '',
-            originalJsonString: '',
             errorMessage: null,
             hasChanges: false,  // New property to track changes
             isLoading: false,    // New property for loader state
@@ -103,14 +109,14 @@ export default {
             this.isLoading = false;
         }, 1000),
         resetBuilder() {
-            this.builderAsJsonString = this.originalJsonString;
+            this.builderAsJsonString = this.originalBuilderAsJsonString;
             this.errorMessage = null;
             this.hasChanges = false;
         },
     },
     created() {
         this.builderAsJsonString = JSON.stringify(this.useVersionBuilder.builder, null, 2);
-        this.originalJsonString = this.builderAsJsonString;
+        this.originalBuilderAsJsonString = _.cloneDeep(this.builderAsJsonString);
     }
 };
 </script>

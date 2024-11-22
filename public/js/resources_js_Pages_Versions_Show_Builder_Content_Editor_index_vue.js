@@ -1272,9 +1272,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _components_CopyToClipboard__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @components/CopyToClipboard */ "./resources/js/Components/CopyToClipboard/index.vue");
-/* harmony import */ var _components_Badges_PrimaryBadge__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @components/Badges/PrimaryBadge */ "./resources/js/Components/Badges/PrimaryBadge.vue");
-/* harmony import */ var _stores_VersionBuilder__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @stores/VersionBuilder */ "./resources/js/Stores/VersionBuilder.js");
-/* harmony import */ var _components_Button_DefaultButton__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @components/Button/DefaultButton */ "./resources/js/Components/Button/DefaultButton.vue");
+/* harmony import */ var _components_Badges_DefaultBadge__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @components/Badges/DefaultBadge */ "./resources/js/Components/Badges/DefaultBadge.vue");
+/* harmony import */ var _components_Badges_PrimaryBadge__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @components/Badges/PrimaryBadge */ "./resources/js/Components/Badges/PrimaryBadge.vue");
+/* harmony import */ var _stores_VersionBuilder__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @stores/VersionBuilder */ "./resources/js/Stores/VersionBuilder.js");
+/* harmony import */ var _components_Button_DefaultButton__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @components/Button/DefaultButton */ "./resources/js/Components/Button/DefaultButton.vue");
+
 
 
 
@@ -1283,14 +1285,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   components: {
     CopyToClipboard: _components_CopyToClipboard__WEBPACK_IMPORTED_MODULE_1__["default"],
-    PrimaryBadge: _components_Badges_PrimaryBadge__WEBPACK_IMPORTED_MODULE_2__["default"],
-    DefaultButton: _components_Button_DefaultButton__WEBPACK_IMPORTED_MODULE_4__["default"]
+    DefaultBadge: _components_Badges_DefaultBadge__WEBPACK_IMPORTED_MODULE_2__["default"],
+    PrimaryBadge: _components_Badges_PrimaryBadge__WEBPACK_IMPORTED_MODULE_3__["default"],
+    DefaultButton: _components_Button_DefaultButton__WEBPACK_IMPORTED_MODULE_5__["default"]
   },
   data: function data() {
     return {
-      useVersionBuilder: (0,_stores_VersionBuilder__WEBPACK_IMPORTED_MODULE_3__.useVersionBuilder)(),
+      useVersionBuilder: (0,_stores_VersionBuilder__WEBPACK_IMPORTED_MODULE_4__.useVersionBuilder)(),
+      originalBuilderAsJsonString: '',
       builderAsJsonString: '',
-      originalJsonString: '',
       errorMessage: null,
       hasChanges: false,
       // New property to track changes
@@ -1328,14 +1331,14 @@ __webpack_require__.r(__webpack_exports__);
       this.isLoading = false;
     }, 1000),
     resetBuilder: function resetBuilder() {
-      this.builderAsJsonString = this.originalJsonString;
+      this.builderAsJsonString = this.originalBuilderAsJsonString;
       this.errorMessage = null;
       this.hasChanges = false;
     }
   },
   created: function created() {
     this.builderAsJsonString = JSON.stringify(this.useVersionBuilder.builder, null, 2);
-    this.originalJsonString = this.builderAsJsonString;
+    this.originalBuilderAsJsonString = _.cloneDeep(this.builderAsJsonString);
   }
 });
 
@@ -4439,7 +4442,7 @@ __webpack_require__.r(__webpack_exports__);
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", {
-    "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(['bg-gray-100 text-gray-600 border border-gray-400 text-xs px-2.5 py-0.5 rounded', {
+    "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(['w-fit bg-gray-100 text-gray-600 border border-gray-400 text-xs px-2.5 py-0.5 rounded', {
       'cursor-pointer hover:bg-blue-200 active:bg-blue-300': $props.clickable
     }])
   }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.renderSlot)(_ctx.$slots, "default")], 2 /* CLASS */);
@@ -6014,8 +6017,9 @@ var _hoisted_10 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElement
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   var _component_DefaultButton = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("DefaultButton");
-  var _component_PrimaryBadge = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("PrimaryBadge");
+  var _component_DefaultBadge = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("DefaultBadge");
   var _component_CopyToClipboard = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("CopyToClipboard");
+  var _component_PrimaryBadge = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("PrimaryBadge");
   return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Code Editor "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(vue__WEBPACK_IMPORTED_MODULE_0__.Transition, {
     name: "fade"
   }, {
@@ -6035,7 +6039,25 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
           return [_hoisted_9, _hoisted_10];
         }),
         _: 1 /* STABLE */
-      }, 8 /* PROPS */, ["onClick"])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Copy To Clipboard "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_CopyToClipboard, {
+      }, 8 /* PROPS */, ["onClick"])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Copy Original To Clipboard "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_CopyToClipboard, {
+        value: $data.originalBuilderAsJsonString,
+        message: "Copied Original Json File",
+        "class": "whitespace-nowrap"
+      }, {
+        "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
+          return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_DefaultBadge, {
+            clickable: true
+          }, {
+            "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
+              return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)("Copy (Original) Json File")];
+            }),
+            _: 1 /* STABLE */
+          })];
+        }),
+
+        _: 1 /* STABLE */
+      }, 8 /* PROPS */, ["value"]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Copy To Clipboard "), $options.mustSaveChanges ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createBlock)(_component_CopyToClipboard, {
+        key: 1,
         value: $data.builderAsJsonString,
         message: "Copied Json File",
         "class": "whitespace-nowrap"
@@ -6045,14 +6067,14 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
             clickable: true
           }, {
             "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
-              return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)("Copy Json File")];
+              return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)("Copy (Unsaved) Json File")];
             }),
             _: 1 /* STABLE */
           })];
         }),
 
         _: 1 /* STABLE */
-      }, 8 /* PROPS */, ["value"])])], 2 /* CLASS */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Editable JSON File "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("textarea", {
+      }, 8 /* PROPS */, ["value"])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])], 2 /* CLASS */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Editable JSON File "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("textarea", {
         "onUpdate:modelValue": _cache[0] || (_cache[0] = function ($event) {
           return $data.builderAsJsonString = $event;
         }),

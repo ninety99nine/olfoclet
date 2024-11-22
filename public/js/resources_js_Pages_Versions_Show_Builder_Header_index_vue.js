@@ -389,6 +389,58 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
 
 /***/ }),
 
+/***/ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/Pages/Versions/Show/Builder/Header/UndoChanges/UndoChangesModal.vue?vue&type=script&lang=js":
+/*!**********************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/Pages/Versions/Show/Builder/Header/UndoChanges/UndoChangesModal.vue?vue&type=script&lang=js ***!
+  \**********************************************************************************************************************************************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _components_Alert_PrimaryAlert__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @components/Alert/PrimaryAlert */ "./resources/js/Components/Alert/PrimaryAlert.vue");
+/* harmony import */ var _components_Modal_DefaultModal__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @components/Modal/DefaultModal */ "./resources/js/Components/Modal/DefaultModal.vue");
+/* harmony import */ var _stores_VersionBuilder__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @stores/VersionBuilder */ "./resources/js/Stores/VersionBuilder.js");
+/* harmony import */ var _components_Button_WarningButton__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @components/Button/WarningButton */ "./resources/js/Components/Button/WarningButton.vue");
+
+
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
+  props: ['form'],
+  components: {
+    PrimaryAlert: _components_Alert_PrimaryAlert__WEBPACK_IMPORTED_MODULE_0__["default"],
+    DefaultModal: _components_Modal_DefaultModal__WEBPACK_IMPORTED_MODULE_1__["default"],
+    WarningButton: _components_Button_WarningButton__WEBPACK_IMPORTED_MODULE_3__["default"]
+  },
+  data: function data() {
+    return {
+      useVersionBuilder: (0,_stores_VersionBuilder__WEBPACK_IMPORTED_MODULE_2__.useVersionBuilder)(),
+      project: this.$page.props.projectPayload,
+      version: this.$page.props.versionPayload,
+      app: this.$page.props.appPayload
+    };
+  },
+  computed: {
+    name: function name() {
+      return this.app.name + ' - version ' + this.version.number;
+    }
+  },
+  methods: {
+    undoChanges: function undoChanges(closeModal) {
+      this.useVersionBuilder.setOriginalBuilder();
+      this.$message({
+        message: 'Changes reversed',
+        type: 'success'
+      });
+      closeModal();
+    }
+  }
+});
+
+/***/ }),
+
 /***/ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/Pages/Versions/Show/Builder/Header/index.vue?vue&type=script&lang=js":
 /*!***********************************************************************************************************************************************************************************************************************!*\
   !*** ./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/Pages/Versions/Show/Builder/Header/index.vue?vue&type=script&lang=js ***!
@@ -399,17 +451,21 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! axios */ "./node_modules/axios/lib/axios.js");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! axios */ "./node_modules/axios/lib/axios.js");
 /* harmony import */ var _BackButton__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./BackButton */ "./resources/js/Pages/Versions/Show/Builder/Header/BackButton.vue");
 /* harmony import */ var _inertiajs_vue3__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @inertiajs/vue3 */ "./node_modules/@inertiajs/vue3/dist/index.esm.js");
 /* harmony import */ var _components_Error_DefaultError__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @components/Error/DefaultError */ "./resources/js/Components/Error/DefaultError.vue");
 /* harmony import */ var _components_Alert_WarningAlert__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @components/Alert/WarningAlert */ "./resources/js/Components/Alert/WarningAlert.vue");
-/* harmony import */ var _stores_VersionBuilder__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @stores/VersionBuilder */ "./resources/js/Stores/VersionBuilder.js");
-/* harmony import */ var _components_Button_DefaultButton__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @components/Button/DefaultButton */ "./resources/js/Components/Button/DefaultButton.vue");
-/* harmony import */ var _components_Button_PrimaryButton__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @components/Button/PrimaryButton */ "./resources/js/Components/Button/PrimaryButton.vue");
-/* harmony import */ var _ImportVersion_ImportVersionModal__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./ImportVersion/ImportVersionModal */ "./resources/js/Pages/Versions/Show/Builder/Header/ImportVersion/ImportVersionModal.vue");
-/* harmony import */ var _ExportVersion_ExportVersionModal__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./ExportVersion/ExportVersionModal */ "./resources/js/Pages/Versions/Show/Builder/Header/ExportVersion/ExportVersionModal.vue");
-/* harmony import */ var _components_ProgressBar_DefaultProgressBar__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @components/ProgressBar/DefaultProgressBar */ "./resources/js/Components/ProgressBar/DefaultProgressBar.vue");
+/* harmony import */ var _components_Badges_WarningBadge__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @components/Badges/WarningBadge */ "./resources/js/Components/Badges/WarningBadge.vue");
+/* harmony import */ var _stores_VersionBuilder__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @stores/VersionBuilder */ "./resources/js/Stores/VersionBuilder.js");
+/* harmony import */ var _components_Button_DefaultButton__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @components/Button/DefaultButton */ "./resources/js/Components/Button/DefaultButton.vue");
+/* harmony import */ var _components_Button_PrimaryButton__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @components/Button/PrimaryButton */ "./resources/js/Components/Button/PrimaryButton.vue");
+/* harmony import */ var _UndoChanges_UndoChangesModal__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./UndoChanges/UndoChangesModal */ "./resources/js/Pages/Versions/Show/Builder/Header/UndoChanges/UndoChangesModal.vue");
+/* harmony import */ var _ImportVersion_ImportVersionModal__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./ImportVersion/ImportVersionModal */ "./resources/js/Pages/Versions/Show/Builder/Header/ImportVersion/ImportVersionModal.vue");
+/* harmony import */ var _ExportVersion_ExportVersionModal__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./ExportVersion/ExportVersionModal */ "./resources/js/Pages/Versions/Show/Builder/Header/ExportVersion/ExportVersionModal.vue");
+/* harmony import */ var _components_ProgressBar_DefaultProgressBar__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @components/ProgressBar/DefaultProgressBar */ "./resources/js/Components/ProgressBar/DefaultProgressBar.vue");
+
+
 
 
 
@@ -429,15 +485,20 @@ __webpack_require__.r(__webpack_exports__);
     BackButton: _BackButton__WEBPACK_IMPORTED_MODULE_0__["default"],
     DefaultError: _components_Error_DefaultError__WEBPACK_IMPORTED_MODULE_2__["default"],
     WarningAlert: _components_Alert_WarningAlert__WEBPACK_IMPORTED_MODULE_3__["default"],
-    DefaultButton: _components_Button_DefaultButton__WEBPACK_IMPORTED_MODULE_5__["default"],
-    PrimaryButton: _components_Button_PrimaryButton__WEBPACK_IMPORTED_MODULE_6__["default"],
-    ImportVersionModal: _ImportVersion_ImportVersionModal__WEBPACK_IMPORTED_MODULE_7__["default"],
-    ExportVersionModal: _ExportVersion_ExportVersionModal__WEBPACK_IMPORTED_MODULE_8__["default"],
-    DefaultProgressBar: _components_ProgressBar_DefaultProgressBar__WEBPACK_IMPORTED_MODULE_9__["default"]
+    WarningBadge: _components_Badges_WarningBadge__WEBPACK_IMPORTED_MODULE_4__["default"],
+    DefaultButton: _components_Button_DefaultButton__WEBPACK_IMPORTED_MODULE_6__["default"],
+    PrimaryButton: _components_Button_PrimaryButton__WEBPACK_IMPORTED_MODULE_7__["default"],
+    UndoChangesModal: _UndoChanges_UndoChangesModal__WEBPACK_IMPORTED_MODULE_8__["default"],
+    ImportVersionModal: _ImportVersion_ImportVersionModal__WEBPACK_IMPORTED_MODULE_9__["default"],
+    ExportVersionModal: _ExportVersion_ExportVersionModal__WEBPACK_IMPORTED_MODULE_10__["default"],
+    DefaultProgressBar: _components_ProgressBar_DefaultProgressBar__WEBPACK_IMPORTED_MODULE_11__["default"]
   },
   data: function data() {
     return {
-      useVersionBuilder: (0,_stores_VersionBuilder__WEBPACK_IMPORTED_MODULE_4__.useVersionBuilder)(),
+      useVersionBuilder: (0,_stores_VersionBuilder__WEBPACK_IMPORTED_MODULE_5__.useVersionBuilder)(),
+      project: this.$page.props.projectPayload,
+      version: this.$page.props.versionPayload,
+      app: this.$page.props.appPayload,
       downloadInSecondsInterval: null,
       stillLoadingConversation: null,
       progressPercentage: null,
@@ -448,6 +509,19 @@ __webpack_require__.r(__webpack_exports__);
       isSaving: false,
       request: null
     };
+  },
+  watch: {
+    // Watch the builder state and store it in localStorage on changes
+    'useVersionBuilder.builder': {
+      handler: function handler(newBuilder, oldBuilder) {
+        // Only run if the oldBuilder is not an empty object
+        if (!_.isEmpty(oldBuilder)) {
+          // Update localStorage
+          this.useVersionBuilder.setUnsavedBuilderOnLocalStorage(newBuilder);
+        }
+      },
+      deep: true
+    }
   },
   computed: {
     error: function error() {
@@ -476,7 +550,6 @@ __webpack_require__.r(__webpack_exports__);
       var _this2 = this;
       //  Indicate that the builder has not been saved
       this.useVersionBuilder.hasSavedBuilder = false;
-      this.useVersionBuilder.unselectEverything();
       this.isSaving = true;
 
       //  Start the conversation
@@ -507,7 +580,7 @@ __webpack_require__.r(__webpack_exports__);
        *
        *  Reference: https://stackoverflow.com/questions/50516438/cancel-previous-request-using-axios-with-vue-js
        */
-      var axiosSource = axios__WEBPACK_IMPORTED_MODULE_10__["default"].CancelToken.source();
+      var axiosSource = axios__WEBPACK_IMPORTED_MODULE_12__["default"].CancelToken.source();
       this.request = {
         cancel: axiosSource.cancel
       };
@@ -519,14 +592,14 @@ __webpack_require__.r(__webpack_exports__);
         cancelToken: axiosSource.token
       };
       var self = this;
-      axios__WEBPACK_IMPORTED_MODULE_10__["default"].post(url, formData, config).then(function (response) {
+      axios__WEBPACK_IMPORTED_MODULE_12__["default"].post(url, formData, config).then(function (response) {
         self.$message({
           message: 'Changes saved successfully',
           type: 'success'
         });
 
-        //  Select a screen by default
-        _this2.useVersionBuilder.selectRecomendedScreen();
+        //  Remove builder from local storage (Changes have been saved)
+        _this2.useVersionBuilder.removeUnsavedBuilderFromLocalStorage();
 
         //  Turn off indication that the builder has been imported
         _this2.useVersionBuilder.hasImportedBuilder = false;
@@ -570,7 +643,7 @@ __webpack_require__.r(__webpack_exports__);
         ++_this3.downloadInSeconds;
       }, 1000);
       var self = this;
-      axios__WEBPACK_IMPORTED_MODULE_10__["default"].get(url, config).then(function (response) {
+      axios__WEBPACK_IMPORTED_MODULE_12__["default"].get(url, config).then(function (response) {
         //  If the download took 5 seconds or longer, notify the user on the download success
         if (self.downloadInSeconds >= 5) {
           self.$message({
@@ -621,6 +694,9 @@ __webpack_require__.r(__webpack_exports__);
     this.stopConvo();
   },
   created: function created() {
+    this.useVersionBuilder.project = this.project;
+    this.useVersionBuilder.version = this.version;
+    this.useVersionBuilder.app = this.app;
     this.downloadVersion();
   }
 });
@@ -996,6 +1072,73 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 
 /***/ }),
 
+/***/ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/Pages/Versions/Show/Builder/Header/UndoChanges/UndoChangesModal.vue?vue&type=template&id=77b9b816":
+/*!**************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/Pages/Versions/Show/Builder/Header/UndoChanges/UndoChangesModal.vue?vue&type=template&id=77b9b816 ***!
+  \**************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "render": () => (/* binding */ render)
+/* harmony export */ });
+/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
+
+var _hoisted_1 = {
+  "class": "block text-justify"
+};
+var _hoisted_2 = {
+  "class": "font-semibold text-blue-500"
+};
+var _hoisted_3 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("svg", {
+  xmlns: "http://www.w3.org/2000/svg",
+  "class": "h-4 w-4 mr-2",
+  fill: "none",
+  viewBox: "0 0 24 24",
+  "stroke-width": "1.5",
+  stroke: "currentColor"
+}, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("path", {
+  "stroke-linecap": "round",
+  "stroke-linejoin": "round",
+  d: "m15 15-6 6m0 0-6-6m6 6V9a6 6 0 0 1 12 0v3"
+})], -1 /* HOISTED */);
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  var _component_PrimaryAlert = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("PrimaryAlert");
+  var _component_WarningButton = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("WarningButton");
+  var _component_DefaultModal = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("DefaultModal");
+  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Modal "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_DefaultModal, {
+    defaultText: "Cancel",
+    warningAction: $options.undoChanges,
+    warningText: $props.form.processing ? '' : 'Undo Changes'
+  }, {
+    title: (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
+      return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)("Undo Changes")];
+    }),
+    trigger: (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
+      return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Undo Changes Button "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_WarningButton, null, {
+        "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
+          return [_hoisted_3, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(" Undo Changes ")];
+        }),
+        _: 1 /* STABLE */
+      })];
+    }),
+
+    "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
+      return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_PrimaryAlert, null, {
+        "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
+          return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_1, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(" We have detected some changes that have not yet been saved for "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_2, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.name), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(". If you would like to revert back to the previous state, then you may undo these unsaved changes. Please note that this action cannot be undone and all unsaved changes will be lost once completed. ")])];
+        }),
+        _: 1 /* STABLE */
+      })];
+    }),
+
+    _: 1 /* STABLE */
+  }, 8 /* PROPS */, ["warningAction", "warningText"])], 2112 /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */);
+}
+
+/***/ }),
+
 /***/ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/Pages/Versions/Show/Builder/Header/index.vue?vue&type=template&id=c6ae5eaa":
 /*!***************************************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** ./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/Pages/Versions/Show/Builder/Header/index.vue?vue&type=template&id=c6ae5eaa ***!
@@ -1043,19 +1186,25 @@ var _hoisted_5 = {
 };
 var _hoisted_6 = {
   key: 0,
-  "class": "flex mr-4"
+  "class": "flex items-center mr-8"
 };
 var _hoisted_7 = {
+  "class": "flex items-center space-x-2"
+};
+var _hoisted_8 = {
+  key: 0
+};
+var _hoisted_9 = {
   key: 0,
   "class": "grid grid-cols-12 gap-8 justify-center mb-4"
 };
-var _hoisted_8 = {
+var _hoisted_10 = {
   "class": "col-span-8"
 };
-var _hoisted_9 = {
+var _hoisted_11 = {
   "class": "col-span-4 flex items-center justify-between"
 };
-var _hoisted_10 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("svg", {
+var _hoisted_12 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("svg", {
   xmlns: "http://www.w3.org/2000/svg",
   "class": "h-3 w-3 mr-1",
   fill: "none",
@@ -1067,16 +1216,16 @@ var _hoisted_10 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElement
   "stroke-linejoin": "round",
   d: "M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
 })], -1 /* HOISTED */);
-var _hoisted_11 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, "Cancel", -1 /* HOISTED */);
-var _hoisted_12 = [_hoisted_10, _hoisted_11];
-var _hoisted_13 = {
+var _hoisted_13 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, "Cancel", -1 /* HOISTED */);
+var _hoisted_14 = [_hoisted_12, _hoisted_13];
+var _hoisted_15 = {
   key: 0,
   "class": "grid grid-cols-12 gap-8 justify-center mb-4"
 };
-var _hoisted_14 = {
+var _hoisted_16 = {
   "class": "col-span-9"
 };
-var _hoisted_15 = {
+var _hoisted_17 = {
   "class": "col-span-3 flex items-center justify-end"
 };
 function render(_ctx, _cache, $props, $setup, $data, $options) {
@@ -1084,10 +1233,11 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   var _component_BackButton = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("BackButton");
   var _component_ImportVersionModal = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("ImportVersionModal");
   var _component_ExportVersionModal = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("ExportVersionModal");
+  var _component_UndoChangesModal = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("UndoChangesModal");
   var _component_PrimaryButton = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("PrimaryButton");
   var _component_DefaultProgressBar = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("DefaultProgressBar");
   var _component_DefaultError = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("DefaultError");
-  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Action Explainer "), $data.useVersionBuilder.hasImportedBuilder ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createBlock)(_component_WarningAlert, {
+  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Action Explainer "), $data.useVersionBuilder.hasImportedBuilder || $data.useVersionBuilder.hasUnsavedBuilderFromLocalStorage ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createBlock)(_component_WarningAlert, {
     key: 0,
     "class": "w-1/2 mb-6"
   }, {
@@ -1135,7 +1285,9 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
       }, null, 8 /* PROPS */, ["form"])])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)];
     }),
     _: 1 /* STABLE */
-  }), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Save Changes Button "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_PrimaryButton, {
+  }), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_7, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Undo Changes Button "), $data.useVersionBuilder.hasUnsavedBuilderFromLocalStorage ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_8, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_UndoChangesModal, {
+    form: $data.form
+  }, null, 8 /* PROPS */, ["form"])])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Save Changes Button "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_PrimaryButton, {
     disabled: $data.isSaving || $data.isDownloading,
     onClick: _cache[2] || (_cache[2] = function ($event) {
       return $options.updateVersion();
@@ -1149,9 +1301,9 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     name: "fade"
   }, {
     "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
-      return [$data.isSaving == true && $data.progressPercentage !== null ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_7, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_8, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Saving Progress Bar "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_DefaultProgressBar, {
+      return [$data.isSaving == true && $data.progressPercentage !== null ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_9, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_10, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Saving Progress Bar "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_DefaultProgressBar, {
         width: $data.progressPercentage
-      }, null, 8 /* PROPS */, ["width"])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_9, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Saving Conversation "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(vue__WEBPACK_IMPORTED_MODULE_0__.Transition, {
+      }, null, 8 /* PROPS */, ["width"])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_11, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Saving Conversation "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(vue__WEBPACK_IMPORTED_MODULE_0__.Transition, {
         name: "fade",
         mode: "out-in",
         appear: ""
@@ -1168,16 +1320,16 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
           return $options.cancelRequest();
         }),
         "class": "flex items-center text-xs text-red-500 hover:text-red-600 active:text-red-700 cursor-pointer ml-8"
-      }, _hoisted_12)])])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)];
+      }, _hoisted_14)])])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)];
     }),
     _: 1 /* STABLE */
   }), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Downloading Progress "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(vue__WEBPACK_IMPORTED_MODULE_0__.Transition, {
     name: "slide-up"
   }, {
     "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
-      return [$data.isDownloading == true && $data.downloadInSeconds >= 1 ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_13, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_14, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Downloading Progress Bar "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_DefaultProgressBar, {
+      return [$data.isDownloading == true && $data.downloadInSeconds >= 1 ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_15, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_16, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Downloading Progress Bar "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_DefaultProgressBar, {
         width: $data.progressPercentage
-      }, null, 8 /* PROPS */, ["width"])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_15, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Downloading Conversation "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(vue__WEBPACK_IMPORTED_MODULE_0__.Transition, {
+      }, null, 8 /* PROPS */, ["width"])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_17, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Downloading Conversation "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(vue__WEBPACK_IMPORTED_MODULE_0__.Transition, {
         name: "slide-up",
         mode: "out-in",
         appear: ""
@@ -1308,6 +1460,33 @@ if (false) {}
 
 /***/ }),
 
+/***/ "./resources/js/Pages/Versions/Show/Builder/Header/UndoChanges/UndoChangesModal.vue":
+/*!******************************************************************************************!*\
+  !*** ./resources/js/Pages/Versions/Show/Builder/Header/UndoChanges/UndoChangesModal.vue ***!
+  \******************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _UndoChangesModal_vue_vue_type_template_id_77b9b816__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./UndoChangesModal.vue?vue&type=template&id=77b9b816 */ "./resources/js/Pages/Versions/Show/Builder/Header/UndoChanges/UndoChangesModal.vue?vue&type=template&id=77b9b816");
+/* harmony import */ var _UndoChangesModal_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./UndoChangesModal.vue?vue&type=script&lang=js */ "./resources/js/Pages/Versions/Show/Builder/Header/UndoChanges/UndoChangesModal.vue?vue&type=script&lang=js");
+/* harmony import */ var _Users_juliantabona_Sites_olfoclet_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
+
+
+
+
+;
+const __exports__ = /*#__PURE__*/(0,_Users_juliantabona_Sites_olfoclet_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__["default"])(_UndoChangesModal_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_UndoChangesModal_vue_vue_type_template_id_77b9b816__WEBPACK_IMPORTED_MODULE_0__.render],['__file',"resources/js/Pages/Versions/Show/Builder/Header/UndoChanges/UndoChangesModal.vue"]])
+/* hot reload */
+if (false) {}
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (__exports__);
+
+/***/ }),
+
 /***/ "./resources/js/Pages/Versions/Show/Builder/Header/index.vue":
 /*!*******************************************************************!*\
   !*** ./resources/js/Pages/Versions/Show/Builder/Header/index.vue ***!
@@ -1395,6 +1574,21 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./resources/js/Pages/Versions/Show/Builder/Header/UndoChanges/UndoChangesModal.vue?vue&type=script&lang=js":
+/*!******************************************************************************************************************!*\
+  !*** ./resources/js/Pages/Versions/Show/Builder/Header/UndoChanges/UndoChangesModal.vue?vue&type=script&lang=js ***!
+  \******************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* reexport safe */ _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_UndoChangesModal_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_0__["default"])
+/* harmony export */ });
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_UndoChangesModal_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../../../../../node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!../../../../../../../../node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./UndoChangesModal.vue?vue&type=script&lang=js */ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/Pages/Versions/Show/Builder/Header/UndoChanges/UndoChangesModal.vue?vue&type=script&lang=js");
+ 
+
+/***/ }),
+
 /***/ "./resources/js/Pages/Versions/Show/Builder/Header/index.vue?vue&type=script&lang=js":
 /*!*******************************************************************************************!*\
   !*** ./resources/js/Pages/Versions/Show/Builder/Header/index.vue?vue&type=script&lang=js ***!
@@ -1466,6 +1660,21 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "render": () => (/* reexport safe */ _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_dist_templateLoader_js_ruleSet_1_rules_2_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_ImportVersionModal_vue_vue_type_template_id_0450480d__WEBPACK_IMPORTED_MODULE_0__.render)
 /* harmony export */ });
 /* harmony import */ var _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_dist_templateLoader_js_ruleSet_1_rules_2_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_ImportVersionModal_vue_vue_type_template_id_0450480d__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../../../../../node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!../../../../../../../../node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!../../../../../../../../node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./ImportVersionModal.vue?vue&type=template&id=0450480d */ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/Pages/Versions/Show/Builder/Header/ImportVersion/ImportVersionModal.vue?vue&type=template&id=0450480d");
+
+
+/***/ }),
+
+/***/ "./resources/js/Pages/Versions/Show/Builder/Header/UndoChanges/UndoChangesModal.vue?vue&type=template&id=77b9b816":
+/*!************************************************************************************************************************!*\
+  !*** ./resources/js/Pages/Versions/Show/Builder/Header/UndoChanges/UndoChangesModal.vue?vue&type=template&id=77b9b816 ***!
+  \************************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "render": () => (/* reexport safe */ _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_dist_templateLoader_js_ruleSet_1_rules_2_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_UndoChangesModal_vue_vue_type_template_id_77b9b816__WEBPACK_IMPORTED_MODULE_0__.render)
+/* harmony export */ });
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_dist_templateLoader_js_ruleSet_1_rules_2_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_UndoChangesModal_vue_vue_type_template_id_77b9b816__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../../../../../node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!../../../../../../../../node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!../../../../../../../../node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./UndoChangesModal.vue?vue&type=template&id=77b9b816 */ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/Pages/Versions/Show/Builder/Header/UndoChanges/UndoChangesModal.vue?vue&type=template&id=77b9b816");
 
 
 /***/ }),

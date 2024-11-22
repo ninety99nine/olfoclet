@@ -7,7 +7,22 @@ import _, { pullAt, cloneDeep } from 'lodash';
 export const useVersionBuilder = defineStore('version_builder', {
     state: () => {
         return {
+            app: null,
+            version: null,
+            project: null,
+
+            simulator: {
+                showingUssdPopup: false,
+                last_session_id: null,
+                ussdResponseMsg: '',
+                initialReplies: '',
+                loading: false,
+                request: null,
+                form: null
+            },
+
             builder: {},
+            originalBuilder: {},
             selectedScreen: null,
             selectedDisplay: null,
             selectedConfigMenu: null,
@@ -19,6 +34,8 @@ export const useVersionBuilder = defineStore('version_builder', {
             filterEventSearch: '',
             filterScreenSearch: '',
             filterDisplaySearch: '',
+
+            hasUnsavedBuilderFromLocalStorage: false
         }
     },
     /**
@@ -103,15 +120,237 @@ export const useVersionBuilder = defineStore('version_builder', {
             }
 
             return markers;
-        },
+        }
     },
     actions: {
 
         setBuilder(builder){
-            this.builder = builder ? builder : {};
+            this.originalBuilder = builder ? builder : {};
+            this.hasUnsavedBuilderFromLocalStorage = this.checkIfHasUnsavedBuilderFromLocalStorage();
+
+            if(this.hasUnsavedBuilderFromLocalStorage) {
+                this.builder = this.getUnsavedBuilderFromLocalStorage();
+            }else{
+                this.setOriginalBuilder();
+            }
         },
-        generateId(){
-            return Date.now();
+        setOriginalBuilder(){
+            this.removeUnsavedBuilderFromLocalStorage();
+            this.builder = _.cloneDeep(this.originalBuilder);
+
+            /**
+             *  The "selectedScreen" does not change once the builder has been changed.
+             *  We need to unselect and then reselect the screen for the changes to be
+             *  reflected on the currently selected screen.
+             */
+            if(this.selectedScreen) this.reSelectScreen();
+        },
+        getUnsavedBuilderName() {
+            return 'unsavedBuilder:'+this.project.id+'-'+this.app.id+'-'+this.version.id;
+        },
+        setUnsavedBuilderOnLocalStorage: _.debounce(function() {
+
+            if(!this.isBuilderEqualWithoutLastModifiedTimestamp(this.builder, this.originalBuilder)) {
+
+                /**
+                 *  Clone the Builder so that we do not update on the original
+                 *  builder that is being refered directly from the newBuilder
+                 *  passed as the method paramater.
+                 */
+                var newBuilder = _.cloneDeep(this.builder);
+                newBuilder.last_modified_timestamp = Date.now();
+
+                // Store the newBuilder in localStorage
+                localStorage.setItem(this.getUnsavedBuilderName(), JSON.stringify(newBuilder));
+
+                this.hasUnsavedBuilderFromLocalStorage = true;
+
+            }else{
+
+                if(this.checkIfHasUnsavedBuilderFromLocalStorage()) {
+                    this.removeUnsavedBuilderFromLocalStorage();
+                }
+
+            }
+
+        }, 1000),
+        getUnsavedBuilderFromLocalStorage() {
+            const unsavedBuilder = localStorage.getItem(this.getUnsavedBuilderName());
+            return unsavedBuilder ? JSON.parse(unsavedBuilder) : null;
+        },
+        removeUnsavedBuilderFromLocalStorage() {
+            localStorage.removeItem(this.getUnsavedBuilderName());
+            this.hasUnsavedBuilderFromLocalStorage = false;
+        },
+        checkIfHasUnsavedBuilderFromLocalStorage() {
+            const unsavedBuilder = this.getUnsavedBuilderFromLocalStorage();
+
+            if(unsavedBuilder) {
+                const unsavedBuilderTimestamp = unsavedBuilder.last_modified_timestamp;
+                const originalBuilderTimestamp = this.originalBuilder.last_modified_timestamp;
+                return !this.isBuilderEqualWithoutLastModifiedTimestamp(unsavedBuilder, this.originalBuilder) && (unsavedBuilderTimestamp > originalBuilderTimestamp);
+            }
+
+            return false;
+        },
+        isBuilderEqualWithoutLastModifiedTimestamp(builder1, builder2) {
+
+            var clonedBuilder1 = _.cloneDeep(builder1);
+            var clonedBuilder2 = _.cloneDeep(builder2);
+
+            delete clonedBuilder1.last_modified_timestamp;
+            delete clonedBuilder2.last_modified_timestamp;
+
+            return _.isEqual(clonedBuilder1, clonedBuilder2);
+        },
+        generateOldId(prefix = ''){
+            return prefix + Date.now(); // Older method for backward compatibility
+        },
+        generateId(prefix = ''){
+            return prefix + crypto.randomUUID().replace(/-/g, '_');
+        },
+        generateEventId(){
+            return this.generateId('event_');
+        },
+        generateScreenId(){
+            return this.generateId('screen_');
+        },
+        generateDisplayId(){
+            return this.generateId('display_');
+        },
+        generateNavigationId(){
+            return this.generateId('navigation_');
+        },
+        generateStaticOptionId(){
+            return this.generateId('static_option_');
+        },
+        replaceIdsInJson(jsonObj) {
+
+            /**
+             *  Match both new and old IDs:
+             *
+             *  Regex patterns for different types of IDs (with backward compatibility).
+             *  We used to generate ids by timestamp e.g "screen_1691063806803", however
+             *  we now use UUID e.g screen_123e4567_e89b_12d3_a456_426614174000. When
+             *  searching for IDs, we must search both using timestamps and those
+             *  using UUIDs. The regex patterns below match both so that we have
+             *  backwards compatibiltiy, that is, we also target those IDs using
+             *  timestamps instead of UUIDs.
+             */
+            var regexMap = {
+                'screen_': /screen_([0-9a-fA-F_]+)/g,
+                'display_': /display_([0-9a-fA-F_]+)/g
+            };
+
+            let jsonString = JSON.stringify(jsonObj);
+            let builderString = JSON.stringify(this.builder);
+            let builderStringWithoutJsonObj = builderString.replace(jsonString, '');
+
+            /**
+             *  External IDs represent IDs that exist outside of the scope of the current JSON Object
+             *  that is being cloned. These IDs help us ensure that we do not override essential IDs
+             *  that exist in the current JSON Object that might be used as identifiers to link to
+             *  screens or displays outside the current JSON Object. We want to change IDs in
+             *  various areas without unlinking external screens or displays. Every external
+             *  ID must be captured except if that ID matches the ID of the current JSON
+             *  Object. Since its possible that an external screen or display may have
+             *  referenced the current JSON Object since this JSON Object might be a
+             *  screen or display object itself. In such cases we must not allow the
+             *  ID to be captured as an external ID since we want to ensure that the
+             *  ID of the screen or display being cloned is changed and must not
+             *  match the original.
+             */
+            let externalIds = [];
+
+            //  Add more patterns to match
+            var regexMap = {
+                ...regexMap,
+                ...{
+                    'event_': /event_(?!data)([0-9a-fA-F_]+)/g,         //  Do not match "event_data"
+                    'navigation_': /navigation_([0-9a-fA-F_]+)/g,
+                    'static_option_': /static_option_([0-9a-fA-F_]+)/g,
+                }
+            };
+
+            for (const [prefix, regex] of Object.entries(regexMap)) {
+                let matches;
+                while ((matches = regex.exec(builderStringWithoutJsonObj)) !== null) {
+                    if(jsonObj['id'] != matches[0]) {
+                        externalIds.push(matches[0]);
+                    }
+                }
+            }
+
+            const idMapping = {};
+
+            // Replace function for each type
+            for (const [prefix, regex] of Object.entries(regexMap)) {
+                jsonString = jsonString.replace(regex, (matchedId) => {
+
+                    // Check if the matchedId is in the externalIds list
+                    if (externalIds.includes(matchedId)) {
+
+                        /**
+                         *  If yes, return the external ID
+                         *
+                         *  This could be an ID of an external screen or display outside) the scope of our current JSON Object.
+                         *  If we are cloning a screen, the external id could be the id of another screen that the current
+                         *  screen we are cloning is referencing via Actions, Events or Comments. We should not change
+                         *  this ID since we would break the link to that external screen or display. We can return
+                         *  the matched ID as is.
+                         */
+                        return matchedId;
+
+                    }
+
+                    // Check if we've already generated a new ID for this matched ID
+                    if (idMapping[matchedId]) {
+
+                        /**
+                         *  If yes, return the already generated ID
+                         *
+                         *  It is possible that we can have the same ID appear in multiple areas of the same JSON Object that we
+                         *  are trying to clone e.g The ID could appear to identify a screen or a display and then also be used
+                         *  as a reference within the same JSON Object via Actions, Events or Comments. In this case we want to
+                         *  always make sure that we don't not assign different IDs to IDs that were the same originally. We
+                         *  can check if the ID was previously mapped, and return the already generated ID.
+                         */
+                        return idMapping[matchedId];
+
+                    }
+
+                    // Otherwise, generate a new ID based on the prefix
+                    let newId;
+
+                    switch (prefix) {
+                        case 'event_':
+                            newId = this.generateEventId();
+                            break;
+                        case 'screen_':
+                            newId = this.generateScreenId();
+                            break;
+                        case 'display_':
+                            newId = this.generateDisplayId();
+                            break;
+                        case 'navigation_':
+                            newId = this.generateNavigationId();
+                            break;
+                        case 'static_option_':
+                            newId = this.generateStaticOptionId();
+                            break;
+                        default:
+                            return matchedId; // Return unchanged if no match
+                    }
+
+                    // Store the mapping of original ID to new ID
+                    idMapping[matchedId] = newId;
+
+                    return newId;
+                });
+            }
+
+            // Convert string back to JSON object
+            return JSON.parse(jsonString);
         },
         selectConfigMenu(menuName){
             this.unselectScreen();
@@ -187,6 +426,19 @@ export const useVersionBuilder = defineStore('version_builder', {
         },
         unselectScreen(){
             this.selectedScreen = null;
+        },
+        reSelectScreen(){
+            const screenId = this.selectedScreen.id;
+
+            this.unselectScreen();
+
+            const screen = this.searchScreens(screenId)[0];
+
+            if(screen) {
+                this.selectedScreen = screen;
+            }else{
+                this.selectRecomendedScreen();
+            }
         },
         selectRecomendedScreen() {
 
@@ -291,7 +543,7 @@ export const useVersionBuilder = defineStore('version_builder', {
              *  display screen by default.
              */
             const isFirstDisplayScreen = (this.hasScreenMarkedAsFirstDisplayScreen() == false);
-            const id = 'screen_' + this.generateId();
+            const id = this.generateScreenId();
 
             return {
                 id: id,
@@ -394,9 +646,32 @@ export const useVersionBuilder = defineStore('version_builder', {
             }
         },
         getClonedScreen(screen){
-            var clonedScreen = _.cloneDeep(screen);
+
+            /**
+             *  For performance reasons we want to drag and drop on limited screen
+             *  information such as the screen id, name, e.t.c Dragging & dropping
+             *  the screen as is makes the web-app slow since we are not moving
+             *  just the screen, but the nested displays, events, and more,
+             *  which is a very heavy process. We can improve the drag and
+             *  drop experience by limiting the information we return per
+             *  screen menu. This means that cloning from the screen menu
+             *  will return the screen with limited information. We must
+             *  search the screen to return its complete structure so
+             *  that cloning is performed on a complete screen.
+             *
+             *  To see how the screen menus minify the screen information,
+             *  please refer to the following components in their respesctive order:
+             *
+             *  resources/js/Pages/Versions/Show/Builder/Aside/Editor/ScreenNavigation/ScreenMenus.vue
+             *  resources/js/Pages/Versions/Show/Builder/Aside/Editor/ScreenNavigation/ScreenMenu.vue
+             *  resources/js/Pages/Versions/Show/Builder/Content/Editor/ScreenEditor/CreateScreen/CreateScreenModal.vue
+             */
+            var clonedScreen = _.cloneDeep(this.searchScreen(screen));
+
+            //  Replace ID's for non-conflicting ID's
+            clonedScreen = this.replaceIdsInJson(clonedScreen);
+
             delete clonedScreen.first_display_screen;
-            delete clonedScreen.id;
 
             return {
                 ...this.getBlankScreen(),
@@ -547,7 +822,7 @@ export const useVersionBuilder = defineStore('version_builder', {
              *  display by default.
              */
             const isFirstDisplay = (this.hasDisplayMarkedAsFirstDisplay() == false);
-            const id = 'display_' + this.generateId();
+            const id = this.generateDisplayId();
 
             return {
                 id: id,
@@ -799,8 +1074,11 @@ export const useVersionBuilder = defineStore('version_builder', {
         },
         getClonedDisplay(display){
             var clonedDisplay = _.cloneDeep(display);
+
+            //  Replace ID's for non-conflicting ID's
+            clonedDisplay = this.replaceIdsInJson(clonedDisplay);
+
             delete clonedDisplay.first_display;
-            delete clonedDisplay.id;
 
             return {
                 ...this.getBlankDisplay(),
@@ -902,7 +1180,7 @@ export const useVersionBuilder = defineStore('version_builder', {
         },
         getBlankNavigation() {
 
-            const id = 'navigation_' + this.generateId();
+            const id = this.generateNavigationId();
 
             return {
                 id: id,
@@ -1097,7 +1375,7 @@ export const useVersionBuilder = defineStore('version_builder', {
 
             //  Set the Hex Color according to the event color scheme otherwise set default color
             const hexColor = this.builder.color_scheme.event_colors[type] || '#CECECE';
-            const id = 'event_' + this.generateId();
+            const id = this.generateEventId();
 
             //  Overide the general event structure with the relevant event specific data
             return Object.assign({
@@ -1630,7 +1908,9 @@ export const useVersionBuilder = defineStore('version_builder', {
         },
         getClonedEvent(event){
             var clonedEvent = _.cloneDeep(event);
-            delete clonedEvent.id;
+
+            //  Replace ID's for non-conflicting ID's
+            clonedEvent = this.replaceIdsInJson(clonedEvent);
 
             return {
                 ...this.getBlankEvent(),
@@ -2150,9 +2430,6 @@ export const useVersionBuilder = defineStore('version_builder', {
             _.pullAt(variables, indexes);
         },
 
-
-
-
         //  Display Static Option Action Methods
         searchStaticOptionsByName(staticOptions, name, exactMatch = false) {
 
@@ -2208,7 +2485,7 @@ export const useVersionBuilder = defineStore('version_builder', {
         },
         getBlankStaticOption(staticOptions = []){
 
-            const id = 'static_option_' + this.generateId();
+            const id = this.generateStaticOptionId();
             const optionNumber = (staticOptions.length + 1).toString();
 
             return {

@@ -396,13 +396,7 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
       version: this.$page.props.versionPayload,
       useVersionBuilder: (0,_stores_VersionBuilder__WEBPACK_IMPORTED_MODULE_2__.useVersionBuilder)(),
       app: this.$page.props.appPayload,
-      showingUssdPopup: false,
-      last_session_id: null,
-      ussdResponseMsg: '',
-      initialReplies: '',
-      loading: false,
-      request: null,
-      form: null
+      simulator: null
     };
   },
   computed: {
@@ -436,7 +430,7 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
       var pattern = /[^0-9a-zA-Z\s*]|^[*]+|[*]+$/g;
 
       //  Replace all invalid characters with nothing
-      var replies = this.initialReplies.replace(pattern, replaceWithNothing);
+      var replies = this.simulator.initialReplies.replace(pattern, replaceWithNothing);
 
       /**
        *  This pattern searches any duplicate '*' occurances e.g
@@ -450,7 +444,7 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
       replies = replies.replace(pattern, replaceWithNothing);
       if (replies) {
         /**
-         *  If "this.initialReplies" is "4*5*6" and "this.form.msg"
+         *  If "this.simulator.initialReplies" is "4*5*6" and "this.simulator.form.msg"
          *  is "*321#" the combine to form "*321*4*5*6#"
          */
         return this.primaryShortCode.substring(0, this.primaryShortCode.length - 1) + '*' + replies + '#';
@@ -461,7 +455,7 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
   },
   methods: {
     startUssdServiceSimulator: function startUssdServiceSimulator() {
-      if (this.loading == false) {
+      if (this.simulator.loading == false) {
         this.resetUssdSimulator();
         this.startApiSimulationRequest();
         this.showUssdPopup();
@@ -475,11 +469,11 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
     },
     resetUssdSimulator: function resetUssdSimulator() {
       var replacement = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      this.form = _objectSpread(_objectSpread({}, this.defaultForm()), replacement);
+      this.simulator.form = _objectSpread(_objectSpread({}, this.defaultForm()), replacement);
     },
     cancelUssdCall: function cancelUssdCall() {
-      if (this.request) this.request.cancel('Session cancelled');
-      this.loading = false;
+      if (this.simulator.request) this.simulator.request.cancel('Session cancelled');
+      this.simulator.loading = false;
     },
     defaultForm: function defaultForm() {
       return {
@@ -495,7 +489,7 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
     },
     startLastUssdCall: function startLastUssdCall() {
       //  Update the session id with the last request sesison id
-      var sessionId = this.form.session_id;
+      var sessionId = this.simulator.form.session_id;
 
       //  Update the request type to "2" which means continue existing session
       var requestType = 2;
@@ -517,10 +511,10 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
        *  If this is the first request then embbed
        *  the service code within the message.
        */
-      if (this.form.request_type == 1) {
-        this.form.msg = this.modifiedServiceCode;
+      if (this.simulator.form.request_type == 1) {
+        this.simulator.form.msg = this.modifiedServiceCode;
       }
-      this.loading = true;
+      this.simulator.loading = true;
 
       /**
        *  Generate the axios cancel token to allow this request
@@ -530,23 +524,23 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
        */
       var axiosSource = axios__WEBPACK_IMPORTED_MODULE_5__["default"].CancelToken.source();
       var url = route('launch.ussd.simulation');
-      this.request = {
+      this.simulator.request = {
         cancel: axiosSource.cancel
       };
-      axios__WEBPACK_IMPORTED_MODULE_5__["default"].post(url, this.form, {
+      axios__WEBPACK_IMPORTED_MODULE_5__["default"].post(url, this.simulator.form, {
         cancelToken: axiosSource.token
       }).then(function (response) {
-        var firstRequest = self.form.request_type == 1;
+        var firstRequest = self.simulator.form.request_type == 1;
         var ussdResponse = response.data;
-        self.last_session_id = ussdResponse.session_id;
-        self.ussdResponseMsg = ussdResponse.msg;
-        self.form.session_id = ussdResponse.session_id;
-        self.form.request_type = ussdResponse.request_type;
-        self.form.service_code = ussdResponse.service_code;
+        self.simulator.last_session_id = ussdResponse.session_id;
+        self.simulator.ussdResponseMsg = ussdResponse.msg;
+        self.simulator.form.session_id = ussdResponse.session_id;
+        self.simulator.form.request_type = ussdResponse.request_type;
+        self.simulator.form.service_code = ussdResponse.service_code;
         self.$emit('response', ussdResponse);
 
         //  If the requestType = 2 it means we want to continue the current session
-        if (self.form.request_type == 2) {
+        if (self.simulator.form.request_type == 2) {
           self.emptyInput();
           self.focusOnInput();
           if (firstRequest) {
@@ -557,7 +551,7 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
           }
 
           //  If the requestType = 3 it means we want to terminate the session
-        } else if (self.form.request_type == 3) {
+        } else if (self.simulator.form.request_type == 3) {
           self.resetUssdSimulator();
           self.emptyInput();
           self.$message({
@@ -566,7 +560,7 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
           });
 
           //  If the requestType = 4 it means the session ended
-        } else if (self.form.request_type == 4) {
+        } else if (self.simulator.form.request_type == 4) {
           self.emptyInput();
           self.$message({
             message: 'Session Timed out',
@@ -574,7 +568,7 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
           });
 
           //  If the requestType = 5 it means we want to redirect
-        } else if (self.form.request_type == 5) {
+        } else if (self.simulator.form.request_type == 5) {
           //  Note: self.ussdResponse contains the new "Ussd Response" that we must redirect to
           self.redirectUssdSimulator(ussdResponse.msg);
         }
@@ -605,14 +599,14 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
           type: 'warning'
         });
       })["finally"](function () {
-        _this.request = null;
-        _this.loading = false;
+        _this.simulator.request = null;
+        _this.simulator.loading = false;
       });
     },
     stopApiSimulationRequest: function stopApiSimulationRequest() {
       var _this2 = this;
       var url = route('stop.ussd.simulation', {
-        session_id: this.last_session_id
+        session_id: this.simulator.last_session_id
       });
       axios__WEBPACK_IMPORTED_MODULE_5__["default"].post(url).then(function (response) {})["catch"](function (error) {
         var _message3;
@@ -637,17 +631,17 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
       this.focusOnInput();
 
       //  Update the service code with the redirect service code
-      this.form.serviceCode = serviceCode;
+      this.simulator.form.serviceCode = serviceCode;
 
       //  Recall the Ussd end point
       this.startApiSimulationRequest();
     },
     showUssdPopup: function showUssdPopup() {
-      this.showingUssdPopup = true;
+      this.simulator.showingUssdPopup = true;
       this.focusOnInput();
     },
     hideUssdPopup: function hideUssdPopup() {
-      this.showingUssdPopup = false;
+      this.simulator.showingUssdPopup = false;
     },
     focusOnInput: function focusOnInput() {
       var _this3 = this;
@@ -656,14 +650,15 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
       }, 100);
     },
     emptyInput: function emptyInput() {
-      this.form.msg = null;
+      this.simulator.form.msg = null;
     }
   },
   created: function created() {
-    this.form = this.defaultForm();
+    this.simulator = this.useVersionBuilder.simulator;
+    this.simulator.form = this.defaultForm();
   },
   beforeUnmount: function beforeUnmount() {
-    if (this.form.session_id) {
+    if (this.simulator.form.session_id) {
       this.stopApiSimulationRequest();
     }
   }
@@ -1266,17 +1261,17 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   var _component_DangerButton = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("DangerButton");
   return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", {
     "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(["h-full relative", {
-      'bg-black/50': $data.showingUssdPopup
+      'bg-black/50': $data.simulator.showingUssdPopup
     }])
   }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(vue__WEBPACK_IMPORTED_MODULE_0__.Transition, {
     name: "fade",
     persisted: ""
   }, {
     "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
-      return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_1, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_2, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_3, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_4, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.app.name), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_5, " — Version " + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.version.number), 1 /* TEXT */)])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_6, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_7, [_hoisted_8, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_9, [_hoisted_10, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_11, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.form.msisdn), 1 /* TEXT */)])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_DefaultInput, {
-        modelValue: $data.initialReplies,
+      return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_1, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_2, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_3, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_4, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.app.name), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_5, " — Version " + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.version.number), 1 /* TEXT */)])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_6, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_7, [_hoisted_8, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_9, [_hoisted_10, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_11, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.simulator.form.msisdn), 1 /* TEXT */)])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_DefaultInput, {
+        modelValue: $data.simulator.initialReplies,
         "onUpdate:modelValue": _cache[0] || (_cache[0] = function ($event) {
-          return $data.initialReplies = $event;
+          return $data.simulator.initialReplies = $event;
         }),
         placeholder: "*1*2*3",
         prependClasses: ['bg-blue-50 text-blue-500'],
@@ -1304,7 +1299,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
           return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)("Launch Simulator")];
         }),
         _: 1 /* STABLE */
-      })])])], 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vShow, !$data.showingUssdPopup]])];
+      })])])], 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vShow, !$data.simulator.showingUssdPopup]])];
     }),
     _: 1 /* STABLE */
   }), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(vue__WEBPACK_IMPORTED_MODULE_0__.Transition, {
@@ -1312,7 +1307,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     persisted: ""
   }, {
     "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
-      return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_16, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_17, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Loader "), $data.loading ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createBlock)(_component_Loader, {
+      return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_16, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_17, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Loader "), $data.simulator.loading ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createBlock)(_component_Loader, {
         key: 0,
         withTransition: false
       }, {
@@ -1322,13 +1317,13 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
         _: 1 /* STABLE */
       })) : ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_19, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Ussd Message "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", {
         "class": "text-gray-600 whitespace-pre-wrap mb-4",
-        innerHTML: $data.ussdResponseMsg
+        innerHTML: $data.simulator.ussdResponseMsg
       }, null, 8 /* PROPS */, _hoisted_20), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Ussd Reply Input "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
         type: "text",
         "onUpdate:modelValue": _cache[3] || (_cache[3] = function ($event) {
-          return $data.form.msg = $event;
+          return $data.simulator.form.msg = $event;
         }),
-        disabled: $data.loading,
+        disabled: $data.simulator.loading,
         ref: "ussd_input",
         "class": "ussd_input",
         onKeypress: _cache[4] || (_cache[4] = (0,vue__WEBPACK_IMPORTED_MODULE_0__.withKeys)(function ($event) {
@@ -1337,7 +1332,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
         onKeyup: _cache[5] || (_cache[5] = (0,vue__WEBPACK_IMPORTED_MODULE_0__.withKeys)(function ($event) {
           return $options.stopUssdSimulator();
         }, ["esc"]))
-      }, null, 40 /* PROPS, HYDRATE_EVENTS */, _hoisted_21), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.form.msg]]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Cancel / Send / Resend Buttons "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_22, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
+      }, null, 40 /* PROPS, HYDRATE_EVENTS */, _hoisted_21), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.simulator.form.msg]]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Cancel / Send / Resend Buttons "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_22, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
         "class": "text-gray-600 hover:text-red-500 active:text-red-600 cursor-pointer",
         onClick: _cache[6] || (_cache[6] = function ($event) {
           return $options.stopUssdSimulator();
@@ -1357,7 +1352,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
           return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)("Restart")];
         }),
         _: 1 /* STABLE */
-      }, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vShow, !$data.loading]]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_PrimaryButton, {
+      }, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vShow, !$data.simulator.loading]]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_PrimaryButton, {
         onClick: _cache[9] || (_cache[9] = function ($event) {
           return $options.startLastUssdCall();
         })
@@ -1366,7 +1361,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
           return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)("Re-run")];
         }),
         _: 1 /* STABLE */
-      }, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vShow, !$data.loading]]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_DangerButton, {
+      }, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vShow, !$data.simulator.loading]]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_DangerButton, {
         onClick: _cache[10] || (_cache[10] = function ($event) {
           return $options.stopUssdSimulator();
         })
@@ -1375,7 +1370,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
           return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)("Stop")];
         }),
         _: 1 /* STABLE */
-      }, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vShow, $data.loading]])])], 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vShow, $data.showingUssdPopup]])];
+      }, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vShow, $data.simulator.loading]])])], 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vShow, $data.simulator.showingUssdPopup]])];
     }),
     _: 1 /* STABLE */
   })], 2 /* CLASS */);

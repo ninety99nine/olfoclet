@@ -46,7 +46,6 @@ class UssdService
     public $display;
     public $screens;
     public $request;
-    public $displays;
     public $app_name;
     public $response;
     public $logs = [];
@@ -2815,23 +2814,7 @@ class UssdService
         $this->getFirstScreen();
 
         //  Handle current screen
-        $response = $this->handleCurrentScreen();
-
-        /** Check if the display data returned is greater than 160 characters.
-         *  If it is set a warning log. Subtract out the first four characters
-         *  first to remove the "CON " and "END ".
-         */
-        $characters = (strlen($response) - 4);
-
-        if ($characters > 160) {
-            //  Set a warning log that the content received is too long
-            $this->logWarning('The screen content exceeds the maximum allowed content length of 160 characters. Returned '.$this->wrapAsSuccessHtml($characters).' characters');
-        } else {
-            //  Set an info log of the content character length
-            $this->logInfo('Content Characters: '.$this->wrapAsSuccessHtml($characters).' characters');
-        }
-
-        return $response;
+        return $this->handleCurrentScreen();
     }
 
     /*  Validate the existence of the builder screens. If the screens do not exist then
@@ -3601,9 +3584,6 @@ class UssdService
         //  Set an info log that we are searching for the first display
         $this->logInfo('Searching for the first display', 'searching_first_display');
 
-        //  Get all the displays available
-        $this->displays = $this->screen['displays'];
-
         //  If we are using condi
         if ($this->screen['conditional_displays']['active']) {
             $this->logInfo('Processing code to conditionally determine first display to load');
@@ -3619,7 +3599,7 @@ class UssdService
                 return $outputResponse;
             }
 
-            //  Get the processed screen id
+            //  Get the processed display id
             $display_id = $this->convertToString($outputResponse);
 
             if ($display_id) {
@@ -3639,7 +3619,7 @@ class UssdService
             }
         } else {
             //  Get the first display (The one specified by the user)
-            $this->display = collect($this->displays)->where('first_display', true)->first() ?? null;
+            $this->display = collect($this->screen['displays'])->where('first_display', true)->first() ?? null;
 
             //  If we did not manage to get the first display specified by the user
             if (!$this->display) {
@@ -3650,7 +3630,7 @@ class UssdService
                 $this->logInfo('Selecting the first available display as the default starting display');
 
                 //  Select the first display on the available displays by default
-                $this->display = $this->displays[0];
+                $this->display = $this->screen['displays'][0];
             }
         }
 
@@ -3977,12 +3957,22 @@ class UssdService
         //  Combine the display instruction and action as the display content
         $this->display_content = $this->display_instructions.$this->display_actions;
 
-        //  Handle the display pagination
-        $outputResponse = $this->handlePagination();
+        $this->logInfo('Instruction Characters: '.$this->wrapAsSuccessHtml(strlen($this->display_instructions)).' characters');
+        $this->logInfo('Action Characters: '.$this->wrapAsSuccessHtml(strlen($this->display_actions)).' characters');
+        $this->logInfo('Combined Characters: '.$this->wrapAsSuccessHtml(strlen($this->display_content)).' characters');
 
-        //  If we have a screen to show return the response otherwise continue
-        if ($this->shouldDisplayScreen($outputResponse)) {
-            return $outputResponse;
+        $hasExceededAllowedCharacters = strlen($this->display_content) > 160;
+
+        if($hasExceededAllowedCharacters) {
+
+            //  Handle the display pagination
+            $outputResponse = $this->handlePagination();
+
+            //  If we have a screen to show return the response otherwise continue
+            if ($this->shouldDisplayScreen($outputResponse)) {
+                return $outputResponse;
+            }
+
         }
 
         //  If the display content is not empty
@@ -3992,6 +3982,9 @@ class UssdService
                 '<p>Final result: <br /><div style="white-space: pre-wrap;" class="bg-white border rounded-md p-4 mt-2">'.$this->wrapAsSuccessHtml($this->display_content).'</div><p>'
             );
         }
+
+        //  Set an info log of the content character length
+        $this->logInfo('Final Characters: '.$this->wrapAsSuccessHtml(strlen($this->display_content)).' characters');
 
         //  Return the display content
         return $this->showCustomScreen($this->display_content);
@@ -6061,7 +6054,7 @@ class UssdService
     /** This method returns a display if it exists by searching based on
      *  the display name provided.
      */
-    public function getDisplayById($link = null)
+    public function getDisplayById($link = null, $globalSearch = false)
     {
         //  If the link provided is in Array format
         if (is_array($link)) {
@@ -6079,8 +6072,18 @@ class UssdService
 
         //  If the display name has been provided
         if (!empty($link)) {
-            //  Get the first display that matches the given link
-            return collect($this->screen['displays'])->where('id', $link)->first() ?? null;
+
+            //  Get the first display that matches the given link (Can only match current screen display)
+            $display = collect($this->screen['displays'])->where('id', $link)->first() ?? null;
+
+            if(!$display && $globalSearch) {
+
+                //  Get the first display that matches the given link (Can match any screen display)
+                $display = collect($this->screens)->map(fn($screen) => $screen['displays'])->collapse()->where('id', $link)->first() ?? null;
+
+            }
+
+            return $display;
         }
     }
 
@@ -10202,7 +10205,7 @@ class UssdService
         $target_value = $this->convertToString($target_value);
 
         //  If the pattern was not matched exactly i.e validation failed
-        if (empty($target_value) || empty($value) || !($target_value == $value)) {
+        if ($target_value === null || $value === null || !($target_value == $value)) {
             //  Handle the failed validation
             return $this->handleFailedValidation($validation_rule);
         }
@@ -10234,7 +10237,7 @@ class UssdService
         $target_value = $this->convertToString($target_value);
 
         //  If the pattern was not matched exactly i.e validation failed
-        if (empty($target_value) || empty($value) || ($target_value == $value)) {
+        if ($target_value === null || $value === null || ($target_value == $value)) {
             //  Handle the failed validation
             return $this->handleFailedValidation($validation_rule);
         }
@@ -10266,7 +10269,7 @@ class UssdService
         $target_value = $this->convertToInteger($target_value);
 
         //  If the pattern was not matched exactly i.e validation failed
-        if (empty($target_value) || empty($value) || !($target_value < $value)) {
+        if ($target_value === null || $value === null || !($target_value < $value)) {
             //  Handle the failed validation
             return $this->handleFailedValidation($validation_rule);
         }
@@ -10298,7 +10301,7 @@ class UssdService
         $target_value = $this->convertToInteger($target_value);
 
         //  If the pattern was not matched exactly i.e validation failed
-        if (empty($target_value) || empty($value) || !($target_value <= $value)) {
+        if ($target_value === null || $value === null || !($target_value <= $value)) {
             //  Handle the failed validation
             return $this->handleFailedValidation($validation_rule);
         }
@@ -10330,7 +10333,7 @@ class UssdService
         $target_value = $this->convertToInteger($target_value);
 
         //  If the pattern was not matched exactly i.e validation failed
-        if (empty($target_value) || empty($value) || !($target_value > $value)) {
+        if ($target_value === null || $value === null || !($target_value > $value)) {
             //  Handle the failed validation
             return $this->handleFailedValidation($validation_rule);
         }
@@ -10362,7 +10365,7 @@ class UssdService
         $target_value = $this->convertToInteger($target_value);
 
         //  If the pattern was not matched exactly i.e validation failed
-        if (empty($target_value) || empty($value) || !($target_value >= $value)) {
+        if ($target_value === null || $value === null || !($target_value >= $value)) {
             //  Handle the failed validation
             return $this->handleFailedValidation($validation_rule);
         }
@@ -11768,7 +11771,8 @@ class UssdService
                      *************************/
 
                     //  Get the display matching the given link
-                    $outputResponse = $this->getDisplayById($link);
+                    $globalSearch = true;
+                    $outputResponse = $this->getDisplayById($link, $globalSearch);
 
                     //  If we have a screen to show return the response otherwise continue
                     if ($this->shouldDisplayScreen($outputResponse)) {

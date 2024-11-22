@@ -40,6 +40,7 @@
                             <div class="border-gray-200 border-t flex justify-end py-6 px-6">
                                 <DefaultButton v-if="defaultText" @click.stop="fireDefaultAction()" :disabled="isLoading" class="ml-2">{{ defaultText }}</DefaultButton>
                                 <DangerButton v-if="dangerText" @click.stop="fireDangerAction()" :disabled="isLoading" class="ml-2">{{ dangerText }}</DangerButton>
+                                <WarningButton v-if="warningText" @click.stop="fireWarningAction()" :disabled="isLoading" class="ml-2">{{ warningText }}</WarningButton>
                                 <PrimaryButton v-if="primaryText" @click.stop="firePrimaryAction()" :disabled="isLoading" class="ml-2">{{ primaryText }}</PrimaryButton>
                             </div>
                         </div>
@@ -61,6 +62,7 @@
     import DefaultButton from "./../Button/DefaultButton";
     import LoaderOverlay from "./../Loader/LoaderOverlay";
     import PrimaryButton from "./../Button/PrimaryButton";
+    import WarningButton from "./../Button/WarningButton";
 
     export default {
         props: {
@@ -70,6 +72,12 @@
             },
             defaultText: String,
             defaultAction: {
+                type: Function,
+                default: () => {}
+            },
+
+            warningText: String,
+            warningAction: {
                 type: Function,
                 default: () => {}
             },
@@ -91,7 +99,7 @@
                 default: false
             }
         },
-        components: { DangerButton, PrimaryButton, DefaultButton, LoaderOverlay },
+        components: { DangerButton, PrimaryButton, WarningButton, DefaultButton, LoaderOverlay },
         data() {
             return {
                 isOpen: false
@@ -117,6 +125,17 @@
                     /**
                      *  Pass the close method as a parameter.
                      *  This allows the primaryAction to
+                     *  receive this method a parameter
+                     *  that can be executed later
+                     */
+                    this.close
+                );
+            },
+            fireWarningAction() {
+                this.warningAction(
+                    /**
+                     *  Pass the close method as a parameter.
+                     *  This allows the warningAction to
                      *  receive this method a parameter
                      *  that can be executed later
                      */

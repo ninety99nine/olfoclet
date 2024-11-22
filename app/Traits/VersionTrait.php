@@ -51,6 +51,7 @@ trait VersionTrait
     public function getBuilderTemplate()
     {
         return [
+            'last_modified_timestamp' => now()->timestamp,
             'screens' => [],
             'markers' => [],
             'application_events' => [
@@ -262,6 +263,12 @@ trait VersionTrait
 
         //  Get the version builder template
         $builderTemplate = $this->getBuilderTemplate();
+
+        //  Set missing builder "last modified timestamp"
+        if(!isset($builderTemplate['last_modified_timestamp'])) {
+            $builderTemplate['last_modified_timestamp'] = $this->updated_at->timestamp;
+
+        }
 
         //  This fixes the builder events
         $fixEvents = function($events) use ( &$fixEvents ) {

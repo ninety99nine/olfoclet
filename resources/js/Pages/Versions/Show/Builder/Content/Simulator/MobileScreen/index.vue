@@ -1,10 +1,10 @@
 <template>
-    <div class="h-full relative" :class="{ 'bg-black/50': showingUssdPopup }">
+    <div class="h-full relative" :class="{ 'bg-black/50': simulator.showingUssdPopup }">
 
         <Transition name="fade">
 
             <!-- Main Screen Content -->
-            <div v-show="!showingUssdPopup" class="absolute top-20 right-5 left-5">
+            <div v-show="!simulator.showingUssdPopup" class="absolute top-20 right-5 left-5">
 
                 <div class="bg-white/90 shadow-sm hover:shadow-md rounded-sm p-4 mb-2">
                     <span class="text-sm font-semibold tracking-tight text-gray-900">
@@ -22,12 +22,12 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                             </svg>
-                            <span class="block text-sm font-medium">{{ form.msisdn }}</span>
+                            <span class="block text-sm font-medium">{{ simulator.form.msisdn }}</span>
                         </div>
 
                     </div>
 
-                    <DefaultInput v-model="initialReplies" placeholder="*1*2*3"
+                    <DefaultInput v-model="simulator.initialReplies" placeholder="*1*2*3"
                         :prependClasses="['bg-blue-50 text-blue-500']"
                         :appendClasses="['bg-blue-50 text-blue-500']">
                         <template #append>
@@ -56,22 +56,22 @@
 
         <Transition name="fade">
 
-            <div v-show="showingUssdPopup" class="absolute top-40 right-5 left-5">
+            <div v-show="simulator.showingUssdPopup" class="absolute top-40 right-5 left-5">
 
                 <div class="bg-white/90 shadow-sm hover:shadow-md rounded-sm p-4 relative">
 
                     <!-- Loader -->
-                    <Loader v-if="loading" :withTransition="false">
+                    <Loader v-if="simulator.loading" :withTransition="false">
                         <span class="text-gray-600 ml-2">Loading...</span>
                     </Loader>
 
                     <div v-else>
 
                         <!-- Ussd Message -->
-                        <p class="text-gray-600 whitespace-pre-wrap mb-4" v-html="ussdResponseMsg"></p>
+                        <p class="text-gray-600 whitespace-pre-wrap mb-4" v-html="simulator.ussdResponseMsg"></p>
 
                         <!-- Ussd Reply Input -->
-                        <input type="text" v-model="form.msg" :disabled="loading" ref="ussd_input" class="ussd_input" @keypress.enter="startApiSimulationRequest()" @keyup.esc="stopUssdSimulator()" />
+                        <input type="text" v-model="simulator.form.msg" :disabled="simulator.loading" ref="ussd_input" class="ussd_input" @keypress.enter="startApiSimulationRequest()" @keyup.esc="stopUssdSimulator()" />
 
                         <!-- Cancel / Send / Resend Buttons -->
                         <div class="w-3/4 m-auto flex justify-between mt-4">
@@ -86,9 +86,9 @@
 
                 <!-- Restart / Re-run / Stop Buttons -->
                 <div class="flex justify-end mt-4 border-gray-300">
-                    <PrimaryButton v-show="!loading" @click="startUssdServiceSimulator()" class="mr-2">Restart</PrimaryButton>
-                    <PrimaryButton v-show="!loading" @click="startLastUssdCall()">Re-run</PrimaryButton>
-                    <DangerButton v-show="loading" @click="stopUssdSimulator()">Stop</DangerButton>
+                    <PrimaryButton v-show="!simulator.loading" @click="startUssdServiceSimulator()" class="mr-2">Restart</PrimaryButton>
+                    <PrimaryButton v-show="!simulator.loading" @click="startLastUssdCall()">Re-run</PrimaryButton>
+                    <DangerButton v-show="simulator.loading" @click="stopUssdSimulator()">Stop</DangerButton>
                 </div>
 
             </div>
@@ -115,13 +115,7 @@
                 version: this.$page.props.versionPayload,
                 useVersionBuilder: useVersionBuilder(),
                 app: this.$page.props.appPayload,
-                showingUssdPopup: false,
-                last_session_id: null,
-                ussdResponseMsg: '',
-                initialReplies: '',
-                loading: false,
-                request: null,
-                form: null
+                simulator: null
             }
         },
         computed: {
@@ -158,7 +152,7 @@
                 var pattern = /[^0-9a-zA-Z\s*]|^[*]+|[*]+$/g;
 
                 //  Replace all invalid characters with nothing
-                var replies = this.initialReplies.replace(pattern, replaceWithNothing);
+                var replies = this.simulator.initialReplies.replace(pattern, replaceWithNothing);
 
                 /**
                  *  This pattern searches any duplicate '*' occurances e.g
@@ -174,7 +168,7 @@
                 if( replies ){
 
                     /**
-                     *  If "this.initialReplies" is "4*5*6" and "this.form.msg"
+                     *  If "this.simulator.initialReplies" is "4*5*6" and "this.simulator.form.msg"
                      *  is "*321#" the combine to form "*321*4*5*6#"
                      */
                     return this.primaryShortCode.substring(0, this.primaryShortCode.length - 1)+'*'+replies+'#';
@@ -189,7 +183,7 @@
         },
         methods: {
             startUssdServiceSimulator(){
-                if( this.loading == false ) {
+                if( this.simulator.loading == false ) {
                     this.resetUssdSimulator();
                     this.startApiSimulationRequest();
                     this.showUssdPopup();
@@ -202,7 +196,7 @@
                 this.hideUssdPopup();
             },
             resetUssdSimulator(replacement = {}){
-                this.form = {
+                this.simulator.form = {
                     ...this.defaultForm(),
 
                     //  This can replace the default form
@@ -210,8 +204,8 @@
                 };
             },
             cancelUssdCall(){
-                if (this.request) this.request.cancel('Session cancelled');
-                this.loading = false;
+                if (this.simulator.request) this.simulator.request.cancel('Session cancelled');
+                this.simulator.loading = false;
             },
             defaultForm(){
                 return {
@@ -229,7 +223,7 @@
             startLastUssdCall(){
 
                 //  Update the session id with the last request sesison id
-                var sessionId = this.form.session_id;
+                var sessionId = this.simulator.form.session_id;
 
                 //  Update the request type to "2" which means continue existing session
                 var requestType = 2;
@@ -251,13 +245,13 @@
                  *  If this is the first request then embbed
                  *  the service code within the message.
                  */
-                if( this.form.request_type == 1 ) {
+                if( this.simulator.form.request_type == 1 ) {
 
-                    this.form.msg = this.modifiedServiceCode;
+                    this.simulator.form.msg = this.modifiedServiceCode;
 
                 }
 
-                this.loading = true;
+                this.simulator.loading = true;
 
                 /**
                  *  Generate the axios cancel token to allow this request
@@ -268,25 +262,25 @@
                 const axiosSource = axios.CancelToken.source();
 
                 const url = route('launch.ussd.simulation');
-                this.request = { cancel: axiosSource.cancel };
+                this.simulator.request = { cancel: axiosSource.cancel };
 
-                axios.post(url, this.form, { cancelToken: axiosSource.token })
+                axios.post(url, this.simulator.form, { cancelToken: axiosSource.token })
                     .then((response) => {
 
-                        let firstRequest = (self.form.request_type == 1);
+                        let firstRequest = (self.simulator.form.request_type == 1);
                         let ussdResponse = response.data;
 
-                        self.last_session_id = ussdResponse.session_id;
+                        self.simulator.last_session_id = ussdResponse.session_id;
 
-                        self.ussdResponseMsg = ussdResponse.msg;
-                        self.form.session_id = ussdResponse.session_id;
-                        self.form.request_type = ussdResponse.request_type;
-                        self.form.service_code = ussdResponse.service_code;
+                        self.simulator.ussdResponseMsg = ussdResponse.msg;
+                        self.simulator.form.session_id = ussdResponse.session_id;
+                        self.simulator.form.request_type = ussdResponse.request_type;
+                        self.simulator.form.service_code = ussdResponse.service_code;
 
                         self.$emit('response', ussdResponse);
 
                         //  If the requestType = 2 it means we want to continue the current session
-                        if( self.form.request_type == 2 ){
+                        if( self.simulator.form.request_type == 2 ){
 
                             self.emptyInput();
                             self.focusOnInput();
@@ -301,7 +295,7 @@
                             }
 
                         //  If the requestType = 3 it means we want to terminate the session
-                        }else if( self.form.request_type == 3 ){
+                        }else if( self.simulator.form.request_type == 3 ){
 
                             self.resetUssdSimulator();
                             self.emptyInput();
@@ -312,7 +306,7 @@
                             });
 
                         //  If the requestType = 4 it means the session ended
-                        }else if( self.form.request_type == 4 ){
+                        }else if( self.simulator.form.request_type == 4 ){
 
                             self.emptyInput();
 
@@ -322,7 +316,7 @@
                             });
 
                         //  If the requestType = 5 it means we want to redirect
-                        }else if( self.form.request_type == 5 ){
+                        }else if( self.simulator.form.request_type == 5 ){
 
                             //  Note: self.ussdResponse contains the new "Ussd Response" that we must redirect to
                             self.redirectUssdSimulator( ussdResponse.msg );
@@ -368,14 +362,14 @@
                     })
                     .finally(() => {
 
-                        this.request = null;
-                        this.loading = false;
+                        this.simulator.request = null;
+                        this.simulator.loading = false;
 
                     });
             },
             stopApiSimulationRequest() {
 
-                const url = route('stop.ussd.simulation', { session_id: this.last_session_id });
+                const url = route('stop.ussd.simulation', { session_id: this.simulator.last_session_id });
 
                 axios.post(url)
                     .then((response) => {
@@ -409,18 +403,18 @@
                 this.focusOnInput();
 
                 //  Update the service code with the redirect service code
-                this.form.serviceCode = serviceCode;
+                this.simulator.form.serviceCode = serviceCode;
 
                 //  Recall the Ussd end point
                 this.startApiSimulationRequest();
 
             },
             showUssdPopup(){
-                this.showingUssdPopup = true;
+                this.simulator.showingUssdPopup = true;
                 this.focusOnInput();
             },
             hideUssdPopup(){
-                this.showingUssdPopup = false;
+                this.simulator.showingUssdPopup = false;
             },
             focusOnInput(){
                 setTimeout(() => {
@@ -428,14 +422,15 @@
                 }, 100);
             },
             emptyInput(){
-                this.form.msg = null;
+                this.simulator.form.msg = null;
             }
         },
         created(){
-            this.form = this.defaultForm();
+            this.simulator = this.useVersionBuilder.simulator;
+            this.simulator.form = this.defaultForm();
         },
         beforeUnmount() {
-            if( this.form.session_id ) {
+            if( this.simulator.form.session_id ) {
                 this.stopApiSimulationRequest();
             }
         }

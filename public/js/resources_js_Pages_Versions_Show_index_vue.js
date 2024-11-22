@@ -1946,9 +1946,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _components_CopyToClipboard__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @components/CopyToClipboard */ "./resources/js/Components/CopyToClipboard/index.vue");
-/* harmony import */ var _components_Badges_PrimaryBadge__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @components/Badges/PrimaryBadge */ "./resources/js/Components/Badges/PrimaryBadge.vue");
-/* harmony import */ var _stores_VersionBuilder__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @stores/VersionBuilder */ "./resources/js/Stores/VersionBuilder.js");
-/* harmony import */ var _components_Button_DefaultButton__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @components/Button/DefaultButton */ "./resources/js/Components/Button/DefaultButton.vue");
+/* harmony import */ var _components_Badges_DefaultBadge__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @components/Badges/DefaultBadge */ "./resources/js/Components/Badges/DefaultBadge.vue");
+/* harmony import */ var _components_Badges_PrimaryBadge__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @components/Badges/PrimaryBadge */ "./resources/js/Components/Badges/PrimaryBadge.vue");
+/* harmony import */ var _stores_VersionBuilder__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @stores/VersionBuilder */ "./resources/js/Stores/VersionBuilder.js");
+/* harmony import */ var _components_Button_DefaultButton__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @components/Button/DefaultButton */ "./resources/js/Components/Button/DefaultButton.vue");
+
 
 
 
@@ -1957,14 +1959,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   components: {
     CopyToClipboard: _components_CopyToClipboard__WEBPACK_IMPORTED_MODULE_1__["default"],
-    PrimaryBadge: _components_Badges_PrimaryBadge__WEBPACK_IMPORTED_MODULE_2__["default"],
-    DefaultButton: _components_Button_DefaultButton__WEBPACK_IMPORTED_MODULE_4__["default"]
+    DefaultBadge: _components_Badges_DefaultBadge__WEBPACK_IMPORTED_MODULE_2__["default"],
+    PrimaryBadge: _components_Badges_PrimaryBadge__WEBPACK_IMPORTED_MODULE_3__["default"],
+    DefaultButton: _components_Button_DefaultButton__WEBPACK_IMPORTED_MODULE_5__["default"]
   },
   data: function data() {
     return {
-      useVersionBuilder: (0,_stores_VersionBuilder__WEBPACK_IMPORTED_MODULE_3__.useVersionBuilder)(),
+      useVersionBuilder: (0,_stores_VersionBuilder__WEBPACK_IMPORTED_MODULE_4__.useVersionBuilder)(),
+      originalBuilderAsJsonString: '',
       builderAsJsonString: '',
-      originalJsonString: '',
       errorMessage: null,
       hasChanges: false,
       // New property to track changes
@@ -2002,14 +2005,14 @@ __webpack_require__.r(__webpack_exports__);
       this.isLoading = false;
     }, 1000),
     resetBuilder: function resetBuilder() {
-      this.builderAsJsonString = this.originalJsonString;
+      this.builderAsJsonString = this.originalBuilderAsJsonString;
       this.errorMessage = null;
       this.hasChanges = false;
     }
   },
   created: function created() {
     this.builderAsJsonString = JSON.stringify(this.useVersionBuilder.builder, null, 2);
-    this.originalJsonString = this.builderAsJsonString;
+    this.originalBuilderAsJsonString = _.cloneDeep(this.builderAsJsonString);
   }
 });
 
@@ -5402,13 +5405,7 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
       version: this.$page.props.versionPayload,
       useVersionBuilder: (0,_stores_VersionBuilder__WEBPACK_IMPORTED_MODULE_2__.useVersionBuilder)(),
       app: this.$page.props.appPayload,
-      showingUssdPopup: false,
-      last_session_id: null,
-      ussdResponseMsg: '',
-      initialReplies: '',
-      loading: false,
-      request: null,
-      form: null
+      simulator: null
     };
   },
   computed: {
@@ -5442,7 +5439,7 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
       var pattern = /[^0-9a-zA-Z\s*]|^[*]+|[*]+$/g;
 
       //  Replace all invalid characters with nothing
-      var replies = this.initialReplies.replace(pattern, replaceWithNothing);
+      var replies = this.simulator.initialReplies.replace(pattern, replaceWithNothing);
 
       /**
        *  This pattern searches any duplicate '*' occurances e.g
@@ -5456,7 +5453,7 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
       replies = replies.replace(pattern, replaceWithNothing);
       if (replies) {
         /**
-         *  If "this.initialReplies" is "4*5*6" and "this.form.msg"
+         *  If "this.simulator.initialReplies" is "4*5*6" and "this.simulator.form.msg"
          *  is "*321#" the combine to form "*321*4*5*6#"
          */
         return this.primaryShortCode.substring(0, this.primaryShortCode.length - 1) + '*' + replies + '#';
@@ -5467,7 +5464,7 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
   },
   methods: {
     startUssdServiceSimulator: function startUssdServiceSimulator() {
-      if (this.loading == false) {
+      if (this.simulator.loading == false) {
         this.resetUssdSimulator();
         this.startApiSimulationRequest();
         this.showUssdPopup();
@@ -5481,11 +5478,11 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
     },
     resetUssdSimulator: function resetUssdSimulator() {
       var replacement = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      this.form = _objectSpread(_objectSpread({}, this.defaultForm()), replacement);
+      this.simulator.form = _objectSpread(_objectSpread({}, this.defaultForm()), replacement);
     },
     cancelUssdCall: function cancelUssdCall() {
-      if (this.request) this.request.cancel('Session cancelled');
-      this.loading = false;
+      if (this.simulator.request) this.simulator.request.cancel('Session cancelled');
+      this.simulator.loading = false;
     },
     defaultForm: function defaultForm() {
       return {
@@ -5501,7 +5498,7 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
     },
     startLastUssdCall: function startLastUssdCall() {
       //  Update the session id with the last request sesison id
-      var sessionId = this.form.session_id;
+      var sessionId = this.simulator.form.session_id;
 
       //  Update the request type to "2" which means continue existing session
       var requestType = 2;
@@ -5523,10 +5520,10 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
        *  If this is the first request then embbed
        *  the service code within the message.
        */
-      if (this.form.request_type == 1) {
-        this.form.msg = this.modifiedServiceCode;
+      if (this.simulator.form.request_type == 1) {
+        this.simulator.form.msg = this.modifiedServiceCode;
       }
-      this.loading = true;
+      this.simulator.loading = true;
 
       /**
        *  Generate the axios cancel token to allow this request
@@ -5536,23 +5533,23 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
        */
       var axiosSource = axios__WEBPACK_IMPORTED_MODULE_5__["default"].CancelToken.source();
       var url = route('launch.ussd.simulation');
-      this.request = {
+      this.simulator.request = {
         cancel: axiosSource.cancel
       };
-      axios__WEBPACK_IMPORTED_MODULE_5__["default"].post(url, this.form, {
+      axios__WEBPACK_IMPORTED_MODULE_5__["default"].post(url, this.simulator.form, {
         cancelToken: axiosSource.token
       }).then(function (response) {
-        var firstRequest = self.form.request_type == 1;
+        var firstRequest = self.simulator.form.request_type == 1;
         var ussdResponse = response.data;
-        self.last_session_id = ussdResponse.session_id;
-        self.ussdResponseMsg = ussdResponse.msg;
-        self.form.session_id = ussdResponse.session_id;
-        self.form.request_type = ussdResponse.request_type;
-        self.form.service_code = ussdResponse.service_code;
+        self.simulator.last_session_id = ussdResponse.session_id;
+        self.simulator.ussdResponseMsg = ussdResponse.msg;
+        self.simulator.form.session_id = ussdResponse.session_id;
+        self.simulator.form.request_type = ussdResponse.request_type;
+        self.simulator.form.service_code = ussdResponse.service_code;
         self.$emit('response', ussdResponse);
 
         //  If the requestType = 2 it means we want to continue the current session
-        if (self.form.request_type == 2) {
+        if (self.simulator.form.request_type == 2) {
           self.emptyInput();
           self.focusOnInput();
           if (firstRequest) {
@@ -5563,7 +5560,7 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
           }
 
           //  If the requestType = 3 it means we want to terminate the session
-        } else if (self.form.request_type == 3) {
+        } else if (self.simulator.form.request_type == 3) {
           self.resetUssdSimulator();
           self.emptyInput();
           self.$message({
@@ -5572,7 +5569,7 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
           });
 
           //  If the requestType = 4 it means the session ended
-        } else if (self.form.request_type == 4) {
+        } else if (self.simulator.form.request_type == 4) {
           self.emptyInput();
           self.$message({
             message: 'Session Timed out',
@@ -5580,7 +5577,7 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
           });
 
           //  If the requestType = 5 it means we want to redirect
-        } else if (self.form.request_type == 5) {
+        } else if (self.simulator.form.request_type == 5) {
           //  Note: self.ussdResponse contains the new "Ussd Response" that we must redirect to
           self.redirectUssdSimulator(ussdResponse.msg);
         }
@@ -5611,14 +5608,14 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
           type: 'warning'
         });
       })["finally"](function () {
-        _this.request = null;
-        _this.loading = false;
+        _this.simulator.request = null;
+        _this.simulator.loading = false;
       });
     },
     stopApiSimulationRequest: function stopApiSimulationRequest() {
       var _this2 = this;
       var url = route('stop.ussd.simulation', {
-        session_id: this.last_session_id
+        session_id: this.simulator.last_session_id
       });
       axios__WEBPACK_IMPORTED_MODULE_5__["default"].post(url).then(function (response) {})["catch"](function (error) {
         var _message3;
@@ -5643,17 +5640,17 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
       this.focusOnInput();
 
       //  Update the service code with the redirect service code
-      this.form.serviceCode = serviceCode;
+      this.simulator.form.serviceCode = serviceCode;
 
       //  Recall the Ussd end point
       this.startApiSimulationRequest();
     },
     showUssdPopup: function showUssdPopup() {
-      this.showingUssdPopup = true;
+      this.simulator.showingUssdPopup = true;
       this.focusOnInput();
     },
     hideUssdPopup: function hideUssdPopup() {
-      this.showingUssdPopup = false;
+      this.simulator.showingUssdPopup = false;
     },
     focusOnInput: function focusOnInput() {
       var _this3 = this;
@@ -5662,14 +5659,15 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
       }, 100);
     },
     emptyInput: function emptyInput() {
-      this.form.msg = null;
+      this.simulator.form.msg = null;
     }
   },
   created: function created() {
-    this.form = this.defaultForm();
+    this.simulator = this.useVersionBuilder.simulator;
+    this.simulator.form = this.defaultForm();
   },
   beforeUnmount: function beforeUnmount() {
-    if (this.form.session_id) {
+    if (this.simulator.form.session_id) {
       this.stopApiSimulationRequest();
     }
   }
@@ -6208,6 +6206,58 @@ function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input ==
 
 /***/ }),
 
+/***/ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/Pages/Versions/Show/Builder/Header/UndoChanges/UndoChangesModal.vue?vue&type=script&lang=js":
+/*!**********************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/Pages/Versions/Show/Builder/Header/UndoChanges/UndoChangesModal.vue?vue&type=script&lang=js ***!
+  \**********************************************************************************************************************************************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _components_Alert_PrimaryAlert__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @components/Alert/PrimaryAlert */ "./resources/js/Components/Alert/PrimaryAlert.vue");
+/* harmony import */ var _components_Modal_DefaultModal__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @components/Modal/DefaultModal */ "./resources/js/Components/Modal/DefaultModal.vue");
+/* harmony import */ var _stores_VersionBuilder__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @stores/VersionBuilder */ "./resources/js/Stores/VersionBuilder.js");
+/* harmony import */ var _components_Button_WarningButton__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @components/Button/WarningButton */ "./resources/js/Components/Button/WarningButton.vue");
+
+
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
+  props: ['form'],
+  components: {
+    PrimaryAlert: _components_Alert_PrimaryAlert__WEBPACK_IMPORTED_MODULE_0__["default"],
+    DefaultModal: _components_Modal_DefaultModal__WEBPACK_IMPORTED_MODULE_1__["default"],
+    WarningButton: _components_Button_WarningButton__WEBPACK_IMPORTED_MODULE_3__["default"]
+  },
+  data: function data() {
+    return {
+      useVersionBuilder: (0,_stores_VersionBuilder__WEBPACK_IMPORTED_MODULE_2__.useVersionBuilder)(),
+      project: this.$page.props.projectPayload,
+      version: this.$page.props.versionPayload,
+      app: this.$page.props.appPayload
+    };
+  },
+  computed: {
+    name: function name() {
+      return this.app.name + ' - version ' + this.version.number;
+    }
+  },
+  methods: {
+    undoChanges: function undoChanges(closeModal) {
+      this.useVersionBuilder.setOriginalBuilder();
+      this.$message({
+        message: 'Changes reversed',
+        type: 'success'
+      });
+      closeModal();
+    }
+  }
+});
+
+/***/ }),
+
 /***/ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/Pages/Versions/Show/Builder/Header/index.vue?vue&type=script&lang=js":
 /*!***********************************************************************************************************************************************************************************************************************!*\
   !*** ./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/Pages/Versions/Show/Builder/Header/index.vue?vue&type=script&lang=js ***!
@@ -6218,17 +6268,21 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! axios */ "./node_modules/axios/lib/axios.js");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! axios */ "./node_modules/axios/lib/axios.js");
 /* harmony import */ var _BackButton__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./BackButton */ "./resources/js/Pages/Versions/Show/Builder/Header/BackButton.vue");
 /* harmony import */ var _inertiajs_vue3__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @inertiajs/vue3 */ "./node_modules/@inertiajs/vue3/dist/index.esm.js");
 /* harmony import */ var _components_Error_DefaultError__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @components/Error/DefaultError */ "./resources/js/Components/Error/DefaultError.vue");
 /* harmony import */ var _components_Alert_WarningAlert__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @components/Alert/WarningAlert */ "./resources/js/Components/Alert/WarningAlert.vue");
-/* harmony import */ var _stores_VersionBuilder__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @stores/VersionBuilder */ "./resources/js/Stores/VersionBuilder.js");
-/* harmony import */ var _components_Button_DefaultButton__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @components/Button/DefaultButton */ "./resources/js/Components/Button/DefaultButton.vue");
-/* harmony import */ var _components_Button_PrimaryButton__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @components/Button/PrimaryButton */ "./resources/js/Components/Button/PrimaryButton.vue");
-/* harmony import */ var _ImportVersion_ImportVersionModal__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./ImportVersion/ImportVersionModal */ "./resources/js/Pages/Versions/Show/Builder/Header/ImportVersion/ImportVersionModal.vue");
-/* harmony import */ var _ExportVersion_ExportVersionModal__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./ExportVersion/ExportVersionModal */ "./resources/js/Pages/Versions/Show/Builder/Header/ExportVersion/ExportVersionModal.vue");
-/* harmony import */ var _components_ProgressBar_DefaultProgressBar__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @components/ProgressBar/DefaultProgressBar */ "./resources/js/Components/ProgressBar/DefaultProgressBar.vue");
+/* harmony import */ var _components_Badges_WarningBadge__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @components/Badges/WarningBadge */ "./resources/js/Components/Badges/WarningBadge.vue");
+/* harmony import */ var _stores_VersionBuilder__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @stores/VersionBuilder */ "./resources/js/Stores/VersionBuilder.js");
+/* harmony import */ var _components_Button_DefaultButton__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @components/Button/DefaultButton */ "./resources/js/Components/Button/DefaultButton.vue");
+/* harmony import */ var _components_Button_PrimaryButton__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @components/Button/PrimaryButton */ "./resources/js/Components/Button/PrimaryButton.vue");
+/* harmony import */ var _UndoChanges_UndoChangesModal__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./UndoChanges/UndoChangesModal */ "./resources/js/Pages/Versions/Show/Builder/Header/UndoChanges/UndoChangesModal.vue");
+/* harmony import */ var _ImportVersion_ImportVersionModal__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./ImportVersion/ImportVersionModal */ "./resources/js/Pages/Versions/Show/Builder/Header/ImportVersion/ImportVersionModal.vue");
+/* harmony import */ var _ExportVersion_ExportVersionModal__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./ExportVersion/ExportVersionModal */ "./resources/js/Pages/Versions/Show/Builder/Header/ExportVersion/ExportVersionModal.vue");
+/* harmony import */ var _components_ProgressBar_DefaultProgressBar__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @components/ProgressBar/DefaultProgressBar */ "./resources/js/Components/ProgressBar/DefaultProgressBar.vue");
+
+
 
 
 
@@ -6248,15 +6302,20 @@ __webpack_require__.r(__webpack_exports__);
     BackButton: _BackButton__WEBPACK_IMPORTED_MODULE_0__["default"],
     DefaultError: _components_Error_DefaultError__WEBPACK_IMPORTED_MODULE_2__["default"],
     WarningAlert: _components_Alert_WarningAlert__WEBPACK_IMPORTED_MODULE_3__["default"],
-    DefaultButton: _components_Button_DefaultButton__WEBPACK_IMPORTED_MODULE_5__["default"],
-    PrimaryButton: _components_Button_PrimaryButton__WEBPACK_IMPORTED_MODULE_6__["default"],
-    ImportVersionModal: _ImportVersion_ImportVersionModal__WEBPACK_IMPORTED_MODULE_7__["default"],
-    ExportVersionModal: _ExportVersion_ExportVersionModal__WEBPACK_IMPORTED_MODULE_8__["default"],
-    DefaultProgressBar: _components_ProgressBar_DefaultProgressBar__WEBPACK_IMPORTED_MODULE_9__["default"]
+    WarningBadge: _components_Badges_WarningBadge__WEBPACK_IMPORTED_MODULE_4__["default"],
+    DefaultButton: _components_Button_DefaultButton__WEBPACK_IMPORTED_MODULE_6__["default"],
+    PrimaryButton: _components_Button_PrimaryButton__WEBPACK_IMPORTED_MODULE_7__["default"],
+    UndoChangesModal: _UndoChanges_UndoChangesModal__WEBPACK_IMPORTED_MODULE_8__["default"],
+    ImportVersionModal: _ImportVersion_ImportVersionModal__WEBPACK_IMPORTED_MODULE_9__["default"],
+    ExportVersionModal: _ExportVersion_ExportVersionModal__WEBPACK_IMPORTED_MODULE_10__["default"],
+    DefaultProgressBar: _components_ProgressBar_DefaultProgressBar__WEBPACK_IMPORTED_MODULE_11__["default"]
   },
   data: function data() {
     return {
-      useVersionBuilder: (0,_stores_VersionBuilder__WEBPACK_IMPORTED_MODULE_4__.useVersionBuilder)(),
+      useVersionBuilder: (0,_stores_VersionBuilder__WEBPACK_IMPORTED_MODULE_5__.useVersionBuilder)(),
+      project: this.$page.props.projectPayload,
+      version: this.$page.props.versionPayload,
+      app: this.$page.props.appPayload,
       downloadInSecondsInterval: null,
       stillLoadingConversation: null,
       progressPercentage: null,
@@ -6267,6 +6326,19 @@ __webpack_require__.r(__webpack_exports__);
       isSaving: false,
       request: null
     };
+  },
+  watch: {
+    // Watch the builder state and store it in localStorage on changes
+    'useVersionBuilder.builder': {
+      handler: function handler(newBuilder, oldBuilder) {
+        // Only run if the oldBuilder is not an empty object
+        if (!_.isEmpty(oldBuilder)) {
+          // Update localStorage
+          this.useVersionBuilder.setUnsavedBuilderOnLocalStorage(newBuilder);
+        }
+      },
+      deep: true
+    }
   },
   computed: {
     error: function error() {
@@ -6295,7 +6367,6 @@ __webpack_require__.r(__webpack_exports__);
       var _this2 = this;
       //  Indicate that the builder has not been saved
       this.useVersionBuilder.hasSavedBuilder = false;
-      this.useVersionBuilder.unselectEverything();
       this.isSaving = true;
 
       //  Start the conversation
@@ -6326,7 +6397,7 @@ __webpack_require__.r(__webpack_exports__);
        *
        *  Reference: https://stackoverflow.com/questions/50516438/cancel-previous-request-using-axios-with-vue-js
        */
-      var axiosSource = axios__WEBPACK_IMPORTED_MODULE_10__["default"].CancelToken.source();
+      var axiosSource = axios__WEBPACK_IMPORTED_MODULE_12__["default"].CancelToken.source();
       this.request = {
         cancel: axiosSource.cancel
       };
@@ -6338,14 +6409,14 @@ __webpack_require__.r(__webpack_exports__);
         cancelToken: axiosSource.token
       };
       var self = this;
-      axios__WEBPACK_IMPORTED_MODULE_10__["default"].post(url, formData, config).then(function (response) {
+      axios__WEBPACK_IMPORTED_MODULE_12__["default"].post(url, formData, config).then(function (response) {
         self.$message({
           message: 'Changes saved successfully',
           type: 'success'
         });
 
-        //  Select a screen by default
-        _this2.useVersionBuilder.selectRecomendedScreen();
+        //  Remove builder from local storage (Changes have been saved)
+        _this2.useVersionBuilder.removeUnsavedBuilderFromLocalStorage();
 
         //  Turn off indication that the builder has been imported
         _this2.useVersionBuilder.hasImportedBuilder = false;
@@ -6389,7 +6460,7 @@ __webpack_require__.r(__webpack_exports__);
         ++_this3.downloadInSeconds;
       }, 1000);
       var self = this;
-      axios__WEBPACK_IMPORTED_MODULE_10__["default"].get(url, config).then(function (response) {
+      axios__WEBPACK_IMPORTED_MODULE_12__["default"].get(url, config).then(function (response) {
         //  If the download took 5 seconds or longer, notify the user on the download success
         if (self.downloadInSeconds >= 5) {
           self.$message({
@@ -6440,6 +6511,9 @@ __webpack_require__.r(__webpack_exports__);
     this.stopConvo();
   },
   created: function created() {
+    this.useVersionBuilder.project = this.project;
+    this.useVersionBuilder.version = this.version;
+    this.useVersionBuilder.app = this.app;
     this.downloadVersion();
   }
 });
@@ -6554,7 +6628,7 @@ __webpack_require__.r(__webpack_exports__);
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", {
-    "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(['bg-red-50 text-red-500 border border-red-500 text-xs px-2.5 py-0.5 rounded', {
+    "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(['w-fit bg-red-50 text-red-500 border border-red-500 text-xs px-2.5 py-0.5 rounded', {
       'cursor-pointer hover:bg-red-100 active:bg-red-200': $props.clickable
     }])
   }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.renderSlot)(_ctx.$slots, "default")], 2 /* CLASS */);
@@ -6576,7 +6650,7 @@ __webpack_require__.r(__webpack_exports__);
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", {
-    "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(['bg-gray-100 text-gray-600 border border-gray-400 text-xs px-2.5 py-0.5 rounded', {
+    "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(['w-fit bg-gray-100 text-gray-600 border border-gray-400 text-xs px-2.5 py-0.5 rounded', {
       'cursor-pointer hover:bg-blue-200 active:bg-blue-300': $props.clickable
     }])
   }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.renderSlot)(_ctx.$slots, "default")], 2 /* CLASS */);
@@ -8741,8 +8815,9 @@ var _hoisted_10 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElement
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   var _component_DefaultButton = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("DefaultButton");
-  var _component_PrimaryBadge = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("PrimaryBadge");
+  var _component_DefaultBadge = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("DefaultBadge");
   var _component_CopyToClipboard = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("CopyToClipboard");
+  var _component_PrimaryBadge = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("PrimaryBadge");
   return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Code Editor "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(vue__WEBPACK_IMPORTED_MODULE_0__.Transition, {
     name: "fade"
   }, {
@@ -8762,7 +8837,25 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
           return [_hoisted_9, _hoisted_10];
         }),
         _: 1 /* STABLE */
-      }, 8 /* PROPS */, ["onClick"])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Copy To Clipboard "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_CopyToClipboard, {
+      }, 8 /* PROPS */, ["onClick"])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Copy Original To Clipboard "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_CopyToClipboard, {
+        value: $data.originalBuilderAsJsonString,
+        message: "Copied Original Json File",
+        "class": "whitespace-nowrap"
+      }, {
+        "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
+          return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_DefaultBadge, {
+            clickable: true
+          }, {
+            "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
+              return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)("Copy (Original) Json File")];
+            }),
+            _: 1 /* STABLE */
+          })];
+        }),
+
+        _: 1 /* STABLE */
+      }, 8 /* PROPS */, ["value"]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Copy To Clipboard "), $options.mustSaveChanges ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createBlock)(_component_CopyToClipboard, {
+        key: 1,
         value: $data.builderAsJsonString,
         message: "Copied Json File",
         "class": "whitespace-nowrap"
@@ -8772,14 +8865,14 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
             clickable: true
           }, {
             "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
-              return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)("Copy Json File")];
+              return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)("Copy (Unsaved) Json File")];
             }),
             _: 1 /* STABLE */
           })];
         }),
 
         _: 1 /* STABLE */
-      }, 8 /* PROPS */, ["value"])])], 2 /* CLASS */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Editable JSON File "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("textarea", {
+      }, 8 /* PROPS */, ["value"])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])], 2 /* CLASS */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Editable JSON File "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("textarea", {
         "onUpdate:modelValue": _cache[0] || (_cache[0] = function ($event) {
           return $data.builderAsJsonString = $event;
         }),
@@ -13222,17 +13315,17 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   var _component_DangerButton = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("DangerButton");
   return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", {
     "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(["h-full relative", {
-      'bg-black/50': $data.showingUssdPopup
+      'bg-black/50': $data.simulator.showingUssdPopup
     }])
   }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(vue__WEBPACK_IMPORTED_MODULE_0__.Transition, {
     name: "fade",
     persisted: ""
   }, {
     "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
-      return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_1, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_2, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_3, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_4, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.app.name), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_5, " — Version " + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.version.number), 1 /* TEXT */)])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_6, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_7, [_hoisted_8, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_9, [_hoisted_10, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_11, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.form.msisdn), 1 /* TEXT */)])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_DefaultInput, {
-        modelValue: $data.initialReplies,
+      return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_1, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_2, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_3, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_4, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.app.name), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_5, " — Version " + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.version.number), 1 /* TEXT */)])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_6, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_7, [_hoisted_8, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_9, [_hoisted_10, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_11, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.simulator.form.msisdn), 1 /* TEXT */)])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_DefaultInput, {
+        modelValue: $data.simulator.initialReplies,
         "onUpdate:modelValue": _cache[0] || (_cache[0] = function ($event) {
-          return $data.initialReplies = $event;
+          return $data.simulator.initialReplies = $event;
         }),
         placeholder: "*1*2*3",
         prependClasses: ['bg-blue-50 text-blue-500'],
@@ -13260,7 +13353,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
           return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)("Launch Simulator")];
         }),
         _: 1 /* STABLE */
-      })])])], 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vShow, !$data.showingUssdPopup]])];
+      })])])], 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vShow, !$data.simulator.showingUssdPopup]])];
     }),
     _: 1 /* STABLE */
   }), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(vue__WEBPACK_IMPORTED_MODULE_0__.Transition, {
@@ -13268,7 +13361,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     persisted: ""
   }, {
     "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
-      return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_16, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_17, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Loader "), $data.loading ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createBlock)(_component_Loader, {
+      return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_16, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_17, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Loader "), $data.simulator.loading ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createBlock)(_component_Loader, {
         key: 0,
         withTransition: false
       }, {
@@ -13278,13 +13371,13 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
         _: 1 /* STABLE */
       })) : ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_19, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Ussd Message "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", {
         "class": "text-gray-600 whitespace-pre-wrap mb-4",
-        innerHTML: $data.ussdResponseMsg
+        innerHTML: $data.simulator.ussdResponseMsg
       }, null, 8 /* PROPS */, _hoisted_20), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Ussd Reply Input "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
         type: "text",
         "onUpdate:modelValue": _cache[3] || (_cache[3] = function ($event) {
-          return $data.form.msg = $event;
+          return $data.simulator.form.msg = $event;
         }),
-        disabled: $data.loading,
+        disabled: $data.simulator.loading,
         ref: "ussd_input",
         "class": "ussd_input",
         onKeypress: _cache[4] || (_cache[4] = (0,vue__WEBPACK_IMPORTED_MODULE_0__.withKeys)(function ($event) {
@@ -13293,7 +13386,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
         onKeyup: _cache[5] || (_cache[5] = (0,vue__WEBPACK_IMPORTED_MODULE_0__.withKeys)(function ($event) {
           return $options.stopUssdSimulator();
         }, ["esc"]))
-      }, null, 40 /* PROPS, HYDRATE_EVENTS */, _hoisted_21), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.form.msg]]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Cancel / Send / Resend Buttons "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_22, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
+      }, null, 40 /* PROPS, HYDRATE_EVENTS */, _hoisted_21), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.simulator.form.msg]]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Cancel / Send / Resend Buttons "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_22, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
         "class": "text-gray-600 hover:text-red-500 active:text-red-600 cursor-pointer",
         onClick: _cache[6] || (_cache[6] = function ($event) {
           return $options.stopUssdSimulator();
@@ -13313,7 +13406,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
           return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)("Restart")];
         }),
         _: 1 /* STABLE */
-      }, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vShow, !$data.loading]]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_PrimaryButton, {
+      }, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vShow, !$data.simulator.loading]]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_PrimaryButton, {
         onClick: _cache[9] || (_cache[9] = function ($event) {
           return $options.startLastUssdCall();
         })
@@ -13322,7 +13415,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
           return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)("Re-run")];
         }),
         _: 1 /* STABLE */
-      }, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vShow, !$data.loading]]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_DangerButton, {
+      }, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vShow, !$data.simulator.loading]]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_DangerButton, {
         onClick: _cache[10] || (_cache[10] = function ($event) {
           return $options.stopUssdSimulator();
         })
@@ -13331,7 +13424,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
           return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)("Stop")];
         }),
         _: 1 /* STABLE */
-      }, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vShow, $data.loading]])])], 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vShow, $data.showingUssdPopup]])];
+      }, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vShow, $data.simulator.loading]])])], 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vShow, $data.simulator.showingUssdPopup]])];
     }),
     _: 1 /* STABLE */
   })], 2 /* CLASS */);
@@ -13768,6 +13861,73 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 
 /***/ }),
 
+/***/ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/Pages/Versions/Show/Builder/Header/UndoChanges/UndoChangesModal.vue?vue&type=template&id=77b9b816":
+/*!**************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/Pages/Versions/Show/Builder/Header/UndoChanges/UndoChangesModal.vue?vue&type=template&id=77b9b816 ***!
+  \**************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "render": () => (/* binding */ render)
+/* harmony export */ });
+/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
+
+var _hoisted_1 = {
+  "class": "block text-justify"
+};
+var _hoisted_2 = {
+  "class": "font-semibold text-blue-500"
+};
+var _hoisted_3 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("svg", {
+  xmlns: "http://www.w3.org/2000/svg",
+  "class": "h-4 w-4 mr-2",
+  fill: "none",
+  viewBox: "0 0 24 24",
+  "stroke-width": "1.5",
+  stroke: "currentColor"
+}, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("path", {
+  "stroke-linecap": "round",
+  "stroke-linejoin": "round",
+  d: "m15 15-6 6m0 0-6-6m6 6V9a6 6 0 0 1 12 0v3"
+})], -1 /* HOISTED */);
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  var _component_PrimaryAlert = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("PrimaryAlert");
+  var _component_WarningButton = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("WarningButton");
+  var _component_DefaultModal = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("DefaultModal");
+  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Modal "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_DefaultModal, {
+    defaultText: "Cancel",
+    warningAction: $options.undoChanges,
+    warningText: $props.form.processing ? '' : 'Undo Changes'
+  }, {
+    title: (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
+      return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)("Undo Changes")];
+    }),
+    trigger: (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
+      return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Undo Changes Button "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_WarningButton, null, {
+        "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
+          return [_hoisted_3, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(" Undo Changes ")];
+        }),
+        _: 1 /* STABLE */
+      })];
+    }),
+
+    "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
+      return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_PrimaryAlert, null, {
+        "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
+          return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_1, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(" We have detected some changes that have not yet been saved for "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_2, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.name), 1 /* TEXT */), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(". If you would like to revert back to the previous state, then you may undo these unsaved changes. Please note that this action cannot be undone and all unsaved changes will be lost once completed. ")])];
+        }),
+        _: 1 /* STABLE */
+      })];
+    }),
+
+    _: 1 /* STABLE */
+  }, 8 /* PROPS */, ["warningAction", "warningText"])], 2112 /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */);
+}
+
+/***/ }),
+
 /***/ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/Pages/Versions/Show/Builder/Header/index.vue?vue&type=template&id=c6ae5eaa":
 /*!***************************************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** ./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/Pages/Versions/Show/Builder/Header/index.vue?vue&type=template&id=c6ae5eaa ***!
@@ -13815,19 +13975,25 @@ var _hoisted_5 = {
 };
 var _hoisted_6 = {
   key: 0,
-  "class": "flex mr-4"
+  "class": "flex items-center mr-8"
 };
 var _hoisted_7 = {
+  "class": "flex items-center space-x-2"
+};
+var _hoisted_8 = {
+  key: 0
+};
+var _hoisted_9 = {
   key: 0,
   "class": "grid grid-cols-12 gap-8 justify-center mb-4"
 };
-var _hoisted_8 = {
+var _hoisted_10 = {
   "class": "col-span-8"
 };
-var _hoisted_9 = {
+var _hoisted_11 = {
   "class": "col-span-4 flex items-center justify-between"
 };
-var _hoisted_10 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("svg", {
+var _hoisted_12 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("svg", {
   xmlns: "http://www.w3.org/2000/svg",
   "class": "h-3 w-3 mr-1",
   fill: "none",
@@ -13839,16 +14005,16 @@ var _hoisted_10 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElement
   "stroke-linejoin": "round",
   d: "M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
 })], -1 /* HOISTED */);
-var _hoisted_11 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, "Cancel", -1 /* HOISTED */);
-var _hoisted_12 = [_hoisted_10, _hoisted_11];
-var _hoisted_13 = {
+var _hoisted_13 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, "Cancel", -1 /* HOISTED */);
+var _hoisted_14 = [_hoisted_12, _hoisted_13];
+var _hoisted_15 = {
   key: 0,
   "class": "grid grid-cols-12 gap-8 justify-center mb-4"
 };
-var _hoisted_14 = {
+var _hoisted_16 = {
   "class": "col-span-9"
 };
-var _hoisted_15 = {
+var _hoisted_17 = {
   "class": "col-span-3 flex items-center justify-end"
 };
 function render(_ctx, _cache, $props, $setup, $data, $options) {
@@ -13856,10 +14022,11 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   var _component_BackButton = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("BackButton");
   var _component_ImportVersionModal = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("ImportVersionModal");
   var _component_ExportVersionModal = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("ExportVersionModal");
+  var _component_UndoChangesModal = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("UndoChangesModal");
   var _component_PrimaryButton = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("PrimaryButton");
   var _component_DefaultProgressBar = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("DefaultProgressBar");
   var _component_DefaultError = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("DefaultError");
-  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Action Explainer "), $data.useVersionBuilder.hasImportedBuilder ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createBlock)(_component_WarningAlert, {
+  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Action Explainer "), $data.useVersionBuilder.hasImportedBuilder || $data.useVersionBuilder.hasUnsavedBuilderFromLocalStorage ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createBlock)(_component_WarningAlert, {
     key: 0,
     "class": "w-1/2 mb-6"
   }, {
@@ -13907,7 +14074,9 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
       }, null, 8 /* PROPS */, ["form"])])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)];
     }),
     _: 1 /* STABLE */
-  }), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Save Changes Button "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_PrimaryButton, {
+  }), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_7, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Undo Changes Button "), $data.useVersionBuilder.hasUnsavedBuilderFromLocalStorage ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_8, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_UndoChangesModal, {
+    form: $data.form
+  }, null, 8 /* PROPS */, ["form"])])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Save Changes Button "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_PrimaryButton, {
     disabled: $data.isSaving || $data.isDownloading,
     onClick: _cache[2] || (_cache[2] = function ($event) {
       return $options.updateVersion();
@@ -13921,9 +14090,9 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     name: "fade"
   }, {
     "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
-      return [$data.isSaving == true && $data.progressPercentage !== null ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_7, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_8, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Saving Progress Bar "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_DefaultProgressBar, {
+      return [$data.isSaving == true && $data.progressPercentage !== null ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_9, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_10, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Saving Progress Bar "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_DefaultProgressBar, {
         width: $data.progressPercentage
-      }, null, 8 /* PROPS */, ["width"])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_9, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Saving Conversation "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(vue__WEBPACK_IMPORTED_MODULE_0__.Transition, {
+      }, null, 8 /* PROPS */, ["width"])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_11, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Saving Conversation "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(vue__WEBPACK_IMPORTED_MODULE_0__.Transition, {
         name: "fade",
         mode: "out-in",
         appear: ""
@@ -13940,16 +14109,16 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
           return $options.cancelRequest();
         }),
         "class": "flex items-center text-xs text-red-500 hover:text-red-600 active:text-red-700 cursor-pointer ml-8"
-      }, _hoisted_12)])])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)];
+      }, _hoisted_14)])])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)];
     }),
     _: 1 /* STABLE */
   }), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Downloading Progress "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(vue__WEBPACK_IMPORTED_MODULE_0__.Transition, {
     name: "slide-up"
   }, {
     "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
-      return [$data.isDownloading == true && $data.downloadInSeconds >= 1 ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_13, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_14, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Downloading Progress Bar "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_DefaultProgressBar, {
+      return [$data.isDownloading == true && $data.downloadInSeconds >= 1 ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_15, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_16, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Downloading Progress Bar "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_DefaultProgressBar, {
         width: $data.progressPercentage
-      }, null, 8 /* PROPS */, ["width"])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_15, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Downloading Conversation "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(vue__WEBPACK_IMPORTED_MODULE_0__.Transition, {
+      }, null, 8 /* PROPS */, ["width"])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_17, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Downloading Conversation "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(vue__WEBPACK_IMPORTED_MODULE_0__.Transition, {
         name: "slide-up",
         mode: "out-in",
         appear: ""
@@ -16504,6 +16673,33 @@ if (false) {}
 
 /***/ }),
 
+/***/ "./resources/js/Pages/Versions/Show/Builder/Header/UndoChanges/UndoChangesModal.vue":
+/*!******************************************************************************************!*\
+  !*** ./resources/js/Pages/Versions/Show/Builder/Header/UndoChanges/UndoChangesModal.vue ***!
+  \******************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _UndoChangesModal_vue_vue_type_template_id_77b9b816__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./UndoChangesModal.vue?vue&type=template&id=77b9b816 */ "./resources/js/Pages/Versions/Show/Builder/Header/UndoChanges/UndoChangesModal.vue?vue&type=template&id=77b9b816");
+/* harmony import */ var _UndoChangesModal_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./UndoChangesModal.vue?vue&type=script&lang=js */ "./resources/js/Pages/Versions/Show/Builder/Header/UndoChanges/UndoChangesModal.vue?vue&type=script&lang=js");
+/* harmony import */ var _Users_juliantabona_Sites_olfoclet_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
+
+
+
+
+;
+const __exports__ = /*#__PURE__*/(0,_Users_juliantabona_Sites_olfoclet_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__["default"])(_UndoChangesModal_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_UndoChangesModal_vue_vue_type_template_id_77b9b816__WEBPACK_IMPORTED_MODULE_0__.render],['__file',"resources/js/Pages/Versions/Show/Builder/Header/UndoChanges/UndoChangesModal.vue"]])
+/* hot reload */
+if (false) {}
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (__exports__);
+
+/***/ }),
+
 /***/ "./resources/js/Pages/Versions/Show/Builder/Header/index.vue":
 /*!*******************************************************************!*\
   !*** ./resources/js/Pages/Versions/Show/Builder/Header/index.vue ***!
@@ -17848,6 +18044,21 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./resources/js/Pages/Versions/Show/Builder/Header/UndoChanges/UndoChangesModal.vue?vue&type=script&lang=js":
+/*!******************************************************************************************************************!*\
+  !*** ./resources/js/Pages/Versions/Show/Builder/Header/UndoChanges/UndoChangesModal.vue?vue&type=script&lang=js ***!
+  \******************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* reexport safe */ _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_UndoChangesModal_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_0__["default"])
+/* harmony export */ });
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_UndoChangesModal_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../../../../../node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!../../../../../../../../node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./UndoChangesModal.vue?vue&type=script&lang=js */ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/Pages/Versions/Show/Builder/Header/UndoChanges/UndoChangesModal.vue?vue&type=script&lang=js");
+ 
+
+/***/ }),
+
 /***/ "./resources/js/Pages/Versions/Show/Builder/Header/index.vue?vue&type=script&lang=js":
 /*!*******************************************************************************************!*\
   !*** ./resources/js/Pages/Versions/Show/Builder/Header/index.vue?vue&type=script&lang=js ***!
@@ -19164,6 +19375,21 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "render": () => (/* reexport safe */ _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_dist_templateLoader_js_ruleSet_1_rules_2_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_ImportVersionModal_vue_vue_type_template_id_0450480d__WEBPACK_IMPORTED_MODULE_0__.render)
 /* harmony export */ });
 /* harmony import */ var _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_dist_templateLoader_js_ruleSet_1_rules_2_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_ImportVersionModal_vue_vue_type_template_id_0450480d__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../../../../../node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!../../../../../../../../node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!../../../../../../../../node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./ImportVersionModal.vue?vue&type=template&id=0450480d */ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/Pages/Versions/Show/Builder/Header/ImportVersion/ImportVersionModal.vue?vue&type=template&id=0450480d");
+
+
+/***/ }),
+
+/***/ "./resources/js/Pages/Versions/Show/Builder/Header/UndoChanges/UndoChangesModal.vue?vue&type=template&id=77b9b816":
+/*!************************************************************************************************************************!*\
+  !*** ./resources/js/Pages/Versions/Show/Builder/Header/UndoChanges/UndoChangesModal.vue?vue&type=template&id=77b9b816 ***!
+  \************************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "render": () => (/* reexport safe */ _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_dist_templateLoader_js_ruleSet_1_rules_2_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_UndoChangesModal_vue_vue_type_template_id_77b9b816__WEBPACK_IMPORTED_MODULE_0__.render)
+/* harmony export */ });
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_dist_templateLoader_js_ruleSet_1_rules_2_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_UndoChangesModal_vue_vue_type_template_id_77b9b816__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../../../../../node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!../../../../../../../../node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!../../../../../../../../node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./UndoChangesModal.vue?vue&type=template&id=77b9b816 */ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/Pages/Versions/Show/Builder/Header/UndoChanges/UndoChangesModal.vue?vue&type=template&id=77b9b816");
 
 
 /***/ }),
