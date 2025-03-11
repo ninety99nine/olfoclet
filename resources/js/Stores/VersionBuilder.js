@@ -209,7 +209,7 @@ export const useVersionBuilder = defineStore('version_builder', {
             return prefix + Date.now(); // Older method for backward compatibility
         },
         generateId(prefix = ''){
-            return prefix + cuuidv4().replace(/-/g, '_');
+            return prefix + uuidv4().replace(/-/g, '_');
         },
         generateEventId(){
             return this.generateId('event_');
