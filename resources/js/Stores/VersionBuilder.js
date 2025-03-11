@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
+import { v4 as uuidv4 } from 'uuid';
 import _, { pullAt, cloneDeep } from 'lodash';
+
 
 /**
  *  Reference: https://pinia.vuejs.org/core-concepts/
@@ -207,7 +209,7 @@ export const useVersionBuilder = defineStore('version_builder', {
             return prefix + Date.now(); // Older method for backward compatibility
         },
         generateId(prefix = ''){
-            return prefix + crypto.randomUUID().replace(/-/g, '_');
+            return prefix + cuuidv4().replace(/-/g, '_');
         },
         generateEventId(){
             return this.generateId('event_');
