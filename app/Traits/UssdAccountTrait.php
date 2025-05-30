@@ -15,9 +15,9 @@ trait UssdAccountTrait
     public function getCacheName($msisdn, $test_mode, $version_id)
     {
         //  If this is a test account
-        if( $test_mode ){
+        if( $test_mode && ($authUser = auth()->user()) ) {
 
-            $user_id = auth()->user()->id;
+            $user_id = $authUser->id;
 
             //  USSD_ACCOUNT_26772123456_1_2 = [ ... ]
             return $this->getBaseCacheName().'_'.$msisdn.'_'.$user_id.'_'.$version_id;

@@ -352,17 +352,30 @@ class UssdService
 
         }
 
-        //  Get the ussd account otherwise create a new one
-        if( !($this->ussd_account = $this->getUssdAccountForCurrentVersion()) ) {
+        if($this->test_mode) {
 
-            //  Check if the ussd account exist for any other version
+            $authUser = auth()->user();
+            $user_id = $authUser ? $authUser->id : null;
+
+        }else{
+
+            $user_id = null;
+
+        }
+
+        // Get the USSD account for the current version
+        $this->ussd_account = $this->getUssdAccountForCurrentVersion();
+
+        if (!$this->ussd_account) {
+
+            // Check if a USSD account exists for any other version
             $this->ussd_account = DB::table('ussd_accounts')
-                                    ->where('msisdn', $this->msisdn)
-                                    ->where('test', $this->test_mode)
-                                    ->where('user_id', auth()->user() ? auth()->user()->id : null)->first();
+                ->where('msisdn', $this->msisdn)
+                ->where('test', $this->test_mode)
+                ->where('user_id', $user_id)
+                ->first();
 
-            //  If the account exists (Associate with the current version)
-            if( $this->ussd_account ) {
+            if ($this->ussd_account) {
 
                 //  Assign the ussd account to the current version
                 DB::table('ussd_account_connections')->insert([
@@ -374,32 +387,31 @@ class UssdService
                     'updated_at' => now()
                 ]);
 
-            //  If the account does not exist (Create the ussd account and then associate with the current version)
-            }else{
+            } else {
 
-                //  Create a new ussd account
+                // Create a new USSD account
                 $ussd_account_id = DB::table('ussd_accounts')->insertGetId([
-                    'user_id' => auth()->user() ? auth()->user()->id : null,
                     'test' => $this->test_mode,
                     'msisdn' => $this->msisdn,
+                    'user_id' => $user_id,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
 
-                //  Associate the ussd account with the current version
+                // Associate the new account with the current version
                 DB::table('ussd_account_connections')->insert([
-                    'ussd_account_id' => $ussd_account_id,
                     'project_id' => $this->app->project_id,
+                    'ussd_account_id' => $ussd_account_id,
                     'version_id' => $this->version->id,
                     'app_id' => $this->app->id,
                     'created_at' => now(),
-                    'updated_at' => now()
+                    'updated_at' => now(),
                 ]);
 
-            }
+                // Assign the newly created account to the instance variable
+                $this->ussd_account = DB::table('ussd_accounts')->where('id', $ussd_account_id)->first();
 
-            //  Get the ussd account that we just created or associated with the current version
-            $this->ussd_account = $this->getUssdAccountForCurrentVersion();
+            }
 
         }
 
