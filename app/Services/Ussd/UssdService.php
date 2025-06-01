@@ -2508,6 +2508,8 @@ class UssdService
      */
     public function addReplyRecord($input = null, $origin = 'user', $removable = true)
     {
+        $input = $input == null ? null : trim($input);
+
         //  If the input received is not null or empty
         if (!is_null($input) && $input != '') {
             $data = [
