@@ -284,7 +284,7 @@ class UssdService
              *
              *  $jsonArray =["msisdn" => "26771234567", "sessionid" => "123456789", "type" => "2", "msg" => 1]
              *
-             *  When the user replies with an empty space on their device we get:
+             *  When the user replies with an empty space (only hits spacebar) on their device we get:
              *
              *  $requestXmlToJsonOutput = {"msisdn":"26771234567","sessionid":"123456789","type":"2","msg":{}}
              *
