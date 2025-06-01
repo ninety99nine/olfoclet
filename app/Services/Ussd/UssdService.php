@@ -275,6 +275,29 @@ class UssdService
             //  Set the "Message"
             $this->msg = $jsonArray['msg'];
 
+            /**
+             *  When the user replies with "1" on their device we get:
+             *
+             *  $requestXmlToJsonOutput = {"msisdn":"26771234567","sessionid":"123456789","type":"2","msg":1}
+             *
+             *  This results in:
+             *
+             *  $jsonArray =["msisdn" => "26771234567", "sessionid" => "123456789", "type" => "2", "msg" => 1]
+             *
+             *  When the user replies with an empty space on their device we get:
+             *
+             *  $requestXmlToJsonOutput = {"msisdn":"26771234567","sessionid":"123456789","type":"2","msg":{}}
+             *
+             *  This results in:
+             *
+             *  $jsonArray = ["msisdn" => "26771234567", "sessionid" => "123456789", "type" => "2", "msg" => []]
+             *
+             *  We must always change the empty array value for an empty string value
+             */
+            if(is_array($this->msg)) {
+                $this->msg = '';
+            }
+
             //  Set the "Msisdn"
             $this->msisdn = $jsonArray['msisdn'];
 
@@ -2508,8 +2531,6 @@ class UssdService
      */
     public function addReplyRecord($input = null, $origin = 'user', $removable = true)
     {
-        $input = $input == null ? null : trim($input);
-
         //  If the input received is not null or empty
         if (!is_null($input) && $input != '') {
             $data = [
