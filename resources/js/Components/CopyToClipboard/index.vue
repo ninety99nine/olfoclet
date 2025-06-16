@@ -36,6 +36,8 @@
         methods: {
             copyToClipboard() {
 
+                console.log(`copy to clipboard: ${this.value}`);
+
                 //  Copy to clipboard
                 navigator.clipboard.writeText(this.value).then(() => {
 

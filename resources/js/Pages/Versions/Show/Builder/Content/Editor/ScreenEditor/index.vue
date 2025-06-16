@@ -99,6 +99,9 @@
                     {
                         label: 'Copy ID',
                         onclick: () => {
+
+                            console.log(`screen id: ${this.screen.id}`);
+
                             //  Copy to clipboard
                             navigator.clipboard.writeText(this.screen.id).then(() => {
                                 // Alert the user that the action took place.
@@ -113,6 +116,9 @@
                         label: 'Copy Name',
                         borders: ['b'],
                         onclick: () => {
+
+                            console.log(`screen name: ${this.screen.name}`);
+
                             //  Copy to clipboard
                             navigator.clipboard.writeText(this.screen.name).then(() => {
                                 // Alert the user that the action took place.

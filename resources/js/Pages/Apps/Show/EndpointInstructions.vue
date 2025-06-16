@@ -47,6 +47,8 @@
         methods: {
             copyToClipboard() {
 
+                console.log(`copy to clipboard: ${this.endpoint}`);
+
                 //  Copy to clipboard
                 navigator.clipboard.writeText(this.endpoint).then(() => {
 
