@@ -4795,9 +4795,13 @@ class UssdService
                 }
 
                 if ($returnType == 'array') {
+                    $this->logError('$collection');
+                    $this->logError($collection);
                     //  Return the options
                     return $collection;
                 } elseif ($returnType == 'string') {
+                    $this->logError('$string');
+                    $this->logError($string);
                     //  Return the options
                     return $text;
                 }
