@@ -5867,14 +5867,25 @@ class UssdService
         //  Check if we have options to display
         $optionsExist = count($options) ? true : false;
 
-        //  Get option matching user response
-        $selectedOption = collect(array_filter($options, function ($option) {
-            //  If the user response matches the option's input
-            return $this->current_user_response == $option['input'];
-        }))->first() ?? null;
-
         //  If we have options to display
         if ($optionsExist) {
+
+            //  Get option matching user response
+            $selectedOption = collect(array_filter($options, function ($option) {
+                //  If the user response matches the option's input
+                return $this->current_user_response == $option['input'];
+            }))->first() ?? null;
+
+            if(empty($selectedOption)) {
+
+                //  Get option with an input set to true
+                $selectedOption = collect(array_filter($options, function ($option) {
+                    //  If the option's input is set to true
+                    return $option['input'] === true;
+                }))->first() ?? null;
+
+            }
+
             //  If the user selected an option that exists
             if (!empty($selectedOption)) {
                 //  Get the selected option link (The display or screen we must link to after the user selects this option)
