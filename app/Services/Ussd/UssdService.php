@@ -4801,7 +4801,7 @@ class UssdService
                     return $collection;
                 } elseif ($returnType == 'string') {
                     $this->logError('$string');
-                    $this->logError($string);
+                    $this->logError($text);
                     //  Return the options
                     return $text;
                 }
