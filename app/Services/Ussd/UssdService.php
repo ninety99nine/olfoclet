@@ -2965,6 +2965,8 @@ class UssdService
      */
     public function handleCurrentScreen()
     {
+        $this->logInfo('Handling screen: '.$this->wrapAsPrimaryHtml($this->screen['name']).' using ID: '.$this->wrapAsPrimaryHtml($this->screen['id']));
+
         //  Add the current screen to the list of chained screens
         array_push($this->chained_screens, [
             'id' => $this->screen['id'],
@@ -4686,12 +4688,12 @@ class UssdService
                     $option = $options[$x];
 
                     //  If the option name was not provided
-                    if (!isset($option['name']) || empty($option['name'])) {
+                    if (!isset($option['name'])) {
                         //  Set a warning log that the option name was not provided
                         $this->logWarning('The '.$this->wrapAsSuccessHtml('Option name').' is not provided');
 
                     //  If the option name is not a type of [String]
-                    } elseif (!is_string($option['name'])) {
+                    } elseif (!is_null($option['name']) && !is_string($option['name'])) {
                         //  Get the option name type wrapped in html tags
                         $dataType = $this->wrapAsSuccessHtml($option['name']);
 
@@ -4699,17 +4701,17 @@ class UssdService
                         $this->logWarning('The given '.$this->wrapAsSuccessHtml('Option name').' must return data of type ['.$this->wrapAsSuccessHtml('String').'] or ['.$this->wrapAsSuccessHtml('Integer').'] however we received a value of type ['.$dataType.']');
 
                     //  If the option input was not provided
-                    } elseif (!isset($option['input']) || is_null($option['input'])) {
+                    } elseif (!isset($option['input'])) {
                         //  Set a warning log that the option input was not provided
                         $this->logWarning('The '.$this->wrapAsSuccessHtml('Option input').' is not provided');
 
                     //  If the option input is not a type of [String] or [Integer]
-                    } elseif (!(is_string($option['input']) || is_integer($option['input']))) {
+                    } elseif (!(is_null($option['input']) || is_string($option['input']) || is_integer($option['input']) || is_callable($option['input']))) {
                         //  Get the option input type wrapped in html tags
-                        $dataType = $this->wrapAsSuccessHtml($option['input']);
+                        $dataType = $this->wrapAsSuccessHtml(gettype($option['input']));
 
                         //  Set a warning log that the option name must be of type [String] or [Integer]
-                        $this->logWarning('The given '.$this->wrapAsSuccessHtml('Option input').' must return data of type ['.$this->wrapAsSuccessHtml('String').'] or ['.$this->wrapAsSuccessHtml('Integer').'] however we received a value of type ['.$dataType.']');
+                        $this->logWarning('The given '.$this->wrapAsSuccessHtml('Option input').' must return data of type ['.$this->wrapAsSuccessHtml('Null').'],  ['.$this->wrapAsSuccessHtml('String').'], ['.$this->wrapAsSuccessHtml('Integer').'] or ['.$this->wrapAsSuccessHtml('Function').'] however we received a value of type ['.$dataType.']');
 
                     //  If the option link was set but is not of type [Array]
                     } elseif (isset($option['link']) && !is_string($option['link'])) {
@@ -4752,6 +4754,8 @@ class UssdService
 
                     //  If the return type is an array format
                     if ($returnType == 'array') {
+                        $this->logError($option['name']);
+                        $this->logError($option['input']);
                         //  Build the option as an array
                         $option = [
                             //  Get the option name
@@ -13310,22 +13314,23 @@ class UssdService
 
     public function convertToString($data = '')
     {
-        //  If the given data is not a string
-        if (!is_string($data)) {
-
-            //  If the data is an array, object or bool
-            if (is_array($data) || is_object($data) || is_bool($data)) {
-
-                $data = json_encode($data);
-
-            }
-
-            //  Cast data into a string format
-            $data = (string) $data;
-
+        // If the data is callable (e.g., function name, Closure)
+        if (is_callable($data)) {
+            return (string) $data();
         }
 
-        //  Return data without HTML or PHP tags
+        // If the given data is not a string
+        if (!is_string($data)) {
+            // If the data is an array, object, or bool
+            if (is_array($data) || is_object($data) || is_bool($data)) {
+                $data = json_encode($data);
+            }
+
+            // Cast data into a string format
+            $data = (string) $data;
+        }
+
+        // Return data without HTML or PHP tags
         return strip_tags($data);
     }
 
