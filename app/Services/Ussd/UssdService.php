@@ -4802,13 +4802,9 @@ class UssdService
                 }
 
                 if ($returnType == 'array') {
-                    $this->logError('$collection');
-                    $this->logError($collection);
                     //  Return the options
                     return $collection;
                 } elseif ($returnType == 'string') {
-                    $this->logError('$collection');
-                    $this->logError($collection);
                     //  Return the options
                     return $text;
                 }
@@ -5887,20 +5883,14 @@ class UssdService
                 return $this->current_user_response == $option['input'];
             }))->first() ?? null;
 
-                $this->logError('stage 1');
             if(empty($selectedOption)) {
-                $this->logError('stage 2');
                 //  Get option with an input set to true
                 $selectedOption = collect(array_filter($options, function ($option) {
-                $this->logError($option);
-                $this->logError($option['input']);
                     //  If the option's input is set to true
                     return $option['input'] === true;
                 }))->first() ?? null;
 
             }
-                $this->logError('$selectedOption');
-                $this->logError($selectedOption);
 
             //  If the user selected an option that exists
             if (!empty($selectedOption)) {
