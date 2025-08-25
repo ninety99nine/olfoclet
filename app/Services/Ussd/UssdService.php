@@ -5888,6 +5888,8 @@ class UssdService
                 }))->first() ?? null;
 
             }
+                $this->logError('$selectedOption');
+                $this->logError($selectedOption);
 
             //  If the user selected an option that exists
             if (!empty($selectedOption)) {
