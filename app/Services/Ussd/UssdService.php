@@ -4755,12 +4755,19 @@ class UssdService
                     //  If the return type is an array format
                     if ($returnType == 'array') {
 
+                        // If the data is callable (e.g., function name, Closure)
+                        if (is_callable($option['input'])) {
+                            $input = $option['input']();
+                        }else{
+                            $input = $this->convertToString($option['input']) ?? null;
+                        }
+
                         //  Build the option as an array
                         $option = [
                             //  Get the option name
                             'name' => $this->convertToString($option['name']) ?? null,
                             //  Get the option input
-                            'input' => $this->convertToString($option['input']) ?? null,
+                            'input' => $input,
                             //  Get the option value
                             'value' => $option['value'] ?? null,
                             //  Get the option link
@@ -4800,8 +4807,8 @@ class UssdService
                     //  Return the options
                     return $collection;
                 } elseif ($returnType == 'string') {
-                    $this->logError('$string');
-                    $this->logError($text);
+                    $this->logError('$collection');
+                    $this->logError($collection);
                     //  Return the options
                     return $text;
                 }
