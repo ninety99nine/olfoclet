@@ -4688,7 +4688,7 @@ class UssdService
                     $option = $options[$x];
 
                     //  If the option name was not provided
-                    if (!isset($option['name'])) {
+                    if (!array_key_exists('name', $option)) {
                         //  Set a warning log that the option name was not provided
                         $this->logWarning('The '.$this->wrapAsSuccessHtml('Option name').' is not provided');
 
@@ -4701,7 +4701,7 @@ class UssdService
                         $this->logWarning('The given '.$this->wrapAsSuccessHtml('Option name').' must return data of type ['.$this->wrapAsSuccessHtml('String').'] or ['.$this->wrapAsSuccessHtml('Integer').'] however we received a value of type ['.$dataType.']');
 
                     //  If the option input was not provided
-                    } elseif (!isset($option['input'])) {
+                    } elseif (!array_key_exists('input', $option)) {
                         //  Set a warning log that the option input was not provided
                         $this->logWarning('The '.$this->wrapAsSuccessHtml('Option input').' is not provided');
 
@@ -4754,8 +4754,7 @@ class UssdService
 
                     //  If the return type is an array format
                     if ($returnType == 'array') {
-                        $this->logError($option['name']);
-                        $this->logError($option['input']);
+
                         //  Build the option as an array
                         $option = [
                             //  Get the option name
