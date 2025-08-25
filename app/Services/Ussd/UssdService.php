@@ -5876,10 +5876,13 @@ class UssdService
                 return $this->current_user_response == $option['input'];
             }))->first() ?? null;
 
+                $this->logError('stage 1');
             if(empty($selectedOption)) {
-
+                $this->logError('stage 2');
                 //  Get option with an input set to true
                 $selectedOption = collect(array_filter($options, function ($option) {
+                $this->logError($option);
+                $this->logError($option['input']);
                     //  If the option's input is set to true
                     return $option['input'] === true;
                 }))->first() ?? null;
