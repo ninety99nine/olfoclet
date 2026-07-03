@@ -1,0 +1,63 @@
+{
+    "transcript": [
+        {
+            "step": "start",
+            "input": "*217#",
+            "request_type": "2",
+            "msg": "First-Aid Counselling\n\n1. My profile\n2. Services\n3. Change language\n4. Settings"
+        },
+        {
+            "step": "in:0",
+            "input": "1",
+            "request_type": "2",
+            "msg": "My Profile\n\n1. View Profile\n2. Update Profile\n0. Back"
+        },
+        {
+            "step": "in:1",
+            "input": "0",
+            "request_type": "2",
+            "msg": "First-Aid Counselling\n\n1. My profile\n2. Services\n3. Change language\n4. Settings"
+        },
+        {
+            "step": "in:2",
+            "input": "2",
+            "request_type": "2",
+            "msg": "Services\n\n1. Get Educated\n2. Self-Help Tips\n3. Daily Quotes\n0. Back"
+        },
+        {
+            "step": "in:3",
+            "input": "1",
+            "request_type": "2",
+            "msg": "Get educated\n\n1. Topics\n2. Search topics\n0. Back\n00. Main menu"
+        },
+        {
+            "step": "in:4",
+            "input": "0",
+            "request_type": "2",
+            "msg": "Services\n\n1. Get Educated\n2. Self-Help Tips\n3. Daily Quotes\n0. Back"
+        },
+        {
+            "step": "in:5",
+            "input": "0",
+            "request_type": "2",
+            "msg": "First-Aid Counselling\n\n1. My profile\n2. Services\n3. Change language\n4. Settings"
+        },
+        {
+            "step": "in:6",
+            "input": "3",
+            "request_type": "2",
+            "msg": "Select language\n\n1. English\n2. Setswana\n0. Back"
+        },
+        {
+            "step": "in:7",
+            "input": "0",
+            "request_type": "2",
+            "msg": "First-Aid Counselling\n\n1. My profile\n2. Services\n3. Change language\n4. Settings"
+        }
+    ],
+    "session": {
+        "request_type": "2",
+        "fatal_error": false,
+        "reply_records": []
+    }
+}
