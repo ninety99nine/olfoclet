@@ -63,8 +63,8 @@ must keep running** because live services depend on it.
 | 4 | Verify/extend tests for File 02 | agent | ✅ core |
 | 5 | Implement `03_JSON_COMPATIBILITY_MIGRATION.md` | agent | ✅ (converter built, tested, run on dev DB) |
 | 6 | Verify/extend tests for File 03 | agent | ✅ core (14 file03 tests green; full suite 59 green) |
-| 7 | Study V2 Docker + build V1 production Docker setup | agent | ⬜ |
-| 8 | Deploy V1 via Docker ("Telcoflo V1"), full boot | agent | ⬜ |
+| 7 | Study V2 Docker + build V1 production Docker setup | agent | ✅ (image builds; nginx+fpm+mysql+redis+worker+scheduler+mock) |
+| 8 | Deploy V1 via Docker ("Telcoflo V1"), full boot | agent | ✅ (all 7 services up; app + converted data verified in-browser on :8080) |
 | 9 | Manual USSD service re-testing | **user** | ⬜ |
 | 10 | AWS staging + monitoring + K6 load testing | agent + user | ⬜ |
 | 11 | Production cutover strategy to Orange server | agent + user | ⬜ |
@@ -450,7 +450,33 @@ configs, `.env.docker`, DB-restore script, docs on build/run.
 
 **Verification:** `docker compose build` succeeds; image contains built assets + no dev deps.
 
-**Feedback log:** _(agent fills in)_
+**Feedback log (2026-07-03) — Phase 7 & 8 DONE ✅ (commits 17967e5, 786fbdf).** Built the full stack and
+booted it end-to-end on this machine. Deviations / issues found by actually building + booting:
+- **Composer stage:** the `composer:2` image now ships **PHP 8.5**, which fails the locked deps'
+  `php <8.3` constraints (nette/*). Fixed by running `composer install` in the **php:8.2 runtime stage**
+  (composer binary copied from `composer:2`), so it runs under the real target PHP.
+- **MySQL env:** compose `${DB_*}` interpolation reads the repo's local dev `.env` (`DB_USERNAME=root`),
+  which MySQL rejects for `MYSQL_USER` → crash-loop. **Hardcoded** the mysql container creds
+  (telcoflo/secret/root) to match `.env.docker`. Also moved mysql host port **3307→3308** (3307 was taken
+  by another local project — `boldmark-db`).
+- **FPM pool** config replaces the base image's `www.conf` (a second file = duplicate `[www]` pool → FPM
+  won't start).
+- **V2 study:** `~/Sites/telcoflo` has no Docker setup to borrow, so used standard Laravel prod patterns.
+- **Seed:** first `mysqldump` was **1 GB** (almost all `ussd_sessions` history). Replaced with a **lean 21 MB**
+  seed = all table structures + data for everything except the session-history tables (so `migrate` doesn't
+  try to recreate a "missing" table). Gitignored; consumed by the mysql first-boot `initdb` bind-mount.
+
+**Verified:** `docker compose build` → `telcoflo-v1/app:latest` (778 MB); `docker compose up -d` boots all
+**7 services** (mysql+redis healthy); app entrypoint runs package:discover + `migrate` (migrations-table
+AUTO_INCREMENT guard → clean "Nothing to migrate" on the seeded DB) + config/route cache; **login page 200,
+0 deprecation leaks**; seeded **35 schema_v2 versions / 33 apps / 5 users**; queue + scheduler running; mock
+answers at `192.168.22.202`. **Browser end-to-end on :8080:** login + a converted builder (v7) loads with
+**0 console errors** and per-element colours hydrated from `settings.builder_ui`. **Restart-idempotent:**
+`down` (keep volumes) → `up -d` returns healthy, data persists (no re-seed), login still 200. Phase 8 done
+alongside. Run docs in `docker/README.md`.
+
+**Not needed for staging (carry to Phase 10/11):** raise `innodb_buffer_pool_size` for load testing;
+richer mock payloads if a flow parses specific CMS fields; a real sanitised prod dump for the AWS box.
 
 ---
 
