@@ -59,8 +59,8 @@ must keep running** because live services depend on it.
 | 0 | Test harness + execution plan (groundwork) | agent | ✅ |
 | 1 | Implement `01_SAFE_NON_BREAKING_FIXES.md` | agent | ✅ (15/20; see notes) |
 | 2 | Verify/extend tests for File 01 (+ land P18/P19/P20) | agent | ✅ |
-| 3 | Implement `02_BREAKING_JSON_STRUCTURE_FIXES.md` | agent | ⬜ |
-| 4 | Verify/extend tests for File 02 | agent | ⬜ |
+| 3 | Implement `02_BREAKING_JSON_STRUCTURE_FIXES.md` | agent | ✅ backend (frontend companion deferred) |
+| 4 | Verify/extend tests for File 02 | agent | ✅ core |
 | 5 | Implement `03_JSON_COMPATIBILITY_MIGRATION.md` | agent | ⬜ |
 | 6 | Verify/extend tests for File 03 | agent | ⬜ |
 | 7 | Study V2 Docker + build V1 production Docker setup | agent | ⬜ |
@@ -237,7 +237,35 @@ new `versions.settings` store; add `schema_version`. **Ships together with Phase
 **Verification:** `--group file02` green; **golden snapshots unchanged** (real-session behaviour identical
 after relocation — this is the crucial guard); builder-bytes-unchanged-on-settings-save test green.
 
-**Feedback log:** _(agent fills in)_
+**Feedback log (2026-07-03) — BACKEND DONE ✅ (commits c45af6d, 56607d5, a3ef7b4):** All 9 problems
+implemented on the backend; full File02 target group green (7 tests, 0 skips); all 5 goldens byte-identical;
+regression green. Highlights + deviations:
+- **Safer-than-spec:** every relocated engine read (`getTimeoutLimitInSeconds`, allow_timeouts,
+  timeout_message, debugger flags, subscriber) uses `versionSetting(path, <legacy-builder-fallback>)`, so the
+  engine behaves identically on **un-converted** versions (reads builder) and on converted ones (reads
+  settings). This makes File 02 safe to run even before the converter — better than the spec's settings-only
+  reads. P8/P7 defensive reads let it also tolerate File 03's compacted output.
+- **Settings endpoint:** `PUT /versions/{version}/settings` + `VersionController::updateSettings` (touches
+  only `settings`; repairBuilder short-circuits on v2 so the builder stays byte-identical).
+- **⚠ File 03 interaction to handle in Phase 5:** `repairBuilder` now stamps `schema_version:2`, and File
+  03's converter skips versions already at v2. So a version re-saved after File 02 (but before the converter)
+  would be stamped v2 while still un-slimmed → the converter would skip it. **Fix in Phase 5:** make the
+  BuilderUpgrader idempotency also require the builder to be actually slimmed (e.g. no `simulator` key), or
+  run the converter with `--force` / on raw builders. The Phase-5 command test must seed a legacy builder
+  (or use `--force`) since `FirstAidApp` saves through repair (→ v2).
+- **FRONTEND COMPANION DEFERRED (not started):** `resources/js/Stores/VersionBuilder.js` + simulator/
+  appearance panels must read appearance/simulator/timeout from `settings` (and save via the new endpoint),
+  stop seeding `simulator`/`color_scheme`, and drop per-display pagination when global — then `npm run prod`
+  rebuild. **Not covered by the automated suite** (no frontend tests) and risky to do blind, so deferred to
+  be implemented + **manually verified during Phase 9** (UI testing) and it MUST land before the production
+  converter run (Phase 11) or the builder UI would break for editing converted versions. Real USSD serving
+  (the engine) is unaffected and fully working now.
+
+**Phase 4 core done:** File02 targets + golden green. Optional extras not added (low priority): an
+authenticated HTTP test of the settings endpoint (the model-level builder-bytes-unchanged test already
+covers the core invariant) and a standalone engine settings-read test.
+
+**→ Ready for Phase 5 (File 03 converter), which also resolves the schema_version/converter interaction above.**
 
 ---
 
