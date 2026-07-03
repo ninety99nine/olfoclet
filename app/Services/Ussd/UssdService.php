@@ -91,6 +91,7 @@ class UssdService
     public $session_execution_times = [];
     public $is_revisting_session = false;
     public $requestXmlToJsonOutput = null;
+    public $httpClient = null;
     public $global_variables_to_save = [];
     public $ussd_account_connection = null;
     public $incorrect_option_selected = null;
@@ -7025,10 +7026,28 @@ class UssdService
         return $response;
     }
 
+    /** Return one reused Guzzle client per request, with timeouts so a hanging
+     *  upstream (e.g. the CMS/SMS endpoints) can no longer block a USSD worker
+     *  indefinitely. http_errors/verify are intentionally NOT set here — every
+     *  caller already passes those per-request, so their semantics are unchanged;
+     *  only the infinite-hang failure case is affected (now errors at ~10s).
+     */
+    public function getHttpClient()
+    {
+        if ($this->httpClient === null) {
+            $this->httpClient = new Client([
+                'timeout' => 10,
+                'connect_timeout' => 5,
+            ]);
+        }
+
+        return $this->httpClient;
+    }
+
     public function callGuzzleHttp($method, $url, $request_options)
     {
-        //  Create a new Http Guzzle Client
-        $httpClient = new Client();
+        //  Get the reused Http Guzzle Client (configured with timeouts)
+        $httpClient = $this->getHttpClient();
 
         //  Set an info log that we are performing REST API call
         $this->logInfo('Run API call to: '.$this->wrapAsSuccessHtml($url));
