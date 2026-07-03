@@ -22,25 +22,26 @@ class MarkerDetectionTest extends TestCase
 
     public function test_index_marker_detects_existing_indexes(): void
     {
-        // These indexes exist in the base migrations (positive detection).
+        // Positive detection — base-migration indexes plus the File 01 P6
+        // session_id index once it has landed.
         $this->assertTrue($this->tableHasIndexOnColumns('ussd_sessions', ['ussd_account_id']));
         $this->assertTrue($this->tableHasIndexOnColumns('session_notifications', ['session_id']));
         $this->assertTrue($this->tableHasIndexOnColumns('ussd_sessions', ['project_id', 'app_id', 'version_id']));
+        $this->assertTrue($this->tableHasIndexOnColumns('ussd_sessions', ['session_id'])); // File 01 P6
     }
 
     public function test_index_marker_reports_missing_target_indexes_as_absent(): void
     {
-        // File 01 Problem 6 has not run yet (negative detection) — this is exactly
-        // what keeps those target tests skipped for now.
-        $this->assertFalse($this->tableHasIndexOnColumns('ussd_sessions', ['session_id']));
-        $this->assertFalse($this->tableHasIndexOnColumns('global_variables', ['ussd_account_id', 'app_id']));
+        // Negative detection — indexes that no phase ever creates, so this stays
+        // stable regardless of which fixes have landed.
+        $this->assertFalse($this->tableHasIndexOnColumns('ussd_sessions', ['fatal_error_msg']));
+        $this->assertFalse($this->tableHasIndexOnColumns('global_variables', ['metadata']));
     }
 
     public function test_column_marker_detects_present_and_absent_columns(): void
     {
-        $this->assertTrue($this->columnExists('ussd_sessions', 'request_type'));   // present today
-        $this->assertFalse($this->columnExists('ussd_sessions', 'session_state')); // File 01 P20 target
-        $this->assertFalse($this->columnExists('versions', 'settings'));           // File 02 P2 target
+        $this->assertTrue($this->columnExists('ussd_sessions', 'request_type'));       // base column
+        $this->assertFalse($this->columnExists('ussd_sessions', 'no_such_column_xyz')); // never exists
     }
 
     public function test_model_state_marker_reflects_current_eager_loading(): void
