@@ -232,8 +232,54 @@ export const useVersionBuilder = defineStore('version_builder', {
             this.settings.builder_ui = acc;
 
             const clone = _.cloneDeep(this.builder);
-            this.stripBuilderUiKeys(clone);
+            this.stripBuilderUiKeys(clone);          //  P3 — hexColor/comment
+            this.compactValueStructures(clone);      //  P8 — empty ValueStructures
+            this.normalizePaginationDeep(clone);     //  P7 — global pagination
             return clone;
+        },
+
+        /**
+         *  File 02 P8 — compact empty non-code ValueStructures on save (drop
+         *  code_editor_text/code_editor_mode when the node is empty and not in code
+         *  mode); code_editor_mode===true content is preserved verbatim. Mirrors the
+         *  backend BuilderUpgrader::compactValueStructures. Operates on the save clone
+         *  only, so in-memory editing keeps the full shape.
+         */
+        compactValueStructures(node){
+            if(!node || typeof node !== 'object') return;
+
+            if(Object.prototype.hasOwnProperty.call(node, 'code_editor_text')
+                && Object.prototype.hasOwnProperty.call(node, 'code_editor_mode')){
+                const mode = node.code_editor_mode ?? false;
+                const code = node.code_editor_text ?? '';
+                if(mode !== true && (code === '' || code === null)){
+                    delete node.code_editor_text;
+                    delete node.code_editor_mode;
+                }
+            }
+
+            for(const key in node){
+                const value = node[key];
+                if(value && typeof value === 'object') this.compactValueStructures(value);
+            }
+        },
+
+        /**
+         *  File 02 P7 — when a display uses global pagination, persist only the flag.
+         *  Custom (use_global_pagination:false) pagination is left intact. Mirrors the
+         *  backend BuilderUpgrader::normalizePagination.
+         */
+        normalizePaginationDeep(builder){
+            const screens = (builder && builder.screens) ? builder.screens : [];
+            for(const screen of screens){
+                const displays = (screen && screen.displays) ? screen.displays : [];
+                for(const display of displays){
+                    const pg = display && display.content ? display.content.pagination : null;
+                    if(pg && typeof pg === 'object' && pg.use_global_pagination === true){
+                        display.content.pagination = { use_global_pagination: true };
+                    }
+                }
+            }
         },
 
         /**
