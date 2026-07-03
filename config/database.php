@@ -60,6 +60,10 @@ return [
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                //  Reuse the MySQL TCP connection across requests within a
+                //  PHP-FPM worker (~5-20ms saved per request). Monitor
+                //  Threads_connected; single-line rollback if it climbs.
+                PDO::ATTR_PERSISTENT => true,
             ]) : [],
         ],
 
