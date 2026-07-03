@@ -46,9 +46,9 @@ class MarkerDetectionTest extends TestCase
 
     public function test_model_state_marker_reflects_current_eager_loading(): void
     {
-        // UssdSession currently eager-loads 'account' — the File 01 P15 target
-        // waits for this to be removed.
+        // File 01 P15 removed the default eager-load of 'account' (the marker the
+        // P15 target test keys off). It must no longer be auto-loaded.
         $with = (array) $this->protectedProp(new UssdSession(), 'with');
-        $this->assertContains('account', $with);
+        $this->assertNotContains('account', $with);
     }
 }

@@ -11,7 +11,13 @@ class UssdSession extends Model
 {
     use HasFactory, UssdSessionTrait;
 
-    protected $with = ['account'];
+    //  File 01 Problem 15: dropped the default eager-load of 'account' so the
+    //  USSD hot path no longer fires an extra JOIN query on every session load.
+    //  'account' still lazy-loads on access, so dashboards keep working; add an
+    //  explicit ->with('account') to list/report queries to avoid N+1 there.
+    //  ($appends retained intentionally — removing it has a wide, unverified
+    //  dashboard/Inertia/export surface; the accessors only run on serialize.)
+    // protected $with = ['account'];
 
     const MAXIMUM_SESSION_DURATION = 120;
 
