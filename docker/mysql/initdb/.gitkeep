@@ -1,0 +1,10 @@
+# Drop a sanitised telcoflo dump here (e.g. seed.sql / seed.sql.gz) to have it
+# imported automatically the FIRST time the mysql container initialises an empty
+# data directory. Files run in alphabetical order. Keep real dumps OUT of git.
+#
+# Example:
+#   mysqldump -h 127.0.0.1 -uroot telcoflo | gzip > docker/mysql/initdb/seed.sql.gz
+#   docker compose up -d          # imported on first boot
+#
+# After the File 03 converter has run once, set RUN_UPGRADE_BUILDERS=false so it
+# is not re-run on every boot (it is idempotent, but skipping is cleaner).

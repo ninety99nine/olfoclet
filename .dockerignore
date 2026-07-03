@@ -1,0 +1,32 @@
+# Keep the build context lean; vendor/ and node_modules/ are rebuilt in the
+# composer/assets stages, and local env/caches must never leak into the image.
+.git
+.gitignore
+.github
+
+node_modules
+vendor
+
+.env
+.env.*
+!.env.docker
+
+storage/logs/*
+storage/framework/cache/data/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/app/builder-backups/*
+bootstrap/cache/*.php
+
+tests
+.phpunit.result.cache
+
+.DS_Store
+**/.DS_Store
+.idea
+.vscode
+.playwright-mcp
+.claude
+
+*.md
+docs

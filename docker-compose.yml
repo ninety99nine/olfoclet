@@ -1,0 +1,162 @@
+# Telcoflo V1 — production-like stack (Phase 7/8).
+#
+# Deliberately isolated from the V2 "Telcoflo" (Sail) setup: compose project
+# `telcoflo-v1`, image `telcoflo-v1/app`, container prefix `telcoflo-v1-*`, and
+# distinct host ports (app 8080 / mysql 3307 / redis 6380) so both can coexist.
+#
+#   docker compose up -d --build
+#   open http://localhost:8080
+#
+name: telcoflo-v1
+
+x-app-build: &app-build
+  build:
+    context: .
+    dockerfile: Dockerfile
+  image: telcoflo-v1/app:latest
+  env_file: .env.docker
+  depends_on:
+    mysql:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  restart: unless-stopped
+
+services:
+  # ---- PHP-FPM application runtime ---------------------------------------
+  app:
+    <<: *app-build
+    container_name: telcoflo-v1-app
+    volumes:
+      - public:/var/www/html/public          # built assets, shared with nginx
+      - storage:/var/www/html/storage        # logs / framework cache / uploads
+    networks:
+      orange:
+
+  # ---- nginx (serves public/, fastcgi to app:9000) -----------------------
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: telcoflo-v1-nginx
+    depends_on:
+      - app
+    ports:
+      - "8080:80"
+    volumes:
+      - public:/var/www/html/public:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      orange:
+    restart: unless-stopped
+
+  # ---- MySQL 8.0 (tuned) -------------------------------------------------
+  mysql:
+    image: mysql:8.0
+    container_name: telcoflo-v1-mysql
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_DATABASE: "${DB_DATABASE:-telcoflo}"
+      MYSQL_USER: "${DB_USERNAME:-telcoflo}"
+      MYSQL_PASSWORD: "${DB_PASSWORD:-secret}"
+      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD:-root}"
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/telcoflo.cnf:ro
+      # First-boot seed: any *.sql / *.sh here runs when the data dir is empty.
+      - ./docker/mysql/initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DB_ROOT_PASSWORD:-root}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      orange:
+    restart: unless-stopped
+
+  # ---- Redis 7 (cache / session / queue) ---------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: telcoflo-v1-redis
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis-data:/data
+      - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      orange:
+    restart: unless-stopped
+
+  # ---- Queue worker (File 01 sessions:archive etc.) ----------------------
+  queue:
+    <<: *app-build
+    container_name: telcoflo-v1-queue
+    depends_on:
+      app:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    entrypoint: []
+    command: ["php", "artisan", "queue:work", "--sleep=1", "--tries=3", "--max-time=3600"]
+    volumes:
+      - storage:/var/www/html/storage
+    networks:
+      orange:
+
+  # ---- Scheduler (drives the daily sessions:archive schedule) ------------
+  scheduler:
+    <<: *app-build
+    container_name: telcoflo-v1-scheduler
+    depends_on:
+      app:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    entrypoint: []
+    command: ["php", "artisan", "schedule:work"]
+    volumes:
+      - storage:/var/www/html/storage
+    networks:
+      orange:
+
+  # ---- Mock Orange internal services -------------------------------------
+  # Holds the CMS IP (192.168.22.202) on the orange network so builder REST
+  # events resolve to it; ORANGE_STK_PUSH_URL in .env.docker also points here.
+  mock-server:
+    image: nginx:1.27-alpine
+    container_name: telcoflo-v1-mock
+    volumes:
+      - ./docker/mock-server/default.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      orange:
+        ipv4_address: 192.168.22.202
+    restart: unless-stopped
+
+networks:
+  orange:
+    name: telcoflo-v1-net
+    driver: bridge
+    ipam:
+      config:
+        # Mimics the real Orange internal subnet so hardcoded/builder-embedded
+        # 192.168.22.x hosts resolve to the mock. NOTE: if the Docker host is
+        # itself on 192.168.22.0/24 this will clash — change the subnet + the
+        # mock IP + ORANGE_STK_PUSH_URL together.
+        - subnet: 192.168.22.0/24
+          gateway: 192.168.22.1
+
+volumes:
+  mysql-data:
+  redis-data:
+  public:
+  storage:
