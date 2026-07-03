@@ -1,0 +1,58 @@
+{
+    "transcript": [
+        {
+            "step": "start",
+            "input": "*217#",
+            "request_type": "2",
+            "msg": "Welcome to First-Aid Counselling - a safe space for anonymous counselling and care\n\n1. Join\n2. Exit"
+        },
+        {
+            "step": "in:0",
+            "input": "3",
+            "request_type": "2",
+            "msg": "Welcome to First-Aid Counselling - a safe space for anonymous counselling and care\n\n1. Join\n2. Exit"
+        },
+        {
+            "step": "in:1",
+            "input": "3",
+            "request_type": "2",
+            "msg": "Welcome to First-Aid Counselling - a safe space for anonymous counselling and care\n\n1. Join\n2. Exit"
+        },
+        {
+            "step": "in:2",
+            "input": "3",
+            "request_type": "2",
+            "msg": "Welcome to First-Aid Counselling - a safe space for anonymous counselling and care\n\n1. Join\n2. Exit"
+        },
+        {
+            "step": "in:3",
+            "input": "3",
+            "request_type": "2",
+            "msg": "Welcome to First-Aid Counselling - a safe space for anonymous counselling and care\n\n1. Join\n2. Exit"
+        },
+        {
+            "step": "in:4",
+            "input": "3",
+            "request_type": "2",
+            "msg": "Welcome to First-Aid Counselling - a safe space for anonymous counselling and care\n\n1. Join\n2. Exit"
+        }
+    ],
+    "session": {
+        "request_type": "2",
+        "service_code": "*217#",
+        "type": "dedicated",
+        "fatal_error": false,
+        "reply_records": [
+            {
+                "value": "3",
+                "origin": "user",
+                "removable": true
+            },
+            {
+                "value": "0",
+                "origin": "auto_reply",
+                "removable": true
+            }
+        ]
+    }
+}

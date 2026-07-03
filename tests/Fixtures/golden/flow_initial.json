@@ -1,0 +1,17 @@
+{
+    "transcript": [
+        {
+            "step": "start",
+            "input": "*217#",
+            "request_type": "2",
+            "msg": "Welcome to First-Aid Counselling - a safe space for anonymous counselling and care\n\n1. Join\n2. Exit"
+        }
+    ],
+    "session": {
+        "request_type": "1",
+        "service_code": "*217#",
+        "type": "dedicated",
+        "fatal_error": false,
+        "reply_records": []
+    }
+}

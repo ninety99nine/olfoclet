@@ -21,8 +21,18 @@
         <env name="APP_ENV" value="testing"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="CACHE_DRIVER" value="array"/>
-        <!-- <env name="DB_CONNECTION" value="sqlite"/> -->
-        <!-- <env name="DB_DATABASE" value=":memory:"/> -->
+        <!--
+            The USSD performance test harness runs against a dedicated MySQL
+            schema (telcoflo_test), NOT the live telcoflo database. Files 01/02/03
+            add indexes, a session_state column and a versions.settings column,
+            so MySQL fidelity (real ALTERs / JSON columns) is required — sqlite
+            would force those assertions to be skipped. Create it once with:
+                mysql -uroot -e "CREATE DATABASE IF NOT EXISTS telcoflo_test \
+                    CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+            RefreshDatabase migrates it fresh on each run.
+        -->
+        <env name="DB_CONNECTION" value="mysql"/>
+        <env name="DB_DATABASE" value="telcoflo_test"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
