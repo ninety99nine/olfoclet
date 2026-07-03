@@ -12,7 +12,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        //  File 01 Problem 10 — keep the hot ussd_sessions table small.
+        $schedule->command('sessions:archive')->dailyAt('03:00')->withoutOverlapping();
     }
 
     /**
