@@ -21,23 +21,12 @@ COPY . .
 RUN npm run prod
 
 # ---------------------------------------------------------------------------
-# Stage 2 — PHP dependencies (Composer, no dev, optimised autoloader)
-# ---------------------------------------------------------------------------
-FROM composer:2 AS vendor
-
-WORKDIR /app
-
-# Install PHP deps against the lockfile without running scripts (no artisan yet).
-COPY composer.json composer.lock ./
-RUN composer install \
-        --no-dev \
-        --optimize-autoloader \
-        --no-interaction \
-        --no-scripts \
-        --prefer-dist
-
-# ---------------------------------------------------------------------------
-# Stage 3 — Runtime (php:8.2-fpm on Debian bookworm)
+# Stage 2 — Runtime (php:8.2-fpm on Debian bookworm)
+#
+# Composer deps are installed HERE, under the runtime's PHP 8.2, rather than in
+# a separate composer-image stage: the official composer:2 image now ships PHP
+# 8.5, which fails the locked deps' `php <8.3` constraints (nette/*). Running
+# composer under the real target PHP guarantees platform compatibility.
 # ---------------------------------------------------------------------------
 FROM php:8.2-fpm-bookworm AS runtime
 
@@ -76,12 +65,25 @@ COPY docker/php/opcache.ini   /usr/local/etc/php/conf.d/zz-opcache.ini
 COPY docker/php/php.ini        /usr/local/etc/php/conf.d/zz-app.ini
 COPY docker/php/www.conf       /usr/local/etc/php-fpm.d/www.conf
 
+# Composer binary (the phar runs under this image's PHP 8.2).
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
 WORKDIR /var/www/html
 
-# Application source (respecting .dockerignore), then the built artefacts from
-# the earlier stages layered on top.
+# Install PHP deps first (lockfile only) for better layer caching. --no-scripts
+# because artisan/the app aren't present yet; the entrypoint runs
+# package:discover. PSR-4 app autoloading resolves once the source is copied.
+COPY composer.json composer.lock ./
+RUN composer install \
+        --no-dev \
+        --optimize-autoloader \
+        --no-interaction \
+        --no-scripts \
+        --prefer-dist \
+    && composer clear-cache
+
+# Application source (respecting .dockerignore), then the built public assets.
 COPY . .
-COPY --from=vendor /app/vendor ./vendor
 COPY --from=assets /app/public ./public
 
 # Entrypoint: waits for the DB, migrates, caches config/routes, etc.

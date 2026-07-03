@@ -30,3 +30,8 @@ tests
 
 *.md
 docs
+
+# DB seed dumps are consumed by the mysql container's bind-mount, not the app
+# image — keep them out of the build context.
+docker/mysql/initdb/*.sql
+docker/mysql/initdb/*.sql.gz

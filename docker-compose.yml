@@ -53,20 +53,26 @@ services:
     image: mysql:8.0
     container_name: telcoflo-v1-mysql
     command: --default-authentication-plugin=mysql_native_password
+    # Hardcoded (not ${...}-interpolated): compose interpolation reads the repo's
+    # local dev .env (DB_USERNAME=root), which MySQL rejects for MYSQL_USER. These
+    # must match the DB_* values the app reads from .env.docker.
     environment:
-      MYSQL_DATABASE: "${DB_DATABASE:-telcoflo}"
-      MYSQL_USER: "${DB_USERNAME:-telcoflo}"
-      MYSQL_PASSWORD: "${DB_PASSWORD:-secret}"
-      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD:-root}"
+      MYSQL_DATABASE: telcoflo
+      MYSQL_USER: telcoflo
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: root
     ports:
-      - "3307:3306"
+      # Host 3307 is taken by another local project (boldmark-db); use 3308.
+      # Container-internal 3306 is unchanged, so the app (DB_HOST=mysql:3306) is
+      # unaffected — this only remaps the external tooling port.
+      - "3308:3306"
     volumes:
       - mysql-data:/var/lib/mysql
       - ./docker/mysql/my.cnf:/etc/mysql/conf.d/telcoflo.cnf:ro
       # First-boot seed: any *.sql / *.sh here runs when the data dir is empty.
       - ./docker/mysql/initdb:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DB_ROOT_PASSWORD:-root}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
       interval: 5s
       timeout: 5s
       retries: 20
