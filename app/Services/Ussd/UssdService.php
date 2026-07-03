@@ -12876,6 +12876,18 @@ class UssdService
          *                    to proccess is embedded within the "text" property or the
          *                    "code_editor_text" property
          */
+
+        //  Fast-path (P16): the overwhelmingly common case is an empty, non-code
+        //  ValueStructure (94.8% in the audited builder). Short-circuit it to ''
+        //  — identical to the full empty-text path — skipping mustache/embedded
+        //  processing. Only the genuinely-empty, non-boolean, non-code case is
+        //  short-circuited; true/false/mustache/code cases fall through unchanged.
+        if (($data['code_editor_mode'] ?? false) === false
+            && ($data['text'] ?? '') === ''
+            && !is_bool($data['text'] ?? null)) {
+            return '';
+        }
+
         $text = $data['text'];
         $code = $data['code_editor_text'];
         $code_editor_mode = $data['code_editor_mode'];
