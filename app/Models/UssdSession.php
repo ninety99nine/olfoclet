@@ -37,6 +37,7 @@ class UssdSession extends Model
         'fatal_error' => 'boolean',
         'timeout_at' => 'datetime',
         'logs' => 'array',
+        'session_state' => 'array',
     ];
 
     /**
@@ -50,7 +51,7 @@ class UssdSession extends Model
         'ussd_account_id', 'ussd_account_connection_id', 'session_id', 'service_code', 'type', 'request_type',
         'text', 'reply_records', 'inputs_and_outputs', 'logs', 'logs_expire_at',
         'fatal_error', 'fatal_error_msg', 'allow_timeout', 'timeout_at', 'total_session_duration',
-        'session_execution_times',
+        'session_execution_times', 'session_state',
 
         /*  Ownership Information  */
         'project_id', 'app_id', 'version_id'

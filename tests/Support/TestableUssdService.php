@@ -68,15 +68,32 @@ class TestableUssdService extends UssdService
 
     public function callGuzzleHttp($method, $url, $request_options)
     {
-        $this->recordedHttpCalls[] = [
-            'method' => $method,
-            'url' => $url,
-            'options' => $request_options,
-        ];
+        //  P20: replay a cached on-start response if present — this models the
+        //  real callGuzzleHttp, which skips the network on continuation requests.
+        //  Replayed calls are NOT recorded (they make no outbound request), which
+        //  is exactly what the P20 target test asserts.
+        $replay = $this->getOnStartHttpReplay($method, $url);
 
-        [$status, $bodyArray] = $this->resolveCannedResponse((string) $url, (string) $method);
+        if ($replay !== null) {
 
-        $body = json_encode($bodyArray);
+            $status = (int) $replay['status'];
+            $body = (string) $replay['body'];
+
+        } else {
+
+            $this->recordedHttpCalls[] = [
+                'method' => $method,
+                'url' => $url,
+                'options' => $request_options,
+            ];
+
+            [$status, $bodyArray] = $this->resolveCannedResponse((string) $url, (string) $method);
+            $body = json_encode($bodyArray);
+        }
+
+        //  Capture so future continuations can replay
+        $this->captureOnStartHttp($method, $url, $body, $status);
+
         $array_body = json_decode($body, true);
         $json_body = json_decode($body, false);
 

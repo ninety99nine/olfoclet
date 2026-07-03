@@ -95,6 +95,12 @@ class UssdService
     public $screenIndex = [];
     public $displayIndex = [];
     public $loggingEnabled = true;
+
+    //  P20 session-state fast path: cache of on-start REST responses.
+    public $onStartHttpActive = false;     //  true only while on-start events run
+    public $onStartHttpReplay = [];        //  key => ['body','status'] loaded from session_state
+    public $onStartHttpCapture = [];       //  key => ['body','status'] captured this request
+
     public $global_variables_to_save = [];
     public $ussd_account_connection = null;
     public $incorrect_option_selected = null;
@@ -1115,6 +1121,7 @@ class UssdService
                 'fatal_error' => $this->fatal_error,
                 'fatal_error_msg' => $this->fatal_error_msg,
                 'session_execution_times' => json_encode($this->session_execution_times),
+                'session_state' => $this->encodeSessionStateForRawWrite(),
                 'created_at' => now(),
                 'updated_at' => now(),
                 'timeout_at' => (Carbon::now())->addSeconds($this->timeout_limit_in_seconds)->format('Y-m-d H:i:s'),
@@ -1198,6 +1205,10 @@ class UssdService
 
         //  Set the user response duration's
         Arr::set($data, 'session_execution_times', $this->session_execution_times);
+
+        //  Persist the on-start HTTP cache (P20) so the next continuation can
+        //  replay the REST responses instead of hitting the network.
+        Arr::set($data, 'session_state', $this->encodeSessionStateForRawWrite());
 
         /*
          *  Get the response message for display to the user e.g
@@ -2415,26 +2426,101 @@ class UssdService
 
     public function handleApplicationOnStartEvents()
     {
-        //  Check if the screen has on_start events
-        if (count($this->version->builder['application_events']['on_start'])) {
+        //  P20: activate the on-start HTTP cache. On continuation requests this
+        //  loads the REST responses captured on the first request so callGuzzleHttp
+        //  replays them instead of hitting the network; the events still run
+        //  normally and recompute all derived data.
+        $this->onStartHttpReplay = $this->loadOnStartHttpReplay();
+        $this->onStartHttpCapture = [];
+        $this->onStartHttpActive = true;
 
-            //  Get the events to handle
-            $events = $this->version->builder['application_events']['on_start']['collection'];
+        try {
 
-            //  Set an info log that the current screen has on start events
-            $this->logInfo($this->wrapAsPrimaryHtml($this->app->name).' has ('.$this->wrapAsSuccessHtml(count($events)).') on app start events');
+            //  Check if the screen has on_start events
+            if (count($this->version->builder['application_events']['on_start'])) {
 
-            //  Start handling the given events
-            return $this->handleEvents($events, 'app');
+                //  Get the events to handle
+                $events = $this->version->builder['application_events']['on_start']['collection'];
 
-        } else {
+                //  Set an info log that the current screen has on start events
+                $this->logInfo($this->wrapAsPrimaryHtml($this->app->name).' has ('.$this->wrapAsSuccessHtml(count($events)).') on app start events');
+
+                //  Start handling the given events
+                return $this->handleEvents($events, 'app');
+
+            }
 
             //  Set an info log that the current screen does not have on start events
             $this->logInfo($this->wrapAsPrimaryHtml($this->app->name).' does not have on app start events.');
 
             return null;
 
+        } finally {
+
+            //  Stop intercepting HTTP once the on-start events have finished
+            $this->onStartHttpActive = false;
+
         }
+    }
+
+    /** P20 — cache key for an on-start REST call. */
+    private function onStartHttpKey($method, $url)
+    {
+        return strtolower((string) $method).'|'.(string) $url;
+    }
+
+    /** P20 — a cached on-start response for this call, or null (must call). */
+    public function getOnStartHttpReplay($method, $url)
+    {
+        if (!$this->onStartHttpActive) {
+            return null;
+        }
+
+        return $this->onStartHttpReplay[$this->onStartHttpKey($method, $url)] ?? null;
+    }
+
+    /** P20 — record an on-start response so continuations can replay it. */
+    public function captureOnStartHttp($method, $url, $body, $status)
+    {
+        if (!$this->onStartHttpActive) {
+            return;
+        }
+
+        $this->onStartHttpCapture[$this->onStartHttpKey($method, $url)] = [
+            'body' => (string) $body,
+            'status' => (int) $status,
+        ];
+    }
+
+    /** P20 — load the on-start HTTP cache from the existing session's state. */
+    private function loadOnStartHttpReplay()
+    {
+        if (empty($this->existing_session) || empty($this->existing_session->session_state)) {
+            return [];
+        }
+
+        $state = $this->existing_session->session_state;
+        $state = is_array($state) ? $state : (json_decode($state, true) ?: []);
+
+        return (($state['v'] ?? null) === 1) ? ($state['http'] ?? []) : [];
+    }
+
+    /** P20 — the session_state payload to persist (replayed entries carried
+     *  forward plus any freshly-captured ones), or null if nothing was captured.
+     */
+    private function buildSessionStatePayload()
+    {
+        $map = array_merge($this->onStartHttpReplay ?? [], $this->onStartHttpCapture ?? []);
+
+        return empty($map) ? null : ['v' => 1, 'http' => $map];
+    }
+
+    /** JSON-encoded session_state for raw DB::table writes (null when empty). */
+    private function encodeSessionStateForRawWrite()
+    {
+        $payload = $this->buildSessionStatePayload();
+
+        return $payload === null ? null : json_encode($payload);
     }
 
     public function handleApplicationOnCloseEvents()
@@ -7126,32 +7212,52 @@ class UssdService
 
     public function callGuzzleHttp($method, $url, $request_options)
     {
-        //  Get the reused Http Guzzle Client (configured with timeouts)
-        $httpClient = $this->getHttpClient();
+        //  P20: while the on-start events run, replay a cached response for this
+        //  method+url instead of hitting the network (populated on continuation
+        //  requests from the session state). Everything else below runs exactly
+        //  as normal on the cached body, so all derived data is recomputed with
+        //  correct types — only the network call is skipped.
+        $__replay = $this->getOnStartHttpReplay($method, $url);
 
-        //  Set an info log that we are performing REST API call
-        $this->logInfo('Run API call to: '.$this->wrapAsSuccessHtml($url));
+        if ($__replay !== null) {
 
-        //  Perform and return the Http request
-        $response = $httpClient->request($method, $url, $request_options);
+            //  Serve the cached on-start response — no network call
+            $this->logInfo('Replaying cached on-start API response for: '.$this->wrapAsSuccessHtml($url));
 
-        //  Get the response body as a String
-        $body = (string) $response->getBody();
+            $body = (string) $__replay['body'];
+            $status_code = (int) $__replay['status'];
+            $status_phrase = '';
+            $response = new \GuzzleHttp\Psr7\Response($status_code, [], $body);
 
-        //  Get the response body and convert the JSON Object to an Array e.g [ "products" => [ ... ] ]
-        //  $body = $this->convertObjectToArray(json_decode($response->getBody()));
+        } else {
+
+            //  Get the reused Http Guzzle Client (configured with timeouts)
+            $httpClient = $this->getHttpClient();
+
+            //  Set an info log that we are performing REST API call
+            $this->logInfo('Run API call to: '.$this->wrapAsSuccessHtml($url));
+
+            //  Perform the Http request
+            $response = $httpClient->request($method, $url, $request_options);
+
+            //  Get the response body as a String
+            $body = (string) $response->getBody();
+
+            //  Get the response status code e.g "200"
+            $status_code = (int) $response->getStatusCode();
+
+            //  Get the response status phrase e.g "OK"
+            $status_phrase = $response->getReasonPhrase() ?? '';
+        }
+
+        //  Capture this on-start response so future continuations can replay it
+        $this->captureOnStartHttp($method, $url, $body, $status_code);
 
         //  Get the response body as an Associative Array
         $array_body = json_decode($body, true);
 
         //  Get the response body as a JSON Object
         $json_body = json_decode($body);
-
-        //  Get the response status code e.g "200"
-        $status_code = (int) $response->getStatusCode();
-
-        //  Get the response status phrase e.g "OK"
-        $status_phrase = $response->getReasonPhrase() ?? '';
 
         //  Check if the is an "OK" status
         $ok = ($status_code == 200);
