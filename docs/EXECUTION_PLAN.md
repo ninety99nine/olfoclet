@@ -59,10 +59,10 @@ must keep running** because live services depend on it.
 | 0 | Test harness + execution plan (groundwork) | agent | ✅ |
 | 1 | Implement `01_SAFE_NON_BREAKING_FIXES.md` | agent | ✅ (15/20; see notes) |
 | 2 | Verify/extend tests for File 01 (+ land P18/P19/P20) | agent | ✅ |
-| 3 | Implement `02_BREAKING_JSON_STRUCTURE_FIXES.md` | agent | ✅ backend (frontend companion deferred) |
+| 3 | Implement `02_BREAKING_JSON_STRUCTURE_FIXES.md` | agent | ✅ backend + frontend settings slice (per-element hexColor/comment fidelity optional — see notes) |
 | 4 | Verify/extend tests for File 02 | agent | ✅ core |
-| 5 | Implement `03_JSON_COMPATIBILITY_MIGRATION.md` | agent | ⬜ |
-| 6 | Verify/extend tests for File 03 | agent | ⬜ |
+| 5 | Implement `03_JSON_COMPATIBILITY_MIGRATION.md` | agent | ✅ (converter built, tested, run on dev DB) |
+| 6 | Verify/extend tests for File 03 | agent | ✅ core (14 file03 tests green; full suite 59 green) |
 | 7 | Study V2 Docker + build V1 production Docker setup | agent | ⬜ |
 | 8 | Deploy V1 via Docker ("Telcoflo V1"), full boot | agent | ⬜ |
 | 9 | Manual USSD service re-testing | **user** | ⬜ |
@@ -351,7 +351,42 @@ settings, so live data is compatible with File 02.
 regression+golden green; after converter, every version `schema_version=2`, `settings` populated, builder has
 no `simulator`/`color_scheme`/`hexColor`/`comment`; simulator + real flows unchanged.
 
-**Feedback log:** _(agent fills in)_
+**Feedback log (2026-07-03) — DONE ✅ (commit 95bf71b).** `BuilderUpgrader` + `ussd:upgrade-builders`
+implemented from the spec, with three deviations forced by real data / this Laravel version:
+- **Idempotency = "v2 AND actually slimmed" (`isCanonical`), not just "v2".** `repairBuilder` stamps
+  `schema_version:2` on every legacy save while leaving `simulator`/`color_scheme` in place, so a plain v2
+  check would skip a stamped-but-unslimmed builder — the exact File 02/03 interaction the plan flagged. This
+  resolves it: `isCanonical` also requires no top-level `simulator`/`color_scheme` and no deep
+  `hexColor`/`comment`. `--force` re-transforms even canonical builders (added a 3rd `upgrade()` arg).
+- **`validate()` checks TOP-LEVEL `simulator` removal, not `containsKeyDeep`.** File 02 deliberately keeps
+  `log_settings.simulator` in the builder; a deep check false-flagged it. (The spec's own unit fixture lacked
+  `log_settings.simulator`, so this only surfaced on real data.)
+- **`--version` → `--version-id`** (Symfony reserves `--version` globally).
+- **Verified:** file03 suite green (14 tests: unit + golden + command); full suite **59 green, 0 failures**.
+  **Ran on the dev `telcoflo` DB with `--backup`:** all **35 versions** upgraded, 0 failures, **~810 KB**
+  builder bytes saved; SQL check confirms every version `schema_version=2`, 0 top-level `simulator`, `settings`
+  + timeouts populated; re-run **skips all 35 as canonical** (idempotent). Originals in
+  `storage/app/builder-backups/`.
+
+**Phase 6 core done alongside** (the file03 tests are the acceptance suite). Optional extra not added: an
+end-to-end golden re-render against the *upgraded* builder+settings (the engine already reads both formats via
+File 02's fallbacks; goldens stay green).
+
+**FRONTEND on converted data — verified + hardened (commit bec6ebb).** Driving a *converted* (slimmed) builder
+in Playwright surfaced 3 stragglers still reading relocated builder keys (they only break once the builder is
+slim): `Content/Simulator/index.vue` (debugger flag), `MobileScreen` (dialer msisdn), `DefaultColorPicker`
+(predefined palette) — all repointed to `settings`, null-safe. Converted builders now load with **0 console
+errors**; simulator + colour-scheme panels read from converter-populated `settings`.
+
+**REMAINING (optional, owner-droppable): per-element `hexColor`/`comment` visual fidelity on converted builders.**
+On a converted builder, per-element event/display colour accents fall back to the default `#CECECE` and inline
+comments don't show (the builder no longer carries them; they're in `settings.builder_ui[id]`, extracted by the
+converter). Nothing breaks — it's cosmetic builder-UI annotation the owner explicitly said is droppable
+("the color scheme settings and the likes can be removed"). To restore full fidelity: wire the per-element
+components to `getElementUI(id)`/`setElementUI(id,…)` (the store helpers already exist) — reads for the
+`:style` colour accents, writes for the colour-picker/comment inputs; builder stays slim, colours persist via
+`settings.builder_ui` (already saved by "Save Changes"). ~15–20 component files; no builder-save-path change,
+so no data-integrity risk. Deferred pending owner call on whether the cosmetic fidelity is worth it.
 
 ---
 
