@@ -57,8 +57,8 @@ must keep running** because live services depend on it.
 | Phase | Title | Owner | Status |
 |------:|-------|-------|--------|
 | 0 | Test harness + execution plan (groundwork) | agent | ✅ |
-| 1 | Implement `01_SAFE_NON_BREAKING_FIXES.md` | agent | ✅ (14/20; see notes) |
-| 2 | Verify/extend tests for File 01 (+ land P18/P19/P20) | agent | 🟨 |
+| 1 | Implement `01_SAFE_NON_BREAKING_FIXES.md` | agent | ✅ (15/20; see notes) |
+| 2 | Verify/extend tests for File 01 (+ land P18/P19/P20) | agent | ✅ |
 | 3 | Implement `02_BREAKING_JSON_STRUCTURE_FIXES.md` | agent | ⬜ |
 | 4 | Verify/extend tests for File 02 | agent | ⬜ |
 | 5 | Implement `03_JSON_COMPATIBILITY_MIGRATION.md` | agent | ⬜ |
@@ -184,8 +184,30 @@ verified byte-identical across all 5 golden flows incl. the new deep navigation.
     fidelity risk. Requires teaching `handleApplicationOnStartEvents`/`handleEvents` to skip REST-type events
     and inject the cached response. Verify against `flow_deep_subscribed` + the P20 target (0 REST calls).
 
-**Verification status:** File 01 target group green (P20's two tests correctly skip again); full suite green
-(59 tests, 82 assertions, 0 failures); all 5 goldens pass.
+**Verification status (superseded — see P20 DONE below):** all 5 goldens pass.
+
+**P20 DONE ✅ (committed 3f91421) — the flagship fix is landed.** Re-attempted with a cleaner, safer design
+than both the spec's replay-elimination and my first attempt:
+- The on-start events **still run normally**; only the network is skipped. On the first request the RAW
+  on-start REST responses (Get User / Create User) are captured into a new nullable
+  `ussd_sessions.session_state` column keyed by method+url. On every continuation `callGuzzleHttp` replays
+  the cached body instead of hitting the network — interception is scoped to `onStartHttpActive` (on-start
+  only), so screen-level REST events are unaffected.
+- Because all derived data (`user`, `_menus`, properties) is recomputed through the normal code path, there
+  is **no JSON type-fidelity risk** (only raw response strings are persisted) — this is what fixed the
+  `Array callback` fatal from the first attempt.
+- **Result:** continuation requests fire **0** on-start REST calls (was 1+ per keystroke — the #1
+  bottleneck), verified byte-identical across all 5 golden flows incl. the deep subscribed navigation
+  (forward-nav + go-back). Archive migration reordered after the session_state column.
+- **Full File 01 target group is now green (12 tests, 0 skips).** Full suite: 59 tests / 86 assertions /
+  0 failures.
+
+**File 01 final tally: 15/20 landed** (P1–P6, P9–P12, P15–P18, **P20**). Deferred micro-opts: P13, P14, P19
+(documented; spec-endorsed caution). Infra → Docker (Phase 7): P7, P8.
+**Minor Phase-2 nice-to-haves not yet added** (optional, low priority): a standalone P11-invalidation test
+and a P9 no-duplicate-DB-hit test — golden-master already exercises both paths.
+
+**→ Ready for Phase 3 (implement File 02).**
 
 ---
 
