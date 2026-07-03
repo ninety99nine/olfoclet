@@ -31,4 +31,20 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Orange Botswana internal integrations
+    |--------------------------------------------------------------------------
+    |
+    | Internal Orange hosts the USSD engine calls. Externalised from hardcoded
+    | values so staging/Docker can point them at the mock server without a code
+    | change. The defaults are the real production values, so behaviour is
+    | unchanged when the env vars are absent.
+    |
+    */
+
+    'orange' => [
+        'stk_push_url' => env('ORANGE_STK_PUSH_URL', 'http://192.168.22.87/STK/test/stkpush.php'),
+    ],
+
 ];

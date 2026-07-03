@@ -9871,7 +9871,9 @@ class UssdService
 
                 $this->logInfo('Terminated session to perform Orange Money payment request');
 
-                $url = 'http://192.168.22.87/STK/test/stkpush.php';
+                //  Externalised (Phase 7) so staging/Docker can point this at the mock
+                //  server; defaults to the real Orange host so behaviour is unchanged.
+                $url = config('services.orange.stk_push_url');
                 $method = 'post';
 
                 $query_params = [
