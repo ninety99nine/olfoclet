@@ -59,7 +59,7 @@ must keep running** because live services depend on it.
 | 0 | Test harness + execution plan (groundwork) | agent | ✅ |
 | 1 | Implement `01_SAFE_NON_BREAKING_FIXES.md` | agent | ✅ (15/20; see notes) |
 | 2 | Verify/extend tests for File 01 (+ land P18/P19/P20) | agent | ✅ |
-| 3 | Implement `02_BREAKING_JSON_STRUCTURE_FIXES.md` | agent | ✅ backend + frontend settings slice (per-element hexColor/comment fidelity optional — see notes) |
+| 3 | Implement `02_BREAKING_JSON_STRUCTURE_FIXES.md` | agent | ✅ backend + full frontend companion (settings panels + per-element fidelity, Playwright-verified on legacy & converted) |
 | 4 | Verify/extend tests for File 02 | agent | ✅ core |
 | 5 | Implement `03_JSON_COMPATIBILITY_MIGRATION.md` | agent | ✅ (converter built, tested, run on dev DB) |
 | 6 | Verify/extend tests for File 03 | agent | ✅ core (14 file03 tests green; full suite 59 green) |
@@ -378,15 +378,28 @@ slim): `Content/Simulator/index.vue` (debugger flag), `MobileScreen` (dialer msi
 (predefined palette) — all repointed to `settings`, null-safe. Converted builders now load with **0 console
 errors**; simulator + colour-scheme panels read from converter-populated `settings`.
 
-**REMAINING (optional, owner-droppable): per-element `hexColor`/`comment` visual fidelity on converted builders.**
-On a converted builder, per-element event/display colour accents fall back to the default `#CECECE` and inline
-comments don't show (the builder no longer carries them; they're in `settings.builder_ui[id]`, extracted by the
-converter). Nothing breaks — it's cosmetic builder-UI annotation the owner explicitly said is droppable
-("the color scheme settings and the likes can be removed"). To restore full fidelity: wire the per-element
-components to `getElementUI(id)`/`setElementUI(id,…)` (the store helpers already exist) — reads for the
-`:style` colour accents, writes for the colour-picker/comment inputs; builder stays slim, colours persist via
-`settings.builder_ui` (already saved by "Save Changes"). ~15–20 component files; no builder-save-path change,
-so no data-integrity risk. Deferred pending owner call on whether the cosmetic fidelity is worth it.
+**Per-element `hexColor`/`comment` fidelity — DONE ✅ (commits 7f529aa, b1b59b6).** Chose a hydrate/compact
+mechanism over rewiring ~20 components: `hydrateBuilderUi()` fills each element's hexColor/comment (by id) from
+`settings.builder_ui` on load (in-memory only, on both working+original copies so the unsaved-diff is
+unaffected), so **every existing `element.hexColor` binding keeps working with zero component changes**;
+`compactBuilderForSave()` collects them back into `settings.builder_ui` and returns a slim clone (also compacts
+empty ValueStructures + normalizes global pagination, mirroring the backend `BuilderUpgrader`). The stored
+builder stays pure service-definition; annotations ride in `versions.settings` (saved by "Save Changes").
+**Verified on converted data:** Perfect Order (v7) event menus render their type colours (#2D8CF0/#FEBD79/
+#EA4CA3) from `settings.builder_ui` (339 entries); after Save Changes the builder still has 0 hexColor and
+builder_ui stays 339; colours persist across reload. First-Aid (v4): a Save Changes preserves all 55
+code_editor_mode ValueStructures and keeps the builder slim.
+
+**End-to-end behaviour proof — DONE ✅ (commit a6678e8, Phase 6).** `UpgradedRenderGoldenTest` converts the
+fixture via `BuilderUpgrader` then dials the 4 golden flows and asserts the output matches the SAME legacy
+golden snapshots — proving a subscriber on an UPGRADED (schema_version:2 + settings) app sees byte-identical
+screens + session rows to the legacy app. Full suite: **63 tests, 170 assertions, 0 failures.**
+
+**Live engine note:** a simulator dial on converted First-Aid confirmed the engine reads the slim builder +
+settings and runs session-start + on-start events; it then hit the pre-existing external-host wall (on-start
+REST → unreachable `192.168.22.202`, 30s exec timeout → empty response). That is the known hardcoded-host
+issue Phase 7 (mock server) addresses, NOT a File 02/03 regression — the engine processed the converted builder
+correctly up to the network boundary.
 
 ---
 
