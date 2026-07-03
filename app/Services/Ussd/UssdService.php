@@ -1185,6 +1185,13 @@ class UssdService
             'recorded_at' => now(),
         ]);
 
+        //  Cap to the most recent 50 entries to stop unbounded ussd_sessions row
+        //  growth on deep sessions. Diagnostic-only column; no engine logic depends
+        //  on the trimmed entries.
+        if (count($this->session_execution_times) > 50) {
+            $this->session_execution_times = array_slice($this->session_execution_times, -50);
+        }
+
         //  Set the user response duration's
         Arr::set($data, 'session_execution_times', $this->session_execution_times);
 
@@ -4069,35 +4076,19 @@ class UssdService
     }
 
     public function removeEmojis($string)
-    {    // Match Enclosed Alphanumeric Supplement
-        $regex_alphanumeric = '/[\x{1F100}-\x{1F1FF}]/u';
-        $clear_string = preg_replace($regex_alphanumeric, '', $string);
-
-        // Match Miscellaneous Symbols and Pictographs
-        $regex_symbols = '/[\x{1F300}-\x{1F5FF}]/u';
-        $clear_string = preg_replace($regex_symbols, '', $clear_string);
-
-        // Match Emoticons
-        $regex_emoticons = '/[\x{1F600}-\x{1F64F}]/u';
-        $clear_string = preg_replace($regex_emoticons, '', $clear_string);
-
-        // Match Transport And Map Symbols
-        $regex_transport = '/[\x{1F680}-\x{1F6FF}]/u';
-        $clear_string = preg_replace($regex_transport, '', $clear_string);
-
-        // Match Supplemental Symbols and Pictographs
-        $regex_supplemental = '/[\x{1F900}-\x{1F9FF}]/u';
-        $clear_string = preg_replace($regex_supplemental, '', $clear_string);
-
-        // Match Miscellaneous Symbols
-        $regex_misc = '/[\x{2600}-\x{26FF}]/u';
-        $clear_string = preg_replace($regex_misc, '', $clear_string);
-
-        // Match Dingbats
-        $regex_dingbats = '/[\x{2700}-\x{27BF}]/u';
-        $clear_string = preg_replace($regex_dingbats, '', $clear_string);
-
-        return $clear_string;
+    {
+        //  Strip emoji/pictograph characters in a single pass. The seven Unicode
+        //  ranges below are exactly the seven previously stripped one-by-one
+        //  (Enclosed Alphanumeric Supplement, Misc Symbols & Pictographs,
+        //  Emoticons, Transport & Map, Supplemental Symbols & Pictographs,
+        //  Miscellaneous Symbols, Dingbats) — same output, one preg_replace.
+        return preg_replace(
+            '/[\x{1F100}-\x{1F1FF}]|[\x{1F300}-\x{1F5FF}]|[\x{1F600}-\x{1F64F}]' .
+            '|[\x{1F680}-\x{1F6FF}]|[\x{1F900}-\x{1F9FF}]|[\x{2600}-\x{26FF}]' .
+            '|[\x{2700}-\x{27BF}]/u',
+            '',
+            $string
+        );
     }
 
     /** This method gets the type of action to build for the current display
@@ -7055,7 +7046,7 @@ class UssdService
         $array_body = json_decode($body, true);
 
         //  Get the response body as a JSON Object
-        $json_body = json_decode($body, false);
+        $json_body = json_decode($body);
 
         //  Get the response status code e.g "200"
         $status_code = (int) $response->getStatusCode();
