@@ -92,6 +92,8 @@ class UssdService
     public $is_revisting_session = false;
     public $requestXmlToJsonOutput = null;
     public $httpClient = null;
+    public $screenIndex = [];
+    public $displayIndex = [];
     public $global_variables_to_save = [];
     public $ussd_account_connection = null;
     public $incorrect_option_selected = null;
@@ -2915,6 +2917,9 @@ class UssdService
 
         //  Get all the screens available
         $this->screens = $this->version->builder['screens'];
+
+        //  Build id→screen / id→display hash maps once (P12) so lookups are O(1)
+        $this->buildScreenIndexes();
 
         //  If we are using condi
         if ($this->version->builder['conditional_screens']['active']) {
@@ -6131,17 +6136,65 @@ class UssdService
         if (!empty($link)) {
 
             //  Get the first display that matches the given link (Can only match current screen display)
-            $display = collect($this->screen['displays'])->where('id', $link)->first() ?? null;
+            $display = null;
+            foreach (($this->screen['displays'] ?? []) as $current_display) {
+                if (($current_display['id'] ?? null) === $link) {
+                    $display = $current_display;
+                    break;
+                }
+            }
 
             if(!$display && $globalSearch) {
 
-                //  Get the first display that matches the given link (Can match any screen display)
-                $display = collect($this->screens)->map(fn($screen) => $screen['displays'])->collapse()->where('id', $link)->first() ?? null;
+                //  Get the first display that matches the given link (Can match any screen display) via the O(1) index
+                $display = $this->getDisplayIndex()[$link] ?? null;
 
             }
 
             return $display;
         }
+    }
+
+    /** Build id→screen and id→display hash maps from $this->screens once per
+     *  request (P12), replacing repeated collect()->where('id')->first() scans.
+     */
+    public function buildScreenIndexes()
+    {
+        $this->screenIndex = [];
+        $this->displayIndex = [];
+
+        foreach (($this->screens ?? []) as $screen) {
+            if (isset($screen['id'])) {
+                $this->screenIndex[$screen['id']] = $screen;
+            }
+            foreach (($screen['displays'] ?? []) as $display) {
+                if (isset($display['id'])) {
+                    $this->displayIndex[$display['id']] = $display;
+                }
+            }
+        }
+    }
+
+    /** Lazily-built id→screen map (falls back to building from $this->screens
+     *  if a lookup happens before startBuildingUssdScreens set the index).
+     */
+    private function getScreenIndex()
+    {
+        if (empty($this->screenIndex) && !empty($this->screens)) {
+            $this->buildScreenIndexes();
+        }
+
+        return $this->screenIndex;
+    }
+
+    /** Lazily-built id→display map (see getScreenIndex). */
+    private function getDisplayIndex()
+    {
+        if (empty($this->displayIndex) && !empty($this->screens)) {
+            $this->buildScreenIndexes();
+        }
+
+        return $this->displayIndex;
     }
 
     /** This method returns a screen if it exists by searching based on
@@ -6168,8 +6221,8 @@ class UssdService
         //  If the screen name has been provided
         if ($link) {
 
-            //  Get the first screen that matches the given link
-            return collect($this->screens)->where('id', $link)->first() ?? null;
+            //  Get the screen that matches the given link via the O(1) index
+            return $this->getScreenIndex()[$link] ?? null;
 
         }
     }
