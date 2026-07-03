@@ -573,7 +573,7 @@ class UssdService
          *
          *  Attempt to get the short codes from the CACHE otherwise perform a query.
          */
-        $short_code_records = Cache::get((new ShortCode())->getCacheName(), function () {
+        $short_code_records = Cache::remember((new ShortCode())->getCacheName(), now()->addHour(), function () {
 
             //  We failed to retrieve from the cache, therefore perform a query
             return (new ShortCode())->findAndCache();
@@ -744,7 +744,7 @@ class UssdService
     public function getUssdAccountForCurrentVersion()
     {
         //  Get the database entry matching the given mobile number, mode and version id
-        return Cache::get((new UssdAccount())->getCacheName($this->msisdn, $this->test_mode, $this->version->id), function () {
+        return Cache::remember((new UssdAccount())->getCacheName($this->msisdn, $this->test_mode, $this->version->id), now()->addHour(), function () {
 
             //  We failed to retrieve from the cache, therefore perform a query
             return (new UssdAccount())->findAndCache($this->msisdn, $this->test_mode, $this->version->id);
@@ -755,7 +755,7 @@ class UssdService
     public function getUssdAccountConnectionForCurrentVersion()
     {
         //  Get the database entry matching the given ussd account id and version id
-        return Cache::get((new UssdAccountConnection())->getCacheName($this->ussd_account->id, $this->version->id), function () {
+        return Cache::remember((new UssdAccountConnection())->getCacheName($this->ussd_account->id, $this->version->id), now()->addHour(), function () {
 
             //  We failed to retrieve from the cache, therefore perform a query
             return (new UssdAccountConnection())->findAndCache($this->ussd_account->id, $this->version->id);
@@ -776,7 +776,7 @@ class UssdService
              *
              *  Attempt to get the app from the CACHE otherwise perform a query.
              */
-            $this->app = Cache::get((new App())->getCacheName($this->app_id), function () {
+            $this->app = Cache::remember((new App())->getCacheName($this->app_id), now()->addHour(), function () {
 
                 //  We failed to retrieve from the cache, therefore perform a query
                 return (new App())->findAndCache($this->app_id);
@@ -799,7 +799,7 @@ class UssdService
                          *  Note that the "getCacheName" is defined within BaseTrait and helps
                          *  us get the correct cache naming convention for our version.
                          */
-                        $this->version = Cache::get((new Version())->getCacheName($this->version_id), function () {
+                        $this->version = Cache::remember((new Version())->getCacheName($this->version_id), now()->addHour(), function () {
 
                             //  We failed to retrieve from the cache, therefore perform a query
                             return (new Version())->findAndCache($this->version_id);
@@ -815,7 +815,7 @@ class UssdService
                          *  Note that the "getCacheName" is defined within BaseTrait and helps
                          *  us get the correct cache naming convention for our version.
                          */
-                        $this->version = Cache::get((new Version())->getCacheName($this->app->active_version_id), function () {
+                        $this->version = Cache::remember((new Version())->getCacheName($this->app->active_version_id), now()->addHour(), function () {
 
                             //  We failed to retrieve from the cache, therefore perform a query
                             return (new Version())->findAndCache($this->app->active_version_id);
@@ -12753,7 +12753,7 @@ class UssdService
         }else{
 
             //  Get the database entry matching the given mobile number, app id and mode
-            return Cache::get((new DatabaseEntry())->getCacheName($this->ussd_account->id, $name), function () use ($name) {
+            return Cache::remember((new DatabaseEntry())->getCacheName($this->ussd_account->id, $name), now()->addHour(), function () use ($name) {
 
                 //  We failed to retrieve from the cache, therefore perform a query
                 return $this->getUssdDatabaseEntryViaQuery($name);
