@@ -57,7 +57,7 @@ must keep running** because live services depend on it.
 | Phase | Title | Owner | Status |
 |------:|-------|-------|--------|
 | 0 | Test harness + execution plan (groundwork) | agent | ✅ |
-| 1 | Implement `01_SAFE_NON_BREAKING_FIXES.md` | agent | ⬜ |
+| 1 | Implement `01_SAFE_NON_BREAKING_FIXES.md` | agent | 🟨 |
 | 2 | Verify/extend tests for File 01 | agent | ⬜ |
 | 3 | Implement `02_BREAKING_JSON_STRUCTURE_FIXES.md` | agent | ⬜ |
 | 4 | Verify/extend tests for File 02 | agent | ⬜ |
@@ -79,7 +79,7 @@ green, 33 target pending, 0 failures.** This plan document created.
 
 ---
 
-## Phase 1 — Implement `01_SAFE_NON_BREAKING_FIXES.md`  ⬜
+## Phase 1 — Implement `01_SAFE_NON_BREAKING_FIXES.md`  🟨
 **Depends on:** none. **Branch:** `perf/phase-1-safe-fixes`.
 
 **Objective:** apply all 20 non-breaking performance fixes (no builder-JSON shape change), in the file's
@@ -109,7 +109,32 @@ commit order (least → most severe), each as its own commit.
 items (P4/P8 documented as server-side); golden snapshots unchanged (behaviour preserved). Run
 `php artisan migrate` on a scratch DB cleanly.
 
-**Feedback log:** _(agent fills in on completion)_
+**Feedback log (2026-07-03):** In progress. Regression stays green throughout (25 tests / 66 assertions);
+golden-master byte-identical after every change.
+- **Done & committed (13 problems):** P1 (decode once), P2 (single-pass removeEmojis), P3 (cap exec times),
+  P4 (persistent PDO), P5 (reused Guzzle client + timeouts — http_errors/verify left per-request as a safer
+  deviation), P6 (hot-path indexes migration), P9 (Cache::remember ×7), P10 (sessions:archive command +
+  archive table + daily schedule), P11 (global_variables cache + invalidation), P12 (screen/display id hash
+  maps), P15 (dropped `$with=['account']`; **retained `$appends`** deliberately — wide, test-unverified
+  dashboard surface), P16 (empty-ValueStructure fast-path), P17 (processPHPCode logging guard).
+- **File01 target tests now green:** P3(cap), P4(PDO), P5(guzzle), P6(5 index tests), P10(archiving),
+  P15(eager-load). Remaining file01 targets still skip pending their fix.
+- **Infra (no repo change — applied in Phase 7 Docker image):** P7 (InnoDB buffer pool), P8 (Redis
+  cache/session/queue drivers), plus OPcache/PHP-FPM tuning.
+- **Deliberately deferred (documented, safe to skip):**
+  - **P13** (collect()→native arrays): broad, low value; spec says "leave as Collection when unsure".
+  - **P14** (memoise extractUserResponsesAsText): correctness footgun — a single missed invalidation among
+    6 reply_records mutation sites (1876/1945/1959/1993/2563/2576) sends stale `text` to the gateway; benefit
+    largely superseded by P20.
+  - **P18** (lazy var extraction) & **P19** (batch mustache): highest-care 🟠; spec advises deferring when
+    coverage is thin. Our golden flows are shallow (Welcome→Join/Exit), so a regression on deeper menus would
+    go uncaught. **Do these in Phase 2 after adding deeper app fixtures.**
+  - **P20** (session-state fast path — THE headline fix): all-or-nothing (its target asserts continuations
+    fire 0 on-start REST calls). The spec mandates studying `handleCurrentDisplay` in full + staging
+    verification against **deep** sessions; our fixtures don't yet exercise depth. **Sequenced into Phase 2:**
+    add the deeper fixtures + P20 depth/parity test FIRST, then implement P20 against that safety net.
+
+**Next step:** Phase 2 — add deeper app fixture(s) + P20 depth test, then land P18/P19/P20 behind them.
 
 ---
 
