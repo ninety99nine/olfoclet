@@ -255,7 +255,10 @@
                  */
                 let formData = new FormData();
                 formData.append('_method', 'put');
-                formData.append('builder', JSON.stringify(this.useVersionBuilder.builder));
+                //  File 02 — persist the SLIM builder: per-element hexColor/comment are
+                //  stripped out and synced into settings.builder_ui (saved just below via
+                //  saveSettings), keeping the stored builder pure service-definition.
+                formData.append('builder', JSON.stringify(this.useVersionBuilder.compactBuilderForSave()));
 
                 const url = route('version.update', { project: this.route().params.project, app: this.route().params.app, version: this.route().params.version });
 

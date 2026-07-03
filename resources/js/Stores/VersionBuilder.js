@@ -149,6 +149,91 @@ export const useVersionBuilder = defineStore('version_builder', {
 
             //  File 02 — initialise the version settings alongside the builder
             this.setSettings();
+
+            //  File 02 — hydrate per-element hexColor/comment back onto the builder
+            //  elements (in-memory only) from settings.builder_ui, so the canvas
+            //  renders colours/annotations on a converted (slimmed) builder without
+            //  changing any component. Both copies are hydrated identically so the
+            //  unsaved-changes diff is unaffected. compactBuilderForSave() strips
+            //  them again on save, keeping the stored builder slim.
+            this.hydrateBuilderUi(this.originalBuilder);
+            this.hydrateBuilderUi(this.builder);
+        },
+
+        /**
+         *  File 02 — walk a builder in place; for any element whose id has a
+         *  settings.builder_ui entry, fill missing hexColor/comment from it.
+         *  Fill-if-missing keeps it deterministic + idempotent (converted elements
+         *  have neither key; newly-created ones already carry their own inline).
+         */
+        hydrateBuilderUi(node){
+            if(!node || typeof node !== 'object') return;
+
+            const ui = (this.settings && this.settings.builder_ui) ? this.settings.builder_ui : null;
+            if(ui && node.id != null && ui[node.id]){
+                const entry = ui[node.id];
+                if(entry.hexColor !== undefined && node.hexColor === undefined) node.hexColor = entry.hexColor;
+                if(entry.comment  !== undefined && node.comment  === undefined) node.comment  = entry.comment;
+            }
+
+            for(const key in node){
+                const value = node[key];
+                if(value && typeof value === 'object') this.hydrateBuilderUi(value);
+            }
+        },
+
+        /**
+         *  File 02 — collect every element's hexColor/comment (keyed by id) into an
+         *  accumulator, mirroring the backend BuilderUpgrader::collectElementUi.
+         */
+        collectBuilderUi(node, acc){
+            if(!node || typeof node !== 'object') return;
+
+            if(node.id != null && (node.hexColor !== undefined || node.comment !== undefined)){
+                const id = String(node.id);
+                if(!acc[id]) acc[id] = {};
+                if(node.hexColor !== undefined) acc[id].hexColor = node.hexColor;
+                if(node.comment  !== undefined) acc[id].comment  = node.comment;
+            }
+
+            for(const key in node){
+                const value = node[key];
+                if(value && typeof value === 'object') this.collectBuilderUi(value, acc);
+            }
+        },
+
+        /**
+         *  File 02 — remove hexColor/comment everywhere (never descend `simulator`),
+         *  mirroring the backend BuilderUpgrader::stripElementUiKeys.
+         */
+        stripBuilderUiKeys(node){
+            if(!node || typeof node !== 'object') return;
+
+            delete node.hexColor;
+            delete node.comment;
+
+            for(const key in node){
+                if(key === 'simulator') continue;
+                const value = node[key];
+                if(value && typeof value === 'object') this.stripBuilderUiKeys(value);
+            }
+        },
+
+        /**
+         *  File 02 — produce the slim builder to persist: sync the current
+         *  per-element hexColor/comment into settings.builder_ui, then return a
+         *  deep clone with those keys stripped. The builder stays pure
+         *  service-definition on disk; the annotations ride in versions.settings
+         *  (saved by the same "Save Changes" flow via saveSettings()).
+         */
+        compactBuilderForSave(){
+            const acc = {};
+            this.collectBuilderUi(this.builder, acc);
+            this.settings.builder_ui = acc;
+
+            const clone = _.cloneDeep(this.builder);
+            this.stripBuilderUiKeys(clone);
+            return clone;
         },
 
         /**
