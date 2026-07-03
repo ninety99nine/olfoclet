@@ -7,6 +7,24 @@ define('LARAVEL_START', microtime(true));
 
 /*
 |--------------------------------------------------------------------------
+| Keep raw PHP errors out of the HTTP response body
+|--------------------------------------------------------------------------
+|
+| A web response (HTML / JSON / Inertia) must never contain raw PHP error
+| text: a single leaked notice/deprecation printed before the doctype
+| corrupts Inertia's data-page JSON and breaks client hydration (e.g. an
+| old Carbon method signature emitting E_DEPRECATED on newer PHP). We set
+| this before the autoloader so it also covers compile-time deprecations.
+| Real exceptions still render via the framework's handler, and Laravel's
+| deprecations log channel still records them — only the raw display into
+| the response is suppressed.
+|
+*/
+
+ini_set('display_errors', '0');
+
+/*
+|--------------------------------------------------------------------------
 | Check If The Application Is Under Maintenance
 |--------------------------------------------------------------------------
 |
