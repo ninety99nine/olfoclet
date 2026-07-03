@@ -71,7 +71,21 @@
                 this.form.post(route('login.authenticate'), {
                     preserveState: true,
                     preserveScroll: true,
-                    onSuccess: () => {
+                    onSuccess: (page) => {
+
+                        //  An error-free Inertia visit does NOT guarantee we logged in.
+                        //  An expired session/CSRF token (419) is rewritten by Inertia
+                        //  into a plain redirect back to the login page that carries no
+                        //  validation errors, which would otherwise fire onSuccess here.
+                        //  Only treat it as a real login if we actually left the login page.
+                        if (page.component === 'Auth/Login/Show') {
+                            self.$message({
+                                message: page.props.message || 'Your session expired, please try signing in again.',
+                                type: 'warning'
+                            });
+                            return;
+                        }
+
                         self.$message({
                             message: 'Logged In',
                             type: 'success'
