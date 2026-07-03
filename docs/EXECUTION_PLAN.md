@@ -57,8 +57,8 @@ must keep running** because live services depend on it.
 | Phase | Title | Owner | Status |
 |------:|-------|-------|--------|
 | 0 | Test harness + execution plan (groundwork) | agent | ✅ |
-| 1 | Implement `01_SAFE_NON_BREAKING_FIXES.md` | agent | 🟨 |
-| 2 | Verify/extend tests for File 01 | agent | ⬜ |
+| 1 | Implement `01_SAFE_NON_BREAKING_FIXES.md` | agent | ✅ (14/20; see notes) |
+| 2 | Verify/extend tests for File 01 (+ land P18/P19/P20) | agent | 🟨 |
 | 3 | Implement `02_BREAKING_JSON_STRUCTURE_FIXES.md` | agent | ⬜ |
 | 4 | Verify/extend tests for File 02 | agent | ⬜ |
 | 5 | Implement `03_JSON_COMPATIBILITY_MIGRATION.md` | agent | ⬜ |
@@ -136,6 +136,11 @@ golden-master byte-identical after every change.
 
 **Next step:** Phase 2 — add deeper app fixture(s) + P20 depth test, then land P18/P19/P20 behind them.
 
+**Update (2026-07-03, Phase 2 progress):** P18 (lazy var extraction) is now **done & committed**,
+verified byte-identical across all 5 golden flows incl. the new deep navigation. So File 01 landed = 14/20
+(P1–P6, P9–P12, P15–P18). Still deferred: P13, P14, P19 (documented micro-opts), P7/P8 (infra→Docker).
+**P20 remains the one open flagship** — see Phase 2 feedback for the attempt + the path forward.
+
 ---
 
 ## Phase 2 — Verify/extend tests for File 01  ⬜
@@ -153,7 +158,34 @@ golden-master byte-identical after every change.
 
 **Verification:** File 01 target group green; regression green; documented which items remain server-side.
 
-**Feedback log:** _(agent fills in)_
+**Feedback log (2026-07-03):**
+- **Deep fixture DONE (committed):** discovered that a "subscribed" persona (active subscription) unlocks the
+  deep First-Aid menu (Home → My profile / Services → Get Educated / Change language) on the *existing* v4
+  fixture — no new fixture needed. Added `Personas.php` + `DeepFlowGoldenTest` (`flow_deep_subscribed`): 8
+  continuations across 4+ distinct screens with go-backs. This mixes forward-nav and go-back steps, so it
+  guards both the fast-resume and full-replay paths.
+- **P18 DONE (committed):** implemented behind the deep golden; all 5 goldens byte-identical.
+- **P19 deferred:** batching mustache genuinely changes semantics (per-tag early-exit on error,
+  preg_replace-as-regex vs str_replace, per-tag logging); spec says keep the per-tag loop if output changes.
+- **P20 ATTEMPTED, then reverted (clean) — the one open item:**
+  - Chose a *narrower, safer* design than the spec's full replay-elimination: restore the on-start results
+    from `session_state` and skip re-firing the on-start events on continuations, keeping the (cheap, correct)
+    replay traversal. **The mechanism worked** — continuations fired **0** on-start REST calls (the core win).
+  - **But** persisting the full `dynamic_data_storage` on-start delta through JSON corrupts a value's type on
+    restore (`Array callback must have exactly two elements` fatal on the next screen). This is the exact
+    builder-dependent fragility the spec flags — the spec's own approach shares it (it also JSON-persists
+    dynamic data).
+  - **Reverted** (migration/cast/logic/wiring all removed) so the suite stays green (P20 targets skip) and
+    the live-engine core is untouched.
+  - **Path forward (next):** don't persist the derived data. Persist **only the raw `user`** (the REST
+    result) and, on continuation, **re-run only the cheap non-REST on-start events** (the "Set App
+    Properties" custom code + "Set $_menus") to recompute `_menus`/properties with correct types, skipping
+    only the REST API events. That saves the network cost (the actual bottleneck) without any JSON type-
+    fidelity risk. Requires teaching `handleApplicationOnStartEvents`/`handleEvents` to skip REST-type events
+    and inject the cached response. Verify against `flow_deep_subscribed` + the P20 target (0 REST calls).
+
+**Verification status:** File 01 target group green (P20's two tests correctly skip again); full suite green
+(59 tests, 82 assertions, 0 failures); all 5 goldens pass.
 
 ---
 
