@@ -162,28 +162,7 @@ trait VersionTrait
                 'active' => false,
                 'code' => null,
             ],
-            'color_scheme'=> [
-                'event_colors'=> [
-                    'REST API' => '#2D8CF0',
-                    'SMS API' => '#2D8CF0',
-                    'Airtime Billing API' => '#2D8CF0',
-                    'Orange Money API' => '#2D8CF0',
-                    'Validation' => '#ED4014',
-                    'Formatting' => '#F9E31C',
-                    'Set Property' => '#2D8CF0',    // 2
-                    'Custom Code' => '#00C2B1',
-                    'Auto Link' => '#00BCD4',
-                    'Auto Reply' => '#F06292',
-                    'Revisit' => '#EA4CA3',         // 1
-                    'Redirect' => '#EA4CA3',        // 1
-                    'Notification' => '#19BE6B',
-                    'Event Collection' => '#FEBD79',
-                    'Terminate Session' => '#607D8B',   // 2
-                    'Database' => '#19C919',
-
-                    //  'Local Storage' => '#607D8B',
-                ]
-            ],
+            //  File 02 P3: color_scheme relocated to settings.appearance (builder-UI only).
             'restrictions' => [
                 'selected_type' => 'None',
                 'blacklist' => [
@@ -205,23 +184,7 @@ trait VersionTrait
                     'message' => 'Access denied to service'
                 ]
             ],
-            'simulator' => [
-                'debugger' => [
-                    'return_logs' => true,
-                    'return_log_types' => [
-                        'info', 'warning', 'error',
-                    ],
-                    'return_summarized_logs' => true,
-                ],
-                'subscriber' => [
-                    'phone_number' => '26772000001',
-                ],
-                'settings' => [
-                    'allow_timeouts' => true,
-                    'timeout_limit_in_seconds' => 120,
-                    'timeout_message' => 'TIMEOUT: You have exceeded your time limit.',
-                ],
-            ],
+            //  File 02 P6: simulator (subscriber/debugger/timeout) relocated to versions.settings.
             'log_settings' => [
                 'simulator' => [
                     'save_logs' => 'never'  //  never, always, on_fail, on_success
@@ -696,13 +659,8 @@ trait VersionTrait
 
                 }
 
-                //  Check if the event supports comments
-                if( !isset($events[$x]['comment']) ) {
-
-                    //  Enable comment support
-                    $events[$x]['comment'] = '';
-
-                }
+                //  File 02 P3: 'comment' is builder-UI only and now lives in
+                //  settings.builder_ui — no longer added back into the builder.
             }
 
             return $events;

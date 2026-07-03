@@ -239,6 +239,8 @@ Route::middleware(['auth'])->group(function () {
                                 Route::name('version.')->group(function () {
                                     Route::get('/', 'show')->name('show');
                                     Route::put('/', 'update')->name('update');
+                                    //  File 02 P2: update version settings WITHOUT touching the builder
+                                    Route::put('/settings', 'updateSettings')->name('settings.update');
                                     Route::delete('/', 'delete')->name('delete');
                                     Route::post('/repair', 'repair')->name('repair');
                                     Route::post('/restore', 'restore')->name('restore');

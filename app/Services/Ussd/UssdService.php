@@ -877,6 +877,25 @@ class UssdService
         return data_get($settings, $path, $default);
     }
 
+    /** File 02 P4 — simulator debugger flags, read from settings with a legacy
+     *  builder fallback (and a safe default so a missing block never errors).
+     */
+    private function debuggerReturnsLogs()
+    {
+        return (bool) $this->versionSetting(
+            'simulator.debugger.return_logs',
+            $this->version->builder['simulator']['debugger']['return_logs'] ?? false
+        );
+    }
+
+    private function debuggerReturnsSummarizedLogs()
+    {
+        return (bool) $this->versionSetting(
+            'simulator.debugger.return_summarized_logs',
+            $this->version->builder['simulator']['debugger']['return_summarized_logs'] ?? false
+        );
+    }
+
     public function getTimeoutLimitInSeconds()
     {
         //  File 02 P5: read from settings.session, falling back to the legacy
@@ -1006,7 +1025,7 @@ class UssdService
         }
 
         //  Set the timeout message
-        $allow_timeouts = $this->version->builder['simulator']['settings']['allow_timeouts'];
+        $allow_timeouts = $this->versionSetting('session.allow_timeouts', $this->version->builder['simulator']['settings']['allow_timeouts'] ?? false);
 
         //  If the existing session has timeout
         if($this->test_mode && $allow_timeouts && $this->existing_session->has_timed_out) {
@@ -1090,7 +1109,7 @@ class UssdService
         if (!$this->new_session) {
 
             //  Determine if we allow timeouts
-            $allow_timeout = $this->version->builder['simulator']['settings']['allow_timeouts'];
+            $allow_timeout = $this->versionSetting('session.allow_timeouts', $this->version->builder['simulator']['settings']['allow_timeouts'] ?? false);
 
             //  Get the timeout limit in seconds e.g "120" to mean "timeout after 120 seconds"
             $this->timeout_limit_in_seconds = $this->getTimeoutLimitInSeconds();
@@ -1542,7 +1561,7 @@ class UssdService
     public function handleTimeout()
     {
         //  Set the timeout message
-        $timeout_message = $this->version->builder['simulator']['settings']['timeout_message'];
+        $timeout_message = $this->versionSetting('session.timeout_message', $this->version->builder['simulator']['settings']['timeout_message'] ?? '');
 
         //  If the timeout message was not provided
         if (empty($timeout_message)) {
@@ -1658,9 +1677,9 @@ class UssdService
             if ($this->version && is_array($this->version->builder)) {
 
                 //  Include the logs if required
-                if ($this->version->builder['simulator']['debugger']['return_logs']) {
+                if ($this->debuggerReturnsLogs()) {
 
-                    if ($this->version->builder['simulator']['debugger']['return_summarized_logs']) {
+                    if ($this->debuggerReturnsSummarizedLogs()) {
                         //  Set the summarized logs on the response payload
                         $response['logs'] = $this->summarized_logs;
                     } else {
@@ -2063,7 +2082,7 @@ class UssdService
         $logSettings = $this->version->builder['log_settings'] ?? [];
         if ($this->test_mode) {
             $simulatorSave = $logSettings['simulator']['save_logs'] ?? 'always';
-            $debuggerReturnsLogs = $this->version->builder['simulator']['debugger']['return_logs'] ?? true;
+            $debuggerReturnsLogs = $this->versionSetting('simulator.debugger.return_logs', $this->version->builder['simulator']['debugger']['return_logs'] ?? true);
             $this->loggingEnabled = ($simulatorSave !== 'never') || $debuggerReturnsLogs;
         } else {
             $mobileSave = $logSettings['mobile']['save_logs'] ?? 'never';
@@ -2071,7 +2090,7 @@ class UssdService
         }
 
         //  Set the version number
-        $subscriber_mobile_number = $this->version->builder['simulator']['subscriber']['phone_number'];
+        $subscriber_mobile_number = $this->versionSetting('simulator.subscriber.phone_number', $this->version->builder['simulator']['subscriber']['phone_number'] ?? $this->msisdn);
 
         //  Set a log that the build process has started
         $this->logInfo('Mobile: '.$this->wrapAsPrimaryHtml($subscriber_mobile_number));
@@ -13698,7 +13717,7 @@ class UssdService
         $weShouldAlwaysSaveLogs = $saveApproach == 'always';
         $weShouldOnlySaveLogsOnFail = $saveApproach == 'on_fail' && $this->fatal_error == true;
         $weShouldOnlySaveLogsOnSuccess = $saveApproach == 'on_success' && $this->fatal_error == false;
-        $weShouldReturnSimulatorLogs = $this->test_mode && $this->version->builder['simulator']['debugger']['return_logs'];
+        $weShouldReturnSimulatorLogs = $this->test_mode && $this->debuggerReturnsLogs();
 
         //  Check if we are required to capture the log
         if( $weShouldAlwaysSaveLogs || $weShouldOnlySaveLogsOnFail || $weShouldOnlySaveLogsOnSuccess || $weShouldReturnSimulatorLogs ) {
@@ -13714,7 +13733,7 @@ class UssdService
             }
 
             //  If we want to capture summarized logs
-            if( !$this->test_mode || ($this->test_mode && $this->version->builder['simulator']['debugger']['return_summarized_logs']) ) {
+            if( !$this->test_mode || ($this->test_mode && $this->debuggerReturnsSummarizedLogs()) ) {
 
                 /** When setting logs, its important to note that some logs are very repetitive
                  *  e.g logs of variable values and data types. This information may be necessary

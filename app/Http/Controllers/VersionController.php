@@ -68,6 +68,31 @@ class VersionController extends BaseController
         }
     }
 
+    /**
+     *  File 02 P2 — update ONLY the version settings (simulator/session/appearance/
+     *  builder_ui), never the builder. Lets a test detail or colour be changed
+     *  without re-saving/repairing the large builder JSON.
+     */
+    public function updateSettings()
+    {
+        //  Persist only the settings column. save() still fires the observer, but
+        //  repairBuilder() short-circuits on a schema_version:2 builder, so the
+        //  builder is left byte-unchanged.
+        $this->version->settings = request()->input('settings', []);
+        $this->version->save();
+
+        //  Refresh the cache so the engine reads the new settings
+        $this->version->findAndCache();
+
+        if (request()->expectsJson()) {
+            return response()->json(['settings' => $this->version->settings]);
+        }
+
+        return redirect()->route('version.show', [
+            'project' => $this->project->id, 'app' => $this->app->id, 'version' => $this->version->id,
+        ]);
+    }
+
     public function delete()
     {
         resolve(VersionRepository::class)->setModel($this->version)->deleteVersion();
