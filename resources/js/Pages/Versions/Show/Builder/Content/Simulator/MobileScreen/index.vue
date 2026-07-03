@@ -217,7 +217,7 @@
                     test_mode: true,
                     app_id: this.app.id,
                     version_id: this.version.id,
-                    msisdn: this.useVersionBuilder.builder.simulator.subscriber.phone_number
+                    msisdn: ((this.useVersionBuilder.settings.simulator || {}).subscriber || {}).phone_number
                 }
             },
             startLastUssdCall(){

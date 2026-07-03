@@ -7,7 +7,7 @@
         <div v-else class="grid grid-cols-3">
 
             <div class="grid-span-1 py-8 px-4">
-                <SimulatorLogs :logs="(response || {}).logs" :showLogs="useVersionBuilder.builder.simulator.debugger.return_logs" origin="simulator"></SimulatorLogs>
+                <SimulatorLogs :logs="(response || {}).logs" :showLogs="((useVersionBuilder.settings.simulator || {}).debugger || {}).return_logs" origin="simulator"></SimulatorLogs>
             </div>
 
             <div class="grid-span-1">

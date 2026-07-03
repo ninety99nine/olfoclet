@@ -31,7 +31,13 @@
             }
         },
         created() {
-            this.predefineColors = Object.values(this.useVersionBuilder.builder.color_scheme.event_colors);
+            //  File 02 — the colour scheme now lives in settings.appearance; fall back
+            //  to a legacy builder.color_scheme, then to an empty palette (converted
+            //  builders no longer carry color_scheme).
+            const scheme = (((this.useVersionBuilder.settings || {}).appearance || {}).color_scheme)
+                || this.useVersionBuilder.builder.color_scheme
+                || { event_colors: {} };
+            this.predefineColors = Object.values(scheme.event_colors || {});
         }
     }
 </script>
