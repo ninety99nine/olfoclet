@@ -866,10 +866,25 @@ class UssdService
 
     /** Return the builder's allowed timeout limit in seconds
      */
+    /** File 02 P2 — read a value from the version-level settings store, falling
+     *  back to the provided default (typically the legacy builder value) so this
+     *  is safe on both converted and un-converted versions.
+     */
+    private function versionSetting(string $path, $default = null)
+    {
+        $settings = $this->version->settings ?? [];
+
+        return data_get($settings, $path, $default);
+    }
+
     public function getTimeoutLimitInSeconds()
     {
-        //  Get the timeout limit in seconds e.g "120" to mean "timeout after 120 seconds"
-        return $this->version->builder['simulator']['settings']['timeout_limit_in_seconds'];
+        //  File 02 P5: read from settings.session, falling back to the legacy
+        //  builder value (and then 120) for versions not yet converted.
+        return (int) $this->versionSetting(
+            'session.timeout_limit_in_seconds',
+            $this->version->builder['simulator']['settings']['timeout_limit_in_seconds'] ?? 120
+        );
     }
 
     /** Determine if we are on test mode or live mode, then execute

@@ -25,10 +25,14 @@ trait VersionTrait
         }else{
 
             //  We failed to retrieve from the cache, therefore perform a query
-            $version = DB::table('versions')->select('id', 'number', 'description', 'builder')->find($id);
+            //  (File 02 P2: also select the version settings so the engine can read them)
+            $version = DB::table('versions')->select('id', 'number', 'description', 'builder', 'settings')->find($id);
 
             //  Convert the builder to an associative array (We want to do this operation once)
             $version->builder = json_decode($version->builder, true);
+
+            //  Convert the settings to an associative array (null stays null)
+            $version->settings = json_decode($version->settings, true);
 
         }
 
@@ -48,9 +52,33 @@ trait VersionTrait
         Cache::forget($this->getCacheName($id));
     }
 
+    /**
+     *  File 02 P2 — default shape for the version-level settings store (simulator
+     *  test config, session timeouts, appearance, and per-element builder-UI
+     *  annotations). Populated for existing versions by the File 03 converter.
+     */
+    public function getSettingsTemplate(): array
+    {
+        return [
+            'schema_version' => 1,
+            'simulator' => [
+                'subscriber' => ['phone_number' => ''],
+                'debugger'   => ['return_logs' => false, 'return_summarized_logs' => false],
+            ],
+            'session' => [
+                'timeout_limit_in_seconds' => 120,
+                'allow_timeouts'           => false,
+                'timeout_message'          => '',
+            ],
+            'appearance' => ['color_scheme' => null],
+            'builder_ui' => new \stdClass(), // keyed by element id: { hexColor, comment }
+        ];
+    }
+
     public function getBuilderTemplate()
     {
         return [
+            'schema_version' => 2,
             'last_modified_timestamp' => now()->timestamp,
             'screens' => [],
             'markers' => [],
@@ -259,6 +287,14 @@ trait VersionTrait
             //  Get the version builder
             $builder = $this->builder;
 
+        }
+
+        //  File 02 P1: builders already at the current schema are canonical — skip
+        //  the ~800-line repair (which is also what stops it re-bloating the JSON,
+        //  e.g. re-adding 'comment'). Legacy builders run repair once, then get
+        //  stamped at the end.
+        if (($builder['schema_version'] ?? 0) >= 2) {
+            return $builder;
         }
 
         //  Get the version builder template
@@ -1084,6 +1120,9 @@ trait VersionTrait
 
 
         }
+
+        //  File 02 P1: stamp the current schema so the next save short-circuits.
+        $builder['schema_version'] = 2;
 
         //  Return the updated version builder
         return $builder;

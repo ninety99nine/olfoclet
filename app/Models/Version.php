@@ -18,6 +18,7 @@ class Version extends Model
      */
     protected $casts = [
         'builder' => 'array',
+        'settings' => 'array',
         'features' => 'array',
         'number' => 'decimal:2',    //  2 represents the decimal precision to return e.g 1.00, 2.00, e.t.c
     ];
@@ -28,7 +29,7 @@ class Version extends Model
      * @var array
      */
     protected $fillable = [
-        'number', 'description', 'builder', 'features', 'app_id', 'confirmation_code'
+        'number', 'description', 'builder', 'settings', 'features', 'app_id', 'confirmation_code'
     ];
 
     /**
