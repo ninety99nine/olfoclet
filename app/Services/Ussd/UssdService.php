@@ -839,6 +839,9 @@ class UssdService
                         return $this->showEndScreen('The app "'.$this->app->name.'" could not locate the version to run the service. Please contact the service provider.');
                     }
 
+                    //  File 02 P9: surface any version that reached runtime un-converted
+                    $this->guardVersionSchemaCompatibility();
+
                     if($this->requestXmlToJsonOutput) {
 
                         $this->logInfo(
@@ -875,6 +878,25 @@ class UssdService
         $settings = $this->version->settings ?? [];
 
         return data_get($settings, $path, $default);
+    }
+
+    /** File 02 P9 — warn (loudly, but do not break) when a version reaches runtime
+     *  before the File 03 converter has upgraded it. The settings reads fall back
+     *  to the legacy builder, so the service still runs; the warning surfaces a
+     *  missed conversion. Markers: still carries the relocated 'simulator' key, or
+     *  is not yet stamped schema_version:2.
+     */
+    private function guardVersionSchemaCompatibility()
+    {
+        $notConverted = isset($this->version->builder['simulator'])
+            || (($this->version->builder['schema_version'] ?? 0) < 2);
+
+        if ($notConverted) {
+            $this->logWarning(
+                'USSD version '.($this->version->id ?? '?').' is not fully converted '.
+                '(run ussd:upgrade-builders); reading legacy builder values as a fallback.'
+            );
+        }
     }
 
     /** File 02 P4 — simulator debugger flags, read from settings with a legacy
@@ -4992,14 +5014,16 @@ class UssdService
      */
     public function handlePagination()
     {
-        //  Get the display pagination settings
-        $displayPagination = $this->display['content']['pagination'];
+        //  File 02 P7: read display pagination null-safely — the File 03 converter
+        //  reduces global-pagination displays to just {use_global_pagination:true},
+        //  and a missing object defaults to using global pagination.
+        $displayPagination = $this->display['content']['pagination'] ?? null;
 
         //  Get the global pagination settings
         $globalPagination = $this->version->builder['global_pagination'];
 
         //  Check if we want to use the display pagination settings or the global pagination settings
-        $useGlobalPagination = $displayPagination['use_global_pagination'];
+        $useGlobalPagination = $displayPagination['use_global_pagination'] ?? true;
 
         //  Set the selected pagination settings (Display or Global)
         $pagination = $useGlobalPagination ? $globalPagination : $displayPagination;
@@ -13045,9 +13069,12 @@ class UssdService
             return '';
         }
 
-        $text = $data['text'];
-        $code = $data['code_editor_text'];
-        $code_editor_mode = $data['code_editor_mode'];
+        //  File 02 P8: read defensively — the File 03 converter compacts empty
+        //  ValueStructures by dropping code_editor_text/code_editor_mode, so an
+        //  absent key means '' / false.
+        $text = $data['text'] ?? '';
+        $code = $data['code_editor_text'] ?? '';
+        $code_editor_mode = $data['code_editor_mode'] ?? false;
 
         //  If the content uses Code Editor Mode
         if ($code_editor_mode == true) {
