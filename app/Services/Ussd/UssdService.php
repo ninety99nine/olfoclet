@@ -13178,11 +13178,25 @@ class UssdService
         */
         $__dynamic_variables = [];
 
+        //  Fetch the dynamic data once (P18) and materialise only the variables
+        //  the code actually references. Full extraction is forced when the
+        //  snippet could use a dynamically-named variable ($$x or ${...}), so no
+        //  referenced variable is ever missed.
+        $__allDynamicData = $this->getDynamicData();
+        preg_match_all('/\$([a-zA-Z_]\w*)/', $__phpCode, $__referencedMatches);
+        $__referenced = array_flip($__referencedMatches[1] ?? []);
+        $__extractAll = (strpos($__phpCode, '$$') !== false) || (strpos($__phpCode, '${') !== false);
+
         //  If we have dynamic data
-        if (count($this->getDynamicData())) {
+        if (count($__allDynamicData)) {
 
             //  Create dynamic variables
-            foreach ($this->getDynamicData() as $__key => $__value) {
+            foreach ($__allDynamicData as $__key => $__value) {
+
+                //  Skip data the code does not reference (unless full extraction is forced)
+                if (!$__extractAll && !isset($__referenced[$__key])) {
+                    continue;
+                }
 
                 /*  Foreach dataset use the iterator key to create the dynamic variable name and
                     *  assign the iterator value as the new variable value.
