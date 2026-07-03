@@ -23,8 +23,13 @@ class VersionObserver
 
     public function saving(Version $version)
     {
-        //  Repair the version builder
-        $version->builder = $version->repairBuilder($version->builder);
+        //  File 02 — only repair when the builder actually changed. A settings-only
+        //  save must not trigger the ~800-line repair (which normalizes and stamps
+        //  schema_version:2 on a still-legacy builder), so changing a test detail or
+        //  colour leaves the builder byte-identical. Builder edits still repair.
+        if ($version->isDirty('builder')) {
+            $version->builder = $version->repairBuilder($version->builder);
+        }
 
         //  Generate a confirmation code
         $version->confirmation_code = $version->generateConfirmationCode();

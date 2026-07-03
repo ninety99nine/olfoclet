@@ -4271,6 +4271,8 @@ __webpack_require__.r(__webpack_exports__);
       menus: [{
         label: 'Copy ID',
         onclick: function onclick() {
+          console.log("screen id: ".concat(_this.screen.id));
+
           //  Copy to clipboard
           navigator.clipboard.writeText(_this.screen.id).then(function () {
             // Alert the user that the action took place.
@@ -4284,6 +4286,8 @@ __webpack_require__.r(__webpack_exports__);
         label: 'Copy Name',
         borders: ['b'],
         onclick: function onclick() {
+          console.log("screen name: ".concat(_this.screen.name));
+
           //  Copy to clipboard
           navigator.clipboard.writeText(_this.screen.name).then(function () {
             // Alert the user that the action took place.

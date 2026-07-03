@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { defineStore } from 'pinia'
 import { v4 as uuidv4 } from 'uuid';
 import _, { pullAt, cloneDeep } from 'lodash';
@@ -25,6 +26,16 @@ export const useVersionBuilder = defineStore('version_builder', {
 
             builder: {},
             originalBuilder: {},
+
+            /**
+             *  File 02 — version-level settings store (simulator/session/appearance/
+             *  builder_ui). Lives on the version row, saved independently of the
+             *  builder via the PUT version.settings.update endpoint. `settings` is the
+             *  working copy; `originalSettings` is the last-saved snapshot.
+             */
+            settings: {},
+            originalSettings: {},
+
             selectedScreen: null,
             selectedDisplay: null,
             selectedConfigMenu: null,
@@ -135,6 +146,114 @@ export const useVersionBuilder = defineStore('version_builder', {
             }else{
                 this.setOriginalBuilder();
             }
+
+            //  File 02 — initialise the version settings alongside the builder
+            this.setSettings();
+        },
+
+        /**
+         *  File 02 — client mirror of Version::getSettingsTemplate(). The default
+         *  shape used when a version has no persisted settings yet (un-converted).
+         */
+        getSettingsTemplate(){
+            return {
+                schema_version: 1,
+                simulator: {
+                    subscriber: { phone_number: '' },
+                    debugger: { return_logs: false, return_summarized_logs: false }
+                },
+                session: {
+                    timeout_limit_in_seconds: 120,
+                    allow_timeouts: false,
+                    timeout_message: ''
+                },
+                appearance: { color_scheme: null },
+                builder_ui: {}
+            };
+        },
+
+        /**
+         *  File 02 — populate the working `settings` from the version row. When the
+         *  version has no settings yet (legacy / un-converted), backfill them from
+         *  the builder so the settings panels work pre-conversion. This mirrors the
+         *  engine's versionSetting(path, <legacy-builder-fallback>) reads on the
+         *  backend, keeping the UI and engine in agreement on both formats.
+         */
+        setSettings(){
+            const template = this.getSettingsTemplate();
+            const persisted = (this.version && this.version.settings) ? this.version.settings : null;
+
+            let settings;
+
+            if(persisted && Object.keys(persisted).length){
+                //  Converted version — merge persisted settings over the template
+                //  so any missing key still has a safe default.
+                settings = _.merge(template, _.cloneDeep(persisted));
+            }else{
+                //  Un-converted version — backfill from the legacy builder.
+                const b = this.builder || {};
+                const sim = b.simulator || {};
+                settings = template;
+                settings.simulator.subscriber.phone_number = (sim.subscriber || {}).phone_number ?? '';
+                settings.simulator.debugger.return_logs = (sim.debugger || {}).return_logs ?? false;
+                settings.simulator.debugger.return_summarized_logs = (sim.debugger || {}).return_summarized_logs ?? false;
+                settings.session.timeout_limit_in_seconds = (sim.settings || {}).timeout_limit_in_seconds ?? 120;
+                settings.session.allow_timeouts = (sim.settings || {}).allow_timeouts ?? false;
+                settings.session.timeout_message = (sim.settings || {}).timeout_message ?? '';
+                settings.appearance.color_scheme = b.color_scheme ?? null;
+            }
+
+            this.settings = settings;
+            this.originalSettings = _.cloneDeep(settings);
+        },
+
+        /**
+         *  File 02 — read the per-element builder-UI annotations (hexColor / comment)
+         *  for a given element id, from settings.builder_ui, with safe defaults. Used
+         *  by the builder canvas so the builder JSON no longer carries these.
+         */
+        getElementUI(id){
+            const ui = (this.settings && this.settings.builder_ui) ? this.settings.builder_ui : {};
+            const entry = (id != null && ui[id]) ? ui[id] : {};
+            return {
+                hexColor: entry.hexColor ?? '#CECECE',
+                comment: entry.comment ?? ''
+            };
+        },
+
+        /**
+         *  File 02 — write a per-element builder-UI annotation (hexColor / comment)
+         *  into settings.builder_ui, keyed by element id.
+         */
+        setElementUI(id, key, value){
+            if(id == null) return;
+            if(!this.settings.builder_ui) this.settings.builder_ui = {};
+            if(!this.settings.builder_ui[id]) this.settings.builder_ui[id] = { hexColor: '#CECECE', comment: '' };
+            this.settings.builder_ui[id][key] = value;
+        },
+
+        /**
+         *  File 02 — persist ONLY the version settings via the lightweight
+         *  PUT version.settings.update endpoint. Never touches the builder, so
+         *  changing a test number / colour does not re-save/repair the large
+         *  builder JSON. Returns the axios promise for success/error UX.
+         */
+        saveSettings(){
+            const url = window.route('version.settings.update', {
+                project: this.project.id, app: this.app.id, version: this.version.id
+            });
+
+            return axios.put(url, { settings: this.settings }).then((response) => {
+                //  Keep the in-memory version + snapshot in sync with what was saved
+                if(this.version) this.version.settings = _.cloneDeep(this.settings);
+                this.originalSettings = _.cloneDeep(this.settings);
+                return response;
+            });
+        },
+
+        //  File 02 — have the working settings diverged from the last save?
+        hasUnsavedSettings(){
+            return !_.isEqual(this.settings, this.originalSettings);
         },
         setOriginalBuilder(){
             this.removeUnsavedBuilderFromLocalStorage();
@@ -1375,8 +1494,11 @@ export const useVersionBuilder = defineStore('version_builder', {
 
             }
 
-            //  Set the Hex Color according to the event color scheme otherwise set default color
-            const hexColor = this.builder.color_scheme.event_colors[type] || '#CECECE';
+            //  Set the Hex Color according to the event color scheme otherwise set default color.
+            //  File 02 — the colour scheme now lives in settings.appearance; fall back to a
+            //  legacy builder.color_scheme for un-converted versions, then to the default.
+            const colorScheme = (((this.settings || {}).appearance || {}).color_scheme) || this.builder.color_scheme || {};
+            const hexColor = ((colorScheme.event_colors || {})[type]) || '#CECECE';
             const id = this.generateEventId();
 
             //  Overide the general event structure with the relevant event specific data

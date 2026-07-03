@@ -31,6 +31,8 @@ __webpack_require__.r(__webpack_exports__);
   methods: {
     copyToClipboard: function copyToClipboard() {
       var _this = this;
+      console.log("copy to clipboard: ".concat(this.endpoint));
+
       //  Copy to clipboard
       navigator.clipboard.writeText(this.endpoint).then(function () {
         //  Alert the user that the action took place.

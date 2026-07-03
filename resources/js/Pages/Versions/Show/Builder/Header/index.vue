@@ -286,6 +286,14 @@
                 axios.post(url, formData, config)
                     .then((response) => {
 
+                        //  File 02 — a full "Save Changes" also persists the version
+                        //  settings (appearance / builder_ui / simulator / session) via
+                        //  the lightweight settings endpoint, so builder-UI edits made on
+                        //  the canvas (colours, per-element annotations) are saved too.
+                        return self.useVersionBuilder.saveSettings();
+
+                    }).then(() => {
+
                         self.$message({
                             message: 'Changes saved successfully',
                             type: 'success'

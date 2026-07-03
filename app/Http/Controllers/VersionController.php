@@ -75,11 +75,13 @@ class VersionController extends BaseController
      */
     public function updateSettings()
     {
-        //  Persist only the settings column. save() still fires the observer, but
-        //  repairBuilder() short-circuits on a schema_version:2 builder, so the
-        //  builder is left byte-unchanged.
+        //  Persist ONLY the settings column. saveQuietly() skips the model
+        //  observer entirely, so a settings update never triggers repairBuilder()
+        //  or confirmation-code regeneration — the builder (and every other column)
+        //  is left byte-identical, even on a still-legacy (schema_version < 2)
+        //  builder. Laravel writes only the dirty `settings` column.
         $this->version->settings = request()->input('settings', []);
-        $this->version->save();
+        $this->version->saveQuietly();
 
         //  Refresh the cache so the engine reads the new settings
         $this->version->findAndCache();
