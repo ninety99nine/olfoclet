@@ -1426,7 +1426,7 @@ class UssdService
              *  2. The Global Variables record must match the test/live mode of this request.
              *  3. The Global Variables record must belong to this app.
              */
-            return DB::table('global_variables')->updateOrInsert(
+            $result = DB::table('global_variables')->updateOrInsert(
                 //  Conditions to find the record to update (If it exists)
                 [
                     'ussd_account_id' => $this->ussd_account->id,
@@ -1443,6 +1443,12 @@ class UssdService
                     'metadata' => json_encode($this->global_variables_to_save),
                 ]
             );
+
+            //  Bust the cached global-variables read (P11) so the next request
+            //  never sees stale globals. Keyed by account+app to match storeGlobalVariables().
+            Cache::forget('gv_'.$this->ussd_account->id.'_'.$this->app->id);
+
+            return $result;
         }
     }
 
@@ -2227,15 +2233,19 @@ class UssdService
              *  1. The Global Variables record must match the subscriber account
              *  2. The Global Variables record must match the app id
              */
-            $global_variables_records = DB::table('global_variables')->where([
-                'ussd_account_id' => $this->ussd_account->id,
-                'app_id' => $this->app->id
-
             /**
-             *  Order by the last time each record was updated, starting
-             *  with the oldest updated leading to the latest updated.
+             *  Cache the query (keyed by account+app) so it is not re-run on
+             *  every request/replay step. Invalidated on write in
+             *  createOrUpdateGlobalVariablesToDatabase(). Ordered oldest→latest
+             *  by updated_at.
              */
-            ])->oldest('updated_at')->get();
+            $cacheKey = 'gv_'.$this->ussd_account->id.'_'.$this->app->id;
+            $global_variables_records = Cache::remember($cacheKey, 1800, function () {
+                return DB::table('global_variables')->where([
+                    'ussd_account_id' => $this->ussd_account->id,
+                    'app_id' => $this->app->id,
+                ])->oldest('updated_at')->get();
+            });
 
             //  Set the global variables to save to an empty array
             $global_variables_to_save = [];
