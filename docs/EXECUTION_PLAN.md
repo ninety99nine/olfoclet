@@ -533,6 +533,19 @@ for existing services**.
 ---
 
 ## Cross-cutting risks & notes
+- **DB-restore hazard — `migrations` table AUTO_INCREMENT (verify before every `artisan migrate` on a
+  restored/imported DB).** The local dev `telcoflo` DB was imported without the `migrations.id`
+  AUTO_INCREMENT + PRIMARY KEY, so `php artisan migrate` applied the ALTER but then died inserting its
+  bookkeeping row (`Field 'id' doesn't have a default value`) — leaving the schema half-applied. A clean
+  `mysqldump` includes the full definition so this only bites partial/manual imports, but Phases 8/10/11
+  restore dumps, so guard it. **Detect:** `SELECT EXTRA FROM information_schema.columns WHERE
+  table_name='migrations' AND column_name='id';` must contain `auto_increment`. **Repair (idempotent):**
+  `ALTER TABLE migrations ADD PRIMARY KEY (id), MODIFY id INT UNSIGNED NOT NULL AUTO_INCREMENT;` Put this
+  check in the Phase 7 Docker entrypoint (before `migrate --force`) and the Phase 11 cutover pre-flight.
+- **Local serve — raw PHP errors must not leak into responses.** Fixed durably in `public/index.php`
+  (`display_errors=0`, before the autoloader) so a PHP-8.4 Carbon deprecation can't corrupt Inertia's
+  data-page. Production php.ini (Phase 7 Docker) should also set `display_errors=Off`. See
+  [[telcoflo-v1-local-run]] for the local serve command.
 - **Behaviour preservation is non-negotiable:** the golden-master suite must stay green through Phases 1–6;
   any intended output change requires explicit review + `UPDATE_GOLDEN=1`.
 - **File 02+03 ship together;** never serve File 02 code on un-converted builders except via the P9 guard.
