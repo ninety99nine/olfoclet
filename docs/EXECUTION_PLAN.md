@@ -265,7 +265,42 @@ regression green. Highlights + deviations:
 authenticated HTTP test of the settings endpoint (the model-level builder-bytes-unchanged test already
 covers the core invariant) and a standalone engine settings-read test.
 
-**FRONTEND COMPANION — user wants it DONE + Playwright-verified (in progress, awaiting MCP).**
+**FRONTEND COMPANION — settings-panel slice DONE ✅ + Playwright-verified (2026-07-03, commit 20c4102).**
+The owner's headline directive ("change a test number / colour without re-saving the large builder") is
+landed and proven end-to-end in the live app via Playwright:
+- **Store (VersionBuilder.js):** `settings`/`originalSettings` state; `getSettingsTemplate()` (mirrors backend);
+  `setSettings()` populates from `version.settings`, backfilling from the legacy builder when un-converted (so
+  panels work pre-conversion, mirroring the engine's `versionSetting(path,<legacy-fallback>)`); `saveSettings()`
+  PUTs `version.settings.update`; `getElementUI()`/`setElementUI()` for `settings.builder_ui[id]`.
+- **Panels:** Simulator/Session panel binds `settings.simulator`+`settings.session` with an independent
+  **Save Settings** button; ColorSchemeEditor reads/writes `settings.appearance.color_scheme` (null-safe);
+  `getBlankEvent` sources colour from settings (legacy fallback); **Save Changes** also persists settings.
+- **Backend invariant fix (critical, found via live testing):** `updateSettings` now uses `saveQuietly()` and
+  `VersionObserver::saving()` only repairs when the builder `isDirty()`. Real dev-DB versions are *legacy*
+  (schema_version < 2), so the old `save()` path repaired+stamped the builder v2 on a settings save — violating
+  the "settings save must not touch builder" invariant AND prematurely stamping v2 before the converter. Now a
+  settings save writes ONLY the settings column. **Verified on legacy v7:** builder MD5 + confirmation_code
+  byte-identical, schema_version stays NULL, phone/colour persisted to settings, re-read on reload. Suite green
+  (26 regression/golden + 7 file02).
+- Also fixed a **local-serve deprecation leak** (PHP notices printed before the HTML doctype corrupted Inertia's
+  data-page → dead login/hydration). Serve via `php -d display_errors=0 -d error_reporting=22519 -S 127.0.0.1:8000
+  -t public /tmp/olfoclet-router.php`. Dev `telcoflo` DB migrated (repaired `migrations.id` — it had lost
+  AUTO_INCREMENT/PK, the exact history quirk flagged; all 4 File 01/02 migrations now applied).
+
+**REMAINING FRONTEND (increments 4+5) — deferred to ship WITH the File 03 converter (Phase 5), by design.**
+- **P3 per-element `hexColor`/`comment` → `settings.builder_ui[id]`** (via `getElementUI(id)`; ~35 component
+  bindings across EventMenu/DisplayMenu/NavigationMenu/StaticOption/ValidationRule/FormattingRule + modals;
+  getBlank* stop embedding the two fields) and **P7 pagination minimal-serialize** + **P8 ValueStructure
+  hydrate-on-load/compact-on-save** (~150 nested sites).
+- **Why deferred (not skipped):** these only take effect on *converted* (slimmed) builders — where the builder
+  has NO per-element hexColor/comment and compacted ValueStructures. The File 03 converter (Phase 5) does not
+  exist yet, so there is **no converted data to Playwright-verify the "reads from builder_ui / tolerates absent
+  keys" paths against**. Doing them blind now is exactly the risk the prior handoff warned about. Correct
+  sequencing: build the Phase 5 converter → convert a throwaway version → then land increments 4+5 and verify
+  the slimmed-builder UI against real converted data. The store already has `getElementUI/setElementUI` ready.
+- Engine already tolerates both formats (backend P7/P8 null-safe reads done), so nothing is blocked meanwhile.
+
+**(historical) Original scope note — awaiting MCP:**
 - Scoped: ~12 files — `resources/js/Stores/VersionBuilder.js` (add `settings`/`originalSettings` state +
   `setSettings()`; `getElementUI(id)` helper reading `settings.builder_ui[id]`; color_scheme →
   `settings.appearance`; `getBlankEvent`/`getBlankDisplay` stop embedding hexColor/comment); pass
