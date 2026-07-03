@@ -94,6 +94,7 @@ class UssdService
     public $httpClient = null;
     public $screenIndex = [];
     public $displayIndex = [];
+    public $loggingEnabled = true;
     public $global_variables_to_save = [];
     public $ussd_account_connection = null;
     public $incorrect_option_selected = null;
@@ -2026,6 +2027,22 @@ class UssdService
 
         //  Set the version number
         $version_number = $this->version->number;
+
+        //  Precompute whether logs will actually be used (P17) so processPHPCode
+        //  can skip building per-variable log entries (incl. json_encode) when
+        //  they can never be saved or returned. Safe by construction: in test
+        //  mode we keep logging on whenever the simulator returns logs, so the
+        //  debugger never loses output; in production we only skip when mobile
+        //  save_logs is 'never'.
+        $logSettings = $this->version->builder['log_settings'] ?? [];
+        if ($this->test_mode) {
+            $simulatorSave = $logSettings['simulator']['save_logs'] ?? 'always';
+            $debuggerReturnsLogs = $this->version->builder['simulator']['debugger']['return_logs'] ?? true;
+            $this->loggingEnabled = ($simulatorSave !== 'never') || $debuggerReturnsLogs;
+        } else {
+            $mobileSave = $logSettings['mobile']['save_logs'] ?? 'never';
+            $this->loggingEnabled = ($mobileSave !== 'never');
+        }
 
         //  Set the version number
         $subscriber_mobile_number = $this->version->builder['simulator']['subscriber']['phone_number'];
@@ -13184,8 +13201,10 @@ class UssdService
                     */
                 ${$__key} = $__value;
 
-                //  Set an info log for the created variable and its dynamic data value
-                if ($__log_dynamic_data) {
+                //  Set an info log for the created variable and its dynamic data value.
+                //  Guarded by loggingEnabled (P17) so the json_encode + array build
+                //  is skipped entirely when logs will not be saved/returned.
+                if ($__log_dynamic_data && $this->loggingEnabled) {
 
                     //  Get the value type wrapped in html tags
                     $__dataType = $this->wrapAsSuccessHtml($this->getDataType($__value));
