@@ -265,6 +265,23 @@ regression green. Highlights + deviations:
 authenticated HTTP test of the settings endpoint (the model-level builder-bytes-unchanged test already
 covers the core invariant) and a standalone engine settings-read test.
 
+**FRONTEND COMPANION — user wants it DONE + Playwright-verified (in progress, awaiting MCP).**
+- Scoped: ~12 files — `resources/js/Stores/VersionBuilder.js` (add `settings`/`originalSettings` state +
+  `setSettings()`; `getElementUI(id)` helper reading `settings.builder_ui[id]`; color_scheme →
+  `settings.appearance`; `getBlankEvent`/`getBlankDisplay` stop embedding hexColor/comment); pass
+  `settingsPayload` from `VersionController::show`; simulator panel + MobileScreen → `settings.simulator`/
+  `settings.session`; ColorSchemeEditor → `settings.appearance.color_scheme`; EventMenu / NavigationMenu /
+  StaticOption / ValidationRule / FormattingRule → `getElementUI(id)`. Plus client-side init of `settings`
+  from the builder when null (mirror of backend fallback) so it works pre-conversion. Save via
+  `PUT version.settings.update`.
+- **Build pipeline CONFIRMED:** `npm run prod` (Laravel Mix) compiles cleanly in ~20s on Node 20 (no
+  openssl-legacy-provider needed). Login users exist (brandontabona@/admin@egov/firstaidcounselling@).
+- **BLOCKER:** Playwright MCP is NOT connected — user is adding it (`claude mcp add playwright npx
+  @playwright/mcp@latest` then reconnect). Once available: implement the 12 files, migrate the dev `telcoflo`
+  DB (via targeted ALTERs — telcoflo's migration history differs from olfoclet's, so DON'T blind `artisan
+  migrate`; add `versions.settings`, `ussd_sessions.session_state`, the P6 indexes + archive table
+  directly), `npm run prod`, serve, and drive each panel in the browser to verify, then commit.
+
 **→ Ready for Phase 5 (File 03 converter), which also resolves the schema_version/converter interaction above.**
 
 ---
