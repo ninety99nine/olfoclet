@@ -551,7 +551,24 @@ results; a bottleneck log with resolutions.
 **Verification:** dashboards show live metrics under K6; documented max sustainable load + named bottlenecks
 + fixes; alerts fire correctly.
 
-**Feedback log:** _(agent + user record load curves + findings)_
+**Feedback log (2026-07-04) — scaffolding DONE ✅ (commit 40995d8); AWS provisioning pending user.**
+Direction confirmed by the owner: host V1 on its own EC2 with **GitHub CI/CD** (push to `main` → deploy),
+modeled on the V2 (`~/Sites/telcoflo-new`) pipeline: test → build & push image to **ECR** → SSH-deploy to
+**EC2** (appleboy scp/ssh, pull + `docker compose up`, `.env` from a `PRODUCTION_ENV` secret). Built for V1:
+- **`.github/workflows/deploy.yml`** — test job runs phpunit against a `mysql:8.0` service (golden harness
+  needs real MySQL, unlike V2's sqlite); builds the single app image (nginx/mysql/redis are stock) and pushes
+  to ECR `telcoflo-v1-app`; SSH-deploys. Gated by repo var `DEPLOY_TARGET=ec2`. Uses Mix (`npm run prod`), PHP 8.2.
+- **`docker-compose.production.yaml`** (ECR image + stock services + mock under `staging` profile),
+  **`scripts/ec2-docker-setup.sh`**, **`.env.production.example`**, **`docs/deployment.md`** (full runbook +
+  the owner's AWS/GitHub/Grafana action items).
+- **K6** (`loadtest/k6/ussd-flow.js` + `run-k6.sh`): drives `POST /api/launch/ussd`, ramp/spike/smoke/soak,
+  custom latency metrics + thresholds, Prometheus remote-write to Grafana Cloud. (api throttle is already
+  300k/min per IP — not a blocker.)
+- **Monitoring** (`docker/monitoring/`): node/php-fpm/mysqld/nginx exporters + Grafana Alloy → Grafana Cloud
+  over 443, using the `/fpm-status` + `/nginx-status` endpoints already exposed.
+**Pending (owner, see docs/deployment.md):** launch the V1 EC2 (eu-west-2), set the GitHub secrets/variable,
+create the Grafana Cloud stack. Then: first deploy → restore a sanitised dump → run converter → K6 ramp →
+read dashboards → fix bottlenecks one by one.
 
 ---
 
