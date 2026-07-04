@@ -197,12 +197,16 @@ jobs:
           APP_PATH: ${{ secrets.AWS_EC2_APP_PATH || '/var/www/telcoflo-v1' }}
           PRODUCTION_ENV: ${{ secrets.PRODUCTION_ENV }}
           TLS_ENABLED: ${{ vars.TLS_ENABLED }}
+          # Forwarded so `aws ecr get-login-password` can authenticate ON the box
+          # (the EC2 has no IAM instance role). Ephemeral in the SSH env; not persisted.
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         with:
           host: ${{ secrets.AWS_EC2_HOST }}
           username: ${{ secrets.AWS_EC2_USER }}
           key: ${{ secrets.AWS_EC2_SSH_KEY }}
           port: ${{ secrets.AWS_EC2_SSH_PORT || 22 }}
-          envs: ECR_REGISTRY,IMAGE_TAG,APP_PATH,PRODUCTION_ENV,AWS_REGION,ECR_REPO,TLS_ENABLED
+          envs: ECR_REGISTRY,IMAGE_TAG,APP_PATH,PRODUCTION_ENV,AWS_REGION,ECR_REPO,TLS_ENABLED,AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY
           script: |
             set -e
             mkdir -p "$APP_PATH"
