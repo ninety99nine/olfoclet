@@ -14,7 +14,7 @@ name: Build and Deploy V1 to AWS
 
 on:
   push:
-    branches: [main]
+    branches: [main, perf/phase-3-json-structure]   # TEMP: smoke-test deploy from the branch — revert to [main] once proven
   workflow_dispatch:
 
 env:
@@ -94,7 +94,7 @@ jobs:
     name: Build & Push to ECR
     runs-on: ubuntu-latest
     needs: [test]
-    if: github.ref == 'refs/heads/main' && vars.DEPLOY_TARGET == 'ec2'
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/perf/phase-3-json-structure') && vars.DEPLOY_TARGET == 'ec2'
     steps:
       - uses: actions/checkout@v4
 
@@ -148,7 +148,7 @@ jobs:
     name: Deploy to EC2
     runs-on: ubuntu-latest
     needs: [build-image]
-    if: github.ref == 'refs/heads/main' && vars.DEPLOY_TARGET == 'ec2'
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/perf/phase-3-json-structure') && vars.DEPLOY_TARGET == 'ec2'
     environment: production
     steps:
       - uses: actions/checkout@v4
@@ -226,12 +226,23 @@ jobs:
             # Authenticate to ECR and pull the new image.
             aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$ECR_REGISTRY"
             export ECR_REGISTRY IMAGE_TAG
+
+            # Free disk before pulling — old SHA-tagged images pile up on the 30GB box
+            # (mirrors the V2 pipeline's pre-pull cleanup, minus a hard `down` to avoid downtime).
+            docker image prune -f 2>/dev/null || true
+            docker builder prune -f 2>/dev/null || true
+
             docker compose $COMPOSE_FILES pull app
 
             # Roll the stack. The app entrypoint migrates + caches on boot.
             docker compose $COMPOSE_FILES up -d
 
-            # Smoke check + cleanup.
+            # Smoke check.
             sleep 8
             docker compose $COMPOSE_FILES ps
-            docker image prune -af || true
+
+            # Post-deploy disk hygiene (mirrors V2: prune images/build-cache, vacuum logs, clean apt).
+            docker image prune -af 2>/dev/null || true
+            docker builder prune -af 2>/dev/null || true
+            sudo journalctl --vacuum-time=7d 2>/dev/null || true
+            sudo apt-get clean 2>/dev/null || true
