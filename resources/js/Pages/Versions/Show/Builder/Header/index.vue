@@ -243,59 +243,59 @@
                 //  Start the conversation
                 this.startConvo();
 
-                /**
-                 *  Attempt to update version
-                 *
-                 *  Note that we use "post" instead of "put" when saving. This is because we want to make use
-                 *  of the "multipart/form-data" which is useful for tracking the upload progress. However
-                 *  the "multipart/form-data" does not support the put, patch or delete methods. We need
-                 *  to use "post" method while appending the "{ _method: 'put' }" parameters as part of
-                 *  the "form" data to allowing saving data while also enabling the upload progress
-                 *  tracker.
-                 */
-                let formData = new FormData();
-                formData.append('_method', 'put');
-                //  File 02 — persist the SLIM builder: per-element hexColor/comment are
-                //  stripped out and synced into settings.builder_ui (saved just below via
-                //  saveSettings), keeping the stored builder pure service-definition.
-                formData.append('builder', JSON.stringify(this.useVersionBuilder.compactBuilderForSave()));
+                const self = this;
 
                 const url = route('version.update', { project: this.route().params.project, app: this.route().params.app, version: this.route().params.version });
 
                 /**
-                 *  Generate the axios cancel token to allow this request
-                 *  to be cancelled if this action is required
-                 *
-                 *  Reference: https://stackoverflow.com/questions/50516438/cancel-previous-request-using-axios-with-vue-js
+                 *  File 02 — only push the builder when it has ACTUALLY changed. Saving
+                 *  non-builder information (test phone number, timeout, debugger / log
+                 *  settings, colours) must not re-post or re-repair the large builder
+                 *  JSON — it saves via the lightweight version.settings endpoint alone.
+                 *  hexColor/comment are hydrated onto the builder in memory, so a colour
+                 *  edit does mark the builder changed; compactBuilderForSave() then strips
+                 *  them back out, keeping the stored builder pure service-definition.
                  */
-                const axiosSource = axios.CancelToken.source();
-                this.request = { cancel: axiosSource.cancel };
+                const builderChanged = !this.useVersionBuilder.isBuilderEqualWithoutLastModifiedTimestamp(
+                    this.useVersionBuilder.builder, this.useVersionBuilder.originalBuilder
+                );
 
-                const config = {
+                let savePromise;
 
-                    //  Upload Progress
-                    onUploadProgress: event => {
-                        this.progressPercentage = Math.round(
-                            (event.loaded * 100) / event.total
-                        );
-                    },
+                if (builderChanged) {
 
-                    cancelToken: axiosSource.token
+                    /**
+                     *  We use "post" instead of "put" so we can use "multipart/form-data"
+                     *  for upload-progress tracking (which does not support put), appending
+                     *  { _method: 'put' } to still route to the update handler.
+                     */
+                    let formData = new FormData();
+                    formData.append('_method', 'put');
+                    formData.append('builder', JSON.stringify(this.useVersionBuilder.compactBuilderForSave()));
 
-                };
+                    const axiosSource = axios.CancelToken.source();
+                    this.request = { cancel: axiosSource.cancel };
 
-                const self = this;
+                    const config = {
+                        onUploadProgress: event => {
+                            this.progressPercentage = Math.round((event.loaded * 100) / event.total);
+                        },
+                        cancelToken: axiosSource.token
+                    };
 
-                axios.post(url, formData, config)
-                    .then((response) => {
+                    //  Save the builder, then the settings (appearance / builder_ui too).
+                    savePromise = axios.post(url, formData, config)
+                        .then(() => self.useVersionBuilder.saveSettings());
 
-                        //  File 02 — a full "Save Changes" also persists the version
-                        //  settings (appearance / builder_ui / simulator / session) via
-                        //  the lightweight settings endpoint, so builder-UI edits made on
-                        //  the canvas (colours, per-element annotations) are saved too.
-                        return self.useVersionBuilder.saveSettings();
+                } else {
 
-                    }).then(() => {
+                    //  Builder unchanged — persist ONLY the version settings.
+                    savePromise = self.useVersionBuilder.saveSettings();
+
+                }
+
+                savePromise
+                    .then(() => {
 
                         self.$message({
                             message: 'Changes saved successfully',
@@ -313,7 +313,7 @@
                         var message = (error || {}).message ?? 'Sorry, something went wrong';
 
                         //  Request failed with status code 419 (CSRF token mismatch.)
-                        if( error.response.status === 419 ) {
+                        if( ((error || {}).response || {}).status === 419 ) {
 
                             message = 'Please login';
 
