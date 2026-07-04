@@ -13756,9 +13756,15 @@ class UssdService
             $data['screen'] = $this->screen['name'] ?? null;
             $data['display'] = $this->display['name'] ?? null;
 
-            //  If the description is an Array, convert to Json Object
-            if(gettype($data['description']) === 'array') {
-                $data['description'] = json_encode($data['description']);
+            //  Ensure the log description is always a well-formed string. Builder
+            //  code runs via eval() with $this bound, so a service definition can
+            //  call $this->logError()/logInfo() with a non-string (e.g. a boolean
+            //  condition result), which would otherwise be stored as description:false.
+            //  Arrays/objects -> JSON; scalars/null -> readable literal ('false', '12').
+            if (! is_string($data['description'])) {
+                $data['description'] = (is_array($data['description']) || is_object($data['description']))
+                    ? json_encode($data['description'])
+                    : var_export($data['description'], true);
             }
 
             //  If we want to capture summarized logs
