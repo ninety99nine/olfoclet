@@ -227,15 +227,48 @@ export const useVersionBuilder = defineStore('version_builder', {
          *  (saved by the same "Save Changes" flow via saveSettings()).
          */
         compactBuilderForSave(){
+            this.syncBuilderUiToSettings();
+            return this.stripBuilderClone(this.builder);
+        },
+
+        /**
+         *  File 02 — collect the current per-element hexColor/comment into
+         *  settings.builder_ui (so colour/comment edits persist via the settings
+         *  endpoint, never the builder). Idempotent.
+         */
+        syncBuilderUiToSettings(){
             const acc = {};
             this.collectBuilderUi(this.builder, acc);
             this.settings.builder_ui = acc;
+        },
 
-            const clone = _.cloneDeep(this.builder);
-            this.stripBuilderUiKeys(clone);          //  P3 — hexColor/comment
-            this.compactValueStructures(clone);      //  P8 — empty ValueStructures
-            this.normalizePaginationDeep(clone);     //  P7 — global pagination
+        /**
+         *  File 02 — return the SLIM, service-definition-only form of a builder:
+         *  a deep clone with hexColor/comment stripped (P3), empty ValueStructures
+         *  compacted (P8) and global pagination normalised (P7). Pure (no side
+         *  effects), so it's also used to compare builders for real changes.
+         */
+        stripBuilderClone(builder){
+            const clone = _.cloneDeep(builder);
+            this.stripBuilderUiKeys(clone);
+            this.compactValueStructures(clone);
+            this.normalizePaginationDeep(clone);
             return clone;
+        },
+
+        /**
+         *  File 02 — has the actual SERVICE-DEFINITION builder changed? Compares the
+         *  slim forms of the working vs original builder, so builder-UI-only edits
+         *  (colours/comments — which are hydrated onto builder elements in memory)
+         *  and settings changes do NOT count as a builder change. This is what lets
+         *  "Save Changes" skip the builder POST for settings-only saves.
+         */
+        isBuilderContentChanged(){
+            const a = this.stripBuilderClone(this.builder);
+            const b = this.stripBuilderClone(this.originalBuilder);
+            delete a.last_modified_timestamp;
+            delete b.last_modified_timestamp;
+            return !_.isEqual(a, b);
         },
 
         /**

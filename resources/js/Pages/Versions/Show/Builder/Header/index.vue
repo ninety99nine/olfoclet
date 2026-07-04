@@ -256,9 +256,14 @@
                  *  edit does mark the builder changed; compactBuilderForSave() then strips
                  *  them back out, keeping the stored builder pure service-definition.
                  */
-                const builderChanged = !this.useVersionBuilder.isBuilderEqualWithoutLastModifiedTimestamp(
-                    this.useVersionBuilder.builder, this.useVersionBuilder.originalBuilder
-                );
+                //  Always capture per-element colour/comment edits into
+                //  settings.builder_ui — they persist via the settings endpoint, not
+                //  the builder.
+                this.useVersionBuilder.syncBuilderUiToSettings();
+
+                //  Only the service-definition builder (colours/comments stripped)
+                //  decides whether the builder itself must be re-posted.
+                const builderChanged = this.useVersionBuilder.isBuilderContentChanged();
 
                 let savePromise;
 
