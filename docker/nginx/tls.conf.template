@@ -1,0 +1,57 @@
+# Telcoflo V1 — TLS nginx config (promotion step). nginx:alpine renders this from
+# /etc/nginx/templates/ with envsubst, substituting ${DOMAIN} (set on the nginx
+# service in docker-compose.tls.yaml). $uri/$fastcgi_* are nginx vars, not env
+# vars, so envsubst leaves them alone. Certs come from Let's Encrypt via certbot
+# (run docker/scripts/init-letsencrypt.sh once).
+
+# HTTP: serve the ACME challenge, redirect everything else to HTTPS.
+server {
+    listen 80;
+    server_name ${DOMAIN};
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+# HTTPS: the app.
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name ${DOMAIN};
+    root /var/www/html/public;
+    index index.php;
+    client_max_body_size 32M;
+    charset utf-8;
+
+    ssl_certificate     /etc/letsencrypt/live/${DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${DOMAIN}/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_session_cache shared:SSL:10m;
+
+    location ~* \.(?:js|css)$ {
+        add_header Cache-Control "no-cache";
+        try_files $uri =404;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        fastcgi_pass app:9000;
+        fastcgi_index index.php;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        fastcgi_param DOCUMENT_ROOT $realpath_root;
+        fastcgi_param HTTPS on;
+        fastcgi_read_timeout 20s;
+    }
+
+    location ~ /\.(?!well-known).* { deny all; }
+}

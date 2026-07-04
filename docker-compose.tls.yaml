@@ -1,0 +1,36 @@
+# Telcoflo V1 — TLS overlay (promotion to production). Adds Let's Encrypt certs +
+# an HTTPS nginx. Staging stays HTTP without this file.
+#
+#   1. Point DNS (APP_DOMAIN) at the EC2, open 443 in the security group.
+#   2. Set APP_DOMAIN + ACME_EMAIL in .env.
+#   3. bash docker/scripts/init-letsencrypt.sh        # obtains certs, brings up TLS
+#   4. thereafter deploy with BOTH files:
+#        docker compose -f docker-compose.production.yaml -f docker-compose.tls.yaml up -d
+name: telcoflo-v1
+
+services:
+  nginx:
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: "${APP_DOMAIN}"
+    volumes:
+      # Render the TLS template instead of the static staging config.
+      - ./docker/nginx/tls.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - public:/var/www/html/public:ro
+      - certbot-www:/var/www/certbot:ro
+      - certbot-etc:/etc/letsencrypt:ro
+
+  certbot:
+    image: certbot/certbot
+    container_name: telcoflo-v1-certbot
+    profiles: [certbot]
+    volumes:
+      - certbot-www:/var/www/certbot
+      - certbot-etc:/etc/letsencrypt
+    networks: [orange]
+
+volumes:
+  certbot-www:
+  certbot-etc:

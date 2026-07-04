@@ -173,7 +173,7 @@ jobs:
           username: ${{ secrets.AWS_EC2_USER }}
           key: ${{ secrets.AWS_EC2_SSH_KEY }}
           port: ${{ secrets.AWS_EC2_SSH_PORT || 22 }}
-          source: "docker-compose.production.yaml,docker/nginx,docker/php,docker/mysql,docker/redis,docker/mock-server,scripts/ec2-docker-setup.sh"
+          source: "docker-compose.production.yaml,docker-compose.tls.yaml,docker/nginx,docker/php,docker/mysql,docker/redis,docker/mock-server,docker/scripts,scripts/ec2-docker-setup.sh"
           target: "/tmp/telcoflo-v1"
 
       - name: Bootstrap EC2 (Docker + AWS CLI if missing)
@@ -196,20 +196,29 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
           APP_PATH: ${{ secrets.AWS_EC2_APP_PATH || '/var/www/telcoflo-v1' }}
           PRODUCTION_ENV: ${{ secrets.PRODUCTION_ENV }}
+          TLS_ENABLED: ${{ vars.TLS_ENABLED }}
         with:
           host: ${{ secrets.AWS_EC2_HOST }}
           username: ${{ secrets.AWS_EC2_USER }}
           key: ${{ secrets.AWS_EC2_SSH_KEY }}
           port: ${{ secrets.AWS_EC2_SSH_PORT || 22 }}
-          envs: ECR_REGISTRY,IMAGE_TAG,APP_PATH,PRODUCTION_ENV,AWS_REGION,ECR_REPO
+          envs: ECR_REGISTRY,IMAGE_TAG,APP_PATH,PRODUCTION_ENV,AWS_REGION,ECR_REPO,TLS_ENABLED
           script: |
             set -e
             mkdir -p "$APP_PATH"
             cd "$APP_PATH"
 
+            # Include the TLS overlay once promoted to HTTPS (repo var TLS_ENABLED=true).
+            COMPOSE_FILES="-f docker-compose.production.yaml"
+            if [ "$TLS_ENABLED" = "true" ]; then
+              COMPOSE_FILES="$COMPOSE_FILES -f docker-compose.tls.yaml"
+            fi
+
             # Sync the stack files shipped above.
             cp /tmp/telcoflo-v1/docker-compose.production.yaml ./docker-compose.production.yaml
+            cp /tmp/telcoflo-v1/docker-compose.tls.yaml ./docker-compose.tls.yaml 2>/dev/null || true
             rm -rf ./docker && cp -r /tmp/telcoflo-v1/docker ./docker
+            chmod +x ./docker/scripts/*.sh 2>/dev/null || true
 
             # Write .env from the PRODUCTION_ENV secret.
             printf '%s' "$PRODUCTION_ENV" > .env
@@ -217,12 +226,12 @@ jobs:
             # Authenticate to ECR and pull the new image.
             aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$ECR_REGISTRY"
             export ECR_REGISTRY IMAGE_TAG
-            docker compose -f docker-compose.production.yaml pull app
+            docker compose $COMPOSE_FILES pull app
 
             # Roll the stack. The app entrypoint migrates + caches on boot.
-            docker compose -f docker-compose.production.yaml up -d
+            docker compose $COMPOSE_FILES up -d
 
             # Smoke check + cleanup.
             sleep 8
-            docker compose -f docker-compose.production.yaml ps
+            docker compose $COMPOSE_FILES ps
             docker image prune -af || true

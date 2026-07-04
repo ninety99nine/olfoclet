@@ -30,20 +30,22 @@ Files: `.github/workflows/deploy.yml`, `docker-compose.production.yaml`,
   key into GitHub as `AWS_EC2_SSH_KEY`.
 - **ECR:** nothing to do — the workflow creates the `telcoflo-v1-app` repo on
   first run. (Region `eu-west-2`.)
-- **IAM for CI:** the workflow needs an access key with **ECR push** + describe
-  (e.g. `AmazonEC2ContainerRegistryPowerUser`) and `sts:GetCallerIdentity`. You can
-  reuse the existing `telcoflo` user's "GitHub Actions CI/CD" key, or (cleaner)
-  create a dedicated `telcoflo-v1-ci` user with that policy. → this key becomes
-  `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`.
+- **IAM for CI:** **reuse the existing `telcoflo` user's "GitHub Actions CI/CD"
+  access key** (chosen) — it already has ECR access. V1 just adds a new ECR repo
+  (`telcoflo-v1-app`, auto-created by the workflow). That key becomes
+  `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`. (If you'd rather isolate later, a
+  dedicated `telcoflo-v1-ci` user with `AmazonEC2ContainerRegistryPowerUser` +
+  `sts:GetCallerIdentity` works identically.)
 - **DNS (optional):** point a hostname at the EC2 if you want a real URL / TLS.
 
 ### 2. GitHub — secrets & variables (repo `ninety99nine/olfoclet`)
 Settings → Secrets and variables → Actions.
 
-**Variable:**
+**Variables:**
 | name | value |
 |------|-------|
 | `DEPLOY_TARGET` | `ec2` |
+| `TLS_ENABLED` | `false` for staging; `true` after you run init-letsencrypt (Promotion) |
 
 **Secrets:**
 | name | value |
@@ -112,6 +114,28 @@ docker compose \
 ```
 
 (Alloy pushes outbound to Grafana Cloud over 443 — no inbound ports needed.)
+
+## Promotion: staging → production (TLS + real CMS + real data)
+
+The box starts as a **staging/load-test replica** (HTTP + mock CMS). To promote the
+same box toward production:
+
+1. **TLS** — point a domain's DNS at the EC2, open `443` in the SG, set `APP_DOMAIN`
+   + `ACME_EMAIL` in `PRODUCTION_ENV`, then on the box:
+   ```bash
+   cd /var/www/telcoflo-v1 && bash docker/scripts/init-letsencrypt.sh
+   ```
+   Set the GitHub variable **`TLS_ENABLED=true`** so every deploy keeps the TLS
+   overlay (`docker-compose.tls.yaml`). Add `certbot-renew.sh` to cron (twice daily).
+2. **Real CMS/STK** — set `ORANGE_STK_PUSH_URL` and the builders' CMS URL to the real
+   reachable Orange hosts (public IP if outside their network), and deploy WITHOUT
+   `--profile staging` so the mock isn't started.
+3. **Real data** — restore a sanitised production dump and run
+   `ussd:upgrade-builders --backup` once (`RUN_UPGRADE_BUILDERS=true` for one boot).
+4. Bump `innodb_buffer_pool_size` and FPM `pm.max_children` to the box's RAM.
+
+> The real Orange production still sits behind Wallix (443 only) — this AWS box is
+> the staging/validation replica; Phase 11 covers the actual Orange cutover.
 
 ## Rollback
 
