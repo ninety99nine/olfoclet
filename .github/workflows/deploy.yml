@@ -173,7 +173,7 @@ jobs:
           username: ${{ secrets.AWS_EC2_USER }}
           key: ${{ secrets.AWS_EC2_SSH_KEY }}
           port: ${{ secrets.AWS_EC2_SSH_PORT || 22 }}
-          source: "docker-compose.production.yaml,docker-compose.tls.yaml,docker/nginx,docker/php,docker/mysql,docker/redis,docker/mock-server,docker/scripts,scripts/ec2-docker-setup.sh"
+          source: "docker-compose.production.yaml,docker-compose.tls.yaml,docker/nginx,docker/php,docker/mysql,docker/redis,docker/mock-server,docker/monitoring,docker/scripts,scripts/ec2-docker-setup.sh"
           target: "/tmp/telcoflo-v1"
 
       - name: Bootstrap EC2 (Docker + AWS CLI if missing)
