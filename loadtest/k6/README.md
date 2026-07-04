@@ -60,11 +60,12 @@ OUTPUT=grafana-cloud ./loadtest/run-k6.sh
 
 ## Before a real run — two config gotchas
 
-1. **API throttle.** `POST /api/launch/ussd` is behind `throttle:api`. The default
-   (60/min) will 429 the load test and hide the app's real ceiling. Raise it for
-   staging via `USSD_API_RATE_LIMIT` (see routes/config) or disable the limiter on
-   the staging box. Watch for `429` in the k6 summary — that means the throttle,
-   not the app, is the bottleneck.
+1. **API throttle.** `POST /api/launch/ussd` is behind `throttle:api`, but the app
+   already sets it to `perMinute(300000)` **per IP** (RouteServiceProvider) — ~5000
+   req/s, effectively unlimited. It only becomes a factor if you drive >5000 req/s
+   from a **single** k6 host IP; then distribute k6 across hosts or raise the limit.
+   Watch for `429` in the summary just in case — that would mean the throttle, not
+   the app.
 2. **CMS target.** For deterministic, isolated numbers point the app's CMS calls at
    the **mock-server** (`192.168.22.202` on the compose network), not the real
    public Orange IP — otherwise you are also load-testing (and waiting on) their

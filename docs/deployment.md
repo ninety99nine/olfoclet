@@ -95,9 +95,9 @@ K6 numbers sit next to FPM/MySQL/host metrics. Ramp until a ceiling hits (FPM
 `max_children`, MySQL connections, CPU), fix, re-test. See `loadtest/k6/README.md`
 and `docker/monitoring/README.md`.
 
-**Before a load run:** raise the `throttle:api` limit (the gateway route is rate-
-limited — the default would 429 the test), point the CMS at the mock
-(`--profile staging`), and bump `innodb_buffer_pool_size` to mirror the box.
+**Before a load run:** point the CMS at the mock (`--profile staging`) and bump
+`innodb_buffer_pool_size` to mirror the box. (The `throttle:api` limit is already
+~5000 req/s per IP, so it's only a factor if you drive >5000 req/s from one k6 host.)
 
 ---
 
