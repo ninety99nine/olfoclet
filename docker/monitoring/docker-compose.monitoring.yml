@@ -1,0 +1,84 @@
+# Telcoflo V1 — monitoring overlay (Phase 10).
+#
+# Exporters (bound to the internal compose network only) + Grafana Alloy, which
+# scrapes them and pushes metrics to Grafana Cloud over HTTPS/443 (push model —
+# nothing new is exposed to the internet; see docs/monitoring-setup.md).
+#
+#   cp docker/monitoring/.env.monitoring.example docker/monitoring/.env.monitoring   # fill in Grafana Cloud creds
+#   docker compose -f docker-compose.yml -f docker/monitoring/docker-compose.monitoring.yml up -d
+#
+# Joins the main stack's network so it can scrape app:9000 (FPM status),
+# mysql:3306, and nginx:80/nginx-status.
+name: telcoflo-v1
+
+services:
+  # ---- Host metrics (CPU/mem/disk/net/fd/sockets) ------------------------
+  node-exporter:
+    image: prom/node-exporter:v1.8.2
+    container_name: telcoflo-v1-node-exporter
+    command:
+      - '--path.rootfs=/host'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    pid: host
+    volumes:
+      - /:/host:ro,rslave
+    networks: [orange]
+    restart: unless-stopped
+
+  # ---- PHP-FPM (the #1 thing to watch: active/queue/max_children) --------
+  php-fpm-exporter:
+    image: hipages/php-fpm_exporter:2.2.0
+    container_name: telcoflo-v1-fpm-exporter
+    environment:
+      PHP_FPM_SCRAPE_URI: "tcp://app:9000/fpm-status"
+    networks: [orange]
+    restart: unless-stopped
+
+  # ---- MySQL (threads vs max_connections, aborts, InnoDB waits) ----------
+  mysqld-exporter:
+    image: prom/mysqld-exporter:v0.15.1
+    container_name: telcoflo-v1-mysqld-exporter
+    command:
+      - '--mysqld.address=mysql:3306'
+      - '--mysqld.username=exporter'
+    environment:
+      MYSQLD_EXPORTER_PASSWORD: "${MONITORING_DB_PASSWORD:-exporter}"
+    networks: [orange]
+    restart: unless-stopped
+
+  # ---- nginx (request rate, active conns, 5xx) ---------------------------
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:1.3.0
+    container_name: telcoflo-v1-nginx-exporter
+    command:
+      - '--nginx.scrape-uri=http://nginx:80/nginx-status'
+    networks: [orange]
+    restart: unless-stopped
+
+  # ---- Grafana Alloy: scrape locally, push to Grafana Cloud --------------
+  alloy:
+    image: grafana/alloy:v1.4.2
+    container_name: telcoflo-v1-alloy
+    command:
+      - 'run'
+      - '--server.http.listen-addr=0.0.0.0:12345'
+      - '--storage.path=/var/lib/alloy/data'
+      - '/etc/alloy/config.alloy'
+    env_file:
+      - .env.monitoring
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - alloy-data:/var/lib/alloy/data
+      # Uncomment to ship container logs to Loki (loki.source.docker in config.alloy):
+      # - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on: [node-exporter, php-fpm-exporter, mysqld-exporter, nginx-exporter]
+    networks: [orange]
+    restart: unless-stopped
+
+networks:
+  orange:
+    name: telcoflo-v1-net
+    external: true
+
+volumes:
+  alloy-data:

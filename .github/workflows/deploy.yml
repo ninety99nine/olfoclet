@@ -1,0 +1,228 @@
+# Telcoflo V1 — Build & Deploy to AWS (modeled on the V2 pipeline).
+#
+# push to main  ->  test  ->  build & push app image to ECR  ->  SSH deploy to EC2.
+#
+# Gated by the repo variable DEPLOY_TARGET == 'ec2' so it can be merged safely
+# before the AWS side exists (set the variable to turn deploys on).
+#
+# Required GitHub secrets:  AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY,
+#   AWS_EC2_HOST, AWS_EC2_USER, AWS_EC2_SSH_KEY, (AWS_EC2_SSH_PORT), PRODUCTION_ENV.
+# Required GitHub variable:  DEPLOY_TARGET = ec2
+# See docs/deployment.md.
+
+name: Build and Deploy V1 to AWS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  PHP_VERSION: "8.2"        # matches the runtime image; deps require php <8.3
+  NODE_VERSION: "20"
+  AWS_REGION: "eu-west-2"
+  ECR_REPO: "telcoflo-v1-app"
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Test — the behaviour-preservation suite runs against a real MySQL (the
+  # golden/File-01-03 harness needs real ALTERs + JSON columns, not sqlite).
+  # ---------------------------------------------------------------------------
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: telcoflo_test
+        ports: ["3306:3306"]
+        options: >-
+          --health-cmd="mysqladmin ping -proot"
+          --health-interval=5s --health-timeout=5s --health-retries=15
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_USERNAME: root
+      DB_PASSWORD: root
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: pdo_mysql, mbstring, xml, intl, bcmath, gd, zip, curl, redis
+          coverage: none
+          tools: composer:v2
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Build frontend assets (Laravel Mix)
+        run: |
+          npm ci
+          npm run prod
+
+      - name: Prepare app env
+        run: |
+          cp .env.example .env || true
+          php artisan key:generate
+
+      - name: Run the test suite
+        run: vendor/bin/phpunit
+
+  # ---------------------------------------------------------------------------
+  # Build the single app image (used by app/queue/scheduler) and push to ECR.
+  # nginx/mysql/redis are stock images pulled on the EC2 — nothing custom there.
+  # ---------------------------------------------------------------------------
+  build-image:
+    name: Build & Push to ECR
+    runs-on: ubuntu-latest
+    needs: [test]
+    if: github.ref == 'refs/heads/main' && vars.DEPLOY_TARGET == 'ec2'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Ensure ECR repository exists
+        run: |
+          aws ecr describe-repositories --repository-names "${ECR_REPO}" --region "${AWS_REGION}" 2>/dev/null || \
+          aws ecr create-repository --repository-name "${ECR_REPO}" --region "${AWS_REGION}" \
+            --image-scanning-configuration scanOnPush=true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push app image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          target: runtime
+          push: true
+          tags: |
+            ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPO }}:${{ github.sha }}
+            ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPO }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Prune old ECR images (keep 5 most recent)
+        run: |
+          DIGESTS=$(aws ecr describe-images --repository-name "${ECR_REPO}" --region "${AWS_REGION}" \
+            --query 'sort_by(imageDetails,& imagePushedAt)[:-5].imageDigest' --output text 2>/dev/null || true)
+          for d in $DIGESTS; do
+            aws ecr batch-delete-image --repository-name "${ECR_REPO}" --region "${AWS_REGION}" --image-ids imageDigest=$d 2>/dev/null || true
+          done
+
+  # ---------------------------------------------------------------------------
+  # Deploy: ship compose + configs, pull the image, up the stack. The container
+  # entrypoint handles the migrations-table self-heal, migrate --force and
+  # config/route caching, so the SSH script stays thin.
+  # ---------------------------------------------------------------------------
+  deploy-ec2:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    needs: [build-image]
+    if: github.ref == 'refs/heads/main' && vars.DEPLOY_TARGET == 'ec2'
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Resolve ECR registry
+        id: ecr
+        run: |
+          ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
+          echo "registry=${ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com" >> "$GITHUB_OUTPUT"
+
+      - name: Copy stack files to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.AWS_EC2_HOST }}
+          username: ${{ secrets.AWS_EC2_USER }}
+          key: ${{ secrets.AWS_EC2_SSH_KEY }}
+          port: ${{ secrets.AWS_EC2_SSH_PORT || 22 }}
+          source: "docker-compose.production.yaml,docker/nginx,docker/php,docker/mysql,docker/redis,docker/mock-server,scripts/ec2-docker-setup.sh"
+          target: "/tmp/telcoflo-v1"
+
+      - name: Bootstrap EC2 (Docker + AWS CLI if missing)
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.AWS_EC2_HOST }}
+          username: ${{ secrets.AWS_EC2_USER }}
+          key: ${{ secrets.AWS_EC2_SSH_KEY }}
+          port: ${{ secrets.AWS_EC2_SSH_PORT || 22 }}
+          script: |
+            set -e
+            if ! command -v docker >/dev/null 2>&1 || ! command -v aws >/dev/null 2>&1; then
+              sudo bash /tmp/telcoflo-v1/scripts/ec2-docker-setup.sh
+            fi
+
+      - name: Deploy on EC2
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          ECR_REGISTRY: ${{ steps.ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+          APP_PATH: ${{ secrets.AWS_EC2_APP_PATH || '/var/www/telcoflo-v1' }}
+          PRODUCTION_ENV: ${{ secrets.PRODUCTION_ENV }}
+        with:
+          host: ${{ secrets.AWS_EC2_HOST }}
+          username: ${{ secrets.AWS_EC2_USER }}
+          key: ${{ secrets.AWS_EC2_SSH_KEY }}
+          port: ${{ secrets.AWS_EC2_SSH_PORT || 22 }}
+          envs: ECR_REGISTRY,IMAGE_TAG,APP_PATH,PRODUCTION_ENV,AWS_REGION,ECR_REPO
+          script: |
+            set -e
+            mkdir -p "$APP_PATH"
+            cd "$APP_PATH"
+
+            # Sync the stack files shipped above.
+            cp /tmp/telcoflo-v1/docker-compose.production.yaml ./docker-compose.production.yaml
+            rm -rf ./docker && cp -r /tmp/telcoflo-v1/docker ./docker
+
+            # Write .env from the PRODUCTION_ENV secret.
+            printf '%s' "$PRODUCTION_ENV" > .env
+
+            # Authenticate to ECR and pull the new image.
+            aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$ECR_REGISTRY"
+            export ECR_REGISTRY IMAGE_TAG
+            docker compose -f docker-compose.production.yaml pull app
+
+            # Roll the stack. The app entrypoint migrates + caches on boot.
+            docker compose -f docker-compose.production.yaml up -d
+
+            # Smoke check + cleanup.
+            sleep 8
+            docker compose -f docker-compose.production.yaml ps
+            docker image prune -af || true

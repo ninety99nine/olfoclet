@@ -1,0 +1,135 @@
+# Telcoflo V1 — production/staging stack for the EC2 box.
+#
+# Pulls the app image from ECR (built + pushed by the deploy workflow); nginx,
+# mysql and redis are stock images. The app entrypoint self-heals the DB, runs
+# migrate --force and caches config/routes on boot.
+#
+#   ECR_REGISTRY=<acct>.dkr.ecr.eu-west-2.amazonaws.com IMAGE_TAG=<sha> \
+#     docker compose -f docker-compose.production.yaml up -d
+#
+# `.env` (written from the PRODUCTION_ENV secret) supplies DB_*/REDIS_*/APP_* and
+# the ORANGE_STK_PUSH_URL / CMS target. See .env.production.example.
+name: telcoflo-v1
+
+x-app-image: &app-image
+  image: "${ECR_REGISTRY:-telcoflo-v1}/telcoflo-v1-app:${IMAGE_TAG:-latest}"
+  env_file: .env
+  restart: unless-stopped
+
+services:
+  app:
+    <<: *app-image
+    container_name: telcoflo-v1-app
+    depends_on:
+      mysql: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    volumes:
+      - public:/var/www/html/public
+      - storage:/var/www/html/storage
+    networks: [orange]
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: telcoflo-v1-nginx
+    depends_on: [app]
+    ports:
+      - "80:80"
+      # - "443:443"   # enable with a TLS-terminating config / Let's Encrypt
+    volumes:
+      - public:/var/www/html/public:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    networks: [orange]
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8.0
+    container_name: telcoflo-v1-mysql
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_DATABASE: "${DB_DATABASE}"
+      MYSQL_USER: "${DB_USERNAME}"
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
+      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/telcoflo.cnf:ro
+      # Restore a (sanitised) prod/staging dump on first boot by dropping it here.
+      - ./docker/mysql/initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DB_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks: [orange]
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: telcoflo-v1-redis
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    volumes:
+      - redis-data:/data
+      - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [orange]
+    restart: unless-stopped
+
+  queue:
+    <<: *app-image
+    container_name: telcoflo-v1-queue
+    depends_on:
+      app: { condition: service_started }
+      mysql: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    entrypoint: []
+    command: ["php", "artisan", "queue:work", "--sleep=1", "--tries=3", "--max-time=3600"]
+    volumes:
+      - storage:/var/www/html/storage
+    networks: [orange]
+
+  scheduler:
+    <<: *app-image
+    container_name: telcoflo-v1-scheduler
+    depends_on:
+      app: { condition: service_started }
+      mysql: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    entrypoint: []
+    command: ["php", "artisan", "schedule:work"]
+    volumes:
+      - storage:/var/www/html/storage
+    networks: [orange]
+
+  # Mock Orange internal services — enable for a staging/load-test replica so the
+  # engine's CMS/STK calls resolve to canned responses instead of the real hosts.
+  # Disabled by default (real deploy points at real Orange hosts).
+  #   docker compose -f docker-compose.production.yaml --profile staging up -d
+  mock-server:
+    image: nginx:1.27-alpine
+    container_name: telcoflo-v1-mock
+    profiles: [staging]
+    volumes:
+      - ./docker/mock-server/default.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      orange:
+        ipv4_address: 192.168.22.202
+    restart: unless-stopped
+
+networks:
+  orange:
+    name: telcoflo-v1-net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.22.0/24
+          gateway: 192.168.22.1
+
+volumes:
+  mysql-data:
+  redis-data:
+  public:
+  storage:

@@ -1,0 +1,3 @@
+seed.sql
+seed*.sql
+*.sql.gz
