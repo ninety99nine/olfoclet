@@ -21,22 +21,32 @@ mysql_cli() {
     MYSQL_PWD="${DB_PASSWORD}" mysql -h "${DB_HOST}" -P "${DB_PORT}" -u "${DB_USERNAME}" "${DB_DATABASE}" "$@"
 }
 
-# ---- 2. Guard: migrations table AUTO_INCREMENT ---------------------------
-# A DB restored from a partial/manual dump can lose the migrations.id
-# AUTO_INCREMENT + PRIMARY KEY, which makes `migrate` apply the schema change
-# then die inserting its bookkeeping row. Detect + repair idempotently before
-# migrating. (See docs/EXECUTION_PLAN.md cross-cutting risks.)
-if mysql_cli -N -e "SHOW TABLES LIKE 'migrations';" 2>/dev/null | grep -q migrations; then
-    EXTRA=$(mysql_cli -N -e "SELECT EXTRA FROM information_schema.columns WHERE table_schema='${DB_DATABASE}' AND table_name='migrations' AND column_name='id';" 2>/dev/null || echo "")
-    case "$EXTRA" in
-        *auto_increment*) : ;;
-        *)
-            log "repairing migrations.id (missing AUTO_INCREMENT/PK) ..."
-            mysql_cli -e "ALTER TABLE migrations MODIFY id INT UNSIGNED NOT NULL;" 2>/dev/null || true
-            mysql_cli -e "ALTER TABLE migrations ADD PRIMARY KEY (id);" 2>/dev/null || true
-            mysql_cli -e "ALTER TABLE migrations MODIFY id INT UNSIGNED NOT NULL AUTO_INCREMENT;" 2>/dev/null || true
-            ;;
-    esac
+# ---- 2. Guard: repair `id` columns missing AUTO_INCREMENT ----------------
+# A DB restored from a defective dump can lose the PRIMARY KEY + AUTO_INCREMENT
+# on `id` columns across MANY tables. Two failure modes: `migrate` dies
+# recording its bookkeeping row, and — more insidiously — every runtime INSERT
+# (a new USSD session, etc.) throws "Field 'id' doesn't have a default value".
+# Detect + repair every affected base table idempotently BEFORE migrating.
+# Generated from information_schema so it covers the whole class, not just
+# `migrations`. (See docs/EXECUTION_PLAN.md cross-cutting risks.)
+REPAIR_SQL=$(mysql_cli -N -e "
+  SELECT CONCAT('ALTER TABLE \`', c.table_name, '\` ',
+    CASE WHEN COALESCE(pk.cnt,0)=0 THEN 'ADD PRIMARY KEY (\`id\`), ' ELSE '' END,
+    'MODIFY \`id\` ', c.column_type, ' NOT NULL AUTO_INCREMENT;')
+  FROM information_schema.columns c
+  JOIN information_schema.tables t
+    ON t.table_schema=c.table_schema AND t.table_name=c.table_name AND t.table_type='BASE TABLE'
+  LEFT JOIN (
+    SELECT table_name, COUNT(*) cnt FROM information_schema.statistics
+    WHERE table_schema='${DB_DATABASE}' AND index_name='PRIMARY' AND column_name='id'
+    GROUP BY table_name
+  ) pk ON pk.table_name=c.table_name
+  WHERE c.table_schema='${DB_DATABASE}' AND c.column_name='id'
+    AND c.extra NOT LIKE '%auto_increment%';" 2>/dev/null)
+if [ -n "$REPAIR_SQL" ]; then
+    log "repairing id columns missing AUTO_INCREMENT:"
+    echo "$REPAIR_SQL"
+    printf '%s\n' "$REPAIR_SQL" | mysql_cli --force 2>&1 || true
 fi
 
 # ---- 3. App key (fallback only — normally set in .env.docker) -------------

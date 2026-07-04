@@ -559,15 +559,21 @@ for existing services**.
 ---
 
 ## Cross-cutting risks & notes
-- **DB-restore hazard — `migrations` table AUTO_INCREMENT (verify before every `artisan migrate` on a
-  restored/imported DB).** The local dev `telcoflo` DB was imported without the `migrations.id`
-  AUTO_INCREMENT + PRIMARY KEY, so `php artisan migrate` applied the ALTER but then died inserting its
-  bookkeeping row (`Field 'id' doesn't have a default value`) — leaving the schema half-applied. A clean
-  `mysqldump` includes the full definition so this only bites partial/manual imports, but Phases 8/10/11
-  restore dumps, so guard it. **Detect:** `SELECT EXTRA FROM information_schema.columns WHERE
-  table_name='migrations' AND column_name='id';` must contain `auto_increment`. **Repair (idempotent):**
-  `ALTER TABLE migrations ADD PRIMARY KEY (id), MODIFY id INT UNSIGNED NOT NULL AUTO_INCREMENT;` Put this
-  check in the Phase 7 Docker entrypoint (before `migrate --force`) and the Phase 11 cutover pre-flight.
+- **DB-restore hazard — `id` columns missing AUTO_INCREMENT/PRIMARY KEY across MANY tables (verify before
+  every `artisan migrate` AND before serving traffic on a restored/imported DB).** The local dev `telcoflo`
+  DB was imported defectively: **17 of 20 tables** lost BOTH the PRIMARY KEY and AUTO_INCREMENT on their `id`
+  column (not just `migrations`). Two failure modes: (a) `migrate` dies recording its bookkeeping row, and
+  (b) — insidiously — **every runtime INSERT throws `Field 'id' doesn't have a default value`** (e.g. a new
+  USSD session on the first real dial). (b) stayed hidden until the simulator reached an INSERT — before
+  that it hung on the unreachable private CMS IP. A clean `mysqldump` keeps the full definition, so this only
+  bites partial/manual imports, but Phases 8/10/11 restore dumps, so guard it. **Detect:** any base table
+  with an `id` column whose `information_schema.columns.EXTRA` lacks `auto_increment`. **Repair (idempotent,
+  generated from information_schema):** for each such table
+  `ALTER TABLE <t> [ADD PRIMARY KEY (id),] MODIFY id <type> NOT NULL AUTO_INCREMENT;`. This is now
+  **automated in `docker/entrypoint.sh` step 2** (runs before `migrate`, covers the whole class) — carry the
+  same check into the Phase 11 cutover pre-flight. NOTE: on large prod tables `ADD PRIMARY KEY` rewrites the
+  table (locks it), so on a healthy prod DB this is a no-op, but if a restore is defective, schedule it in a
+  maintenance window.
 - **Local serve — raw PHP errors must not leak into responses.** Fixed durably in `public/index.php`
   (`display_errors=0`, before the autoloader) so a PHP-8.4 Carbon deprecation can't corrupt Inertia's
   data-page. Production php.ini (Phase 7 Docker) should also set `display_errors=Off`. See
