@@ -503,7 +503,29 @@ migrations + converter idempotent on second boot.
 **Depends on:** 8. The user re-tests real USSD services against the Dockerised V1 (via simulator + mock
 server, or a controlled real path) to confirm behaviour is correct after all optimisations. Agent supports
 by preparing test scripts / a checklist of representative services and expected screens. **Verification:**
-user sign-off that services behave as before, only faster. **Feedback log:** _(user/agent record results)_
+user sign-off that services behave as before, only faster.
+
+**Feedback log (2026-07-04) — first real dials on the Dockerised stack surfaced 4 issues, all fixed:**
+- **500 on dial (the big one):** the imported dev DB had lost PRIMARY KEY + AUTO_INCREMENT on `id` across
+  **17 of 20 tables**, so every runtime INSERT (new `ussd_sessions` row) threw `Field 'id' doesn't have a
+  default value`. Masked until now because the sim previously hung on the unreachable private CMS IP before
+  reaching an INSERT; the user pointing the CMS global var at the **public IP** (105.235.242.227) let it get
+  there. Fixed: repaired container + dev DBs (17→0), and **generalised the entrypoint self-heal** (commit
+  09ae4c4) to fix every affected `id` column from information_schema before migrate.
+- **`error:false` log entries:** NOT an engine bug — the First-Aid builder (v4, v29) had leftover debug
+  `$this->logError($ussd['user_response'] == '1');` in an event's activation code (builder code evals with
+  `$this` bound). Stripped the debug line from the builder content, and hardened `addLog` to always store a
+  well-formed string description (commit + engine change). Dial now shows **0 errors**.
+- **Save-changes purity (owner directive):** "saving non-builder info (phone/timeout/log settings) must not
+  push the builder at all." The Simulator panel's **Save Settings** already hit only the settings endpoint,
+  but the prominent **Save Changes** always re-POSTed the builder. Fixed (commit ad34045): `updateVersion`
+  diffs the builder and, when unchanged, persists ONLY settings (PUT version.settings.update) — no builder
+  POST. **Verified by network capture:** settings-only save → only PUT /settings, builder MD5 identical;
+  a screen-name edit → POST /versions/{id} still fires.
+- The externalised STK host + mock-server + public-IP CMS confirm the P20 on-start fast-path live in Docker
+  ("Replaying cached on-start API response" on continuations).
+
+**Feedback log:** _(user/agent record results)_
 
 ---
 
