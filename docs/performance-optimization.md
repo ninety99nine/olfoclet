@@ -319,6 +319,28 @@ size(s) → compare req/s ceiling + p95/p99 curve + app CPU% to `docs/performanc
 
 ---
 
+## 5b. Empirical results & a note on fair testing (2026-07-05)
+
+First implementation pass, A/B'd on the `*217#` start flow (45s saturating hold, 8 vCPU):
+- **JIT (A1): +1%** (noise) — eval bodies can't be JIT'd; kept as harmless/foundational.
+- **B1 eval-bypass (cached-closure form): FLAT** (404→406 req/s), though **behaviour
+  was byte-identical (11/11 golden green, both live services).** Reverted per the
+  "only accept positive" rule.
+
+**Why B1 was flat — and why the test was NOT fair to eval optimisation:** the
+`*217#` *start* screen renders a near-static menu (very few mustache tags), so the
+dialled flow is **eval-light**. The 160 tags live across 19 screens the benchmark
+never visits. Profiling the start request confirmed the cost is **~87% engine
+(handleSessionRequest: REST + session I/O + state-machine), ~13% bootstrap, and
+near-zero eval** — so an eval optimisation *cannot* move this benchmark.
+
+**FUTURE WORK — give eval optimisations a fair A/B:** build a load-test scenario
+that walks a **multi-screen, tag-heavy eval sequence** (e.g. `*250#` account/order
+screens with `{{ customer.name }}`, `{{ order.number }}`, conditional displays) to a
+final outcome, seeding the canned CMS responses it needs. Only against that
+eval-heavy flow can B1/B2 (and the three-tier evaluator in §B) be fairly measured.
+The cached-closure B1 is proven safe (golden-gated) and ready to re-test there.
+
 ## 6. Validation methodology
 
 - **A/B protocol:** identical `characterize.sh` VU matrix, same instance size, same
