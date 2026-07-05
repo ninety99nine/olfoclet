@@ -1,0 +1,1505 @@
+CHAR_META size=2vcpu ncpu=2 mem_total_mb=3811 levels=50 100 150 200 250 300 350 400 450 500 550 600 650 700 750 800 850 900 950 1000
+CHAR_FPM pm = static pm.max_children = 16 
+CHAR_START_UTC 2026-07-05T14:55:47Z
+===LEVEL vus=50===
+STAT 50 char-k6|2.79%|1.68%|63.98MiB / 3.722GiB
+STAT 50 telcoflo-v1-app|54.19%|2.68%|102.2MiB / 3.722GiB
+STAT 50 telcoflo-v1-mysql|12.18%|20.69%|788.7MiB / 3.722GiB
+STAT 50 telcoflo-v1-nginx|1.28%|0.11%|4.027MiB / 3.722GiB
+STAT 50 telcoflo-v1-redis|3.58%|0.42%|16.16MiB / 3.722GiB
+LOAD 50 0.20 0.08 0.07 5/500 11956
+STAT 50 char-k6|3.74%|1.72%|65.52MiB / 3.722GiB
+STAT 50 telcoflo-v1-app|62.37%|2.68%|102.2MiB / 3.722GiB
+STAT 50 telcoflo-v1-mysql|12.02%|20.75%|791MiB / 3.722GiB
+STAT 50 telcoflo-v1-nginx|1.78%|0.09%|3.523MiB / 3.722GiB
+STAT 50 telcoflo-v1-redis|5.17%|0.43%|16.3MiB / 3.722GiB
+LOAD 50 0.43 0.13 0.09 1/502 12006
+STAT 50 char-k6|2.79%|1.73%|65.91MiB / 3.722GiB
+STAT 50 telcoflo-v1-app|45.60%|2.68%|102.3MiB / 3.722GiB
+STAT 50 telcoflo-v1-mysql|12.78%|20.83%|793.9MiB / 3.722GiB
+STAT 50 telcoflo-v1-nginx|1.31%|0.09%|3.492MiB / 3.722GiB
+STAT 50 telcoflo-v1-redis|3.84%|0.44%|16.79MiB / 3.722GiB
+LOAD 50 0.63 0.17 0.10 5/498 12065
+MYSQL 50 connected=17 running=2
+FPM 50 
+VMSTAT 50 r=0 b=0 swpd=0 free=603372 cache=1902976 si=0 so=0 bi=392 bo=304 cs=14810 us=30 sy=9 id=60 wa=1 st=0
+FREEMEM 50 used_mb=1645 free_mb=589 available_mb=2166
+STAT 50 char-k6|3.27%|1.74%|66.24MiB / 3.722GiB
+STAT 50 telcoflo-v1-app|49.08%|2.69%|102.7MiB / 3.722GiB
+STAT 50 telcoflo-v1-mysql|13.98%|20.89%|796.1MiB / 3.722GiB
+STAT 50 telcoflo-v1-nginx|1.43%|0.10%|3.797MiB / 3.722GiB
+STAT 50 telcoflo-v1-redis|4.23%|0.46%|17.48MiB / 3.722GiB
+LOAD 50 0.58 0.17 0.10 9/500 12291
+STAT 50 char-k6|2.83%|1.74%|66.35MiB / 3.722GiB
+STAT 50 telcoflo-v1-app|45.83%|2.68%|102.3MiB / 3.722GiB
+STAT 50 telcoflo-v1-mysql|13.56%|20.94%|798MiB / 3.722GiB
+STAT 50 telcoflo-v1-nginx|1.33%|0.10%|3.922MiB / 3.722GiB
+STAT 50 telcoflo-v1-redis|4.01%|0.47%|18.06MiB / 3.722GiB
+LOAD 50 0.54 0.17 0.10 5/500 12340
+STAT 50 char-k6|3.16%|1.81%|68.98MiB / 3.722GiB
+STAT 50 telcoflo-v1-app|46.24%|2.71%|103.2MiB / 3.722GiB
+STAT 50 telcoflo-v1-mysql|13.69%|20.98%|799.7MiB / 3.722GiB
+STAT 50 telcoflo-v1-nginx|1.44%|0.09%|3.492MiB / 3.722GiB
+STAT 50 telcoflo-v1-redis|3.91%|0.49%|18.66MiB / 3.722GiB
+LOAD 50 0.49 0.16 0.10 2/500 12389
+MYSQL 50 connected=17 running=2
+FPM 50 
+VMSTAT 50 r=2 b=0 swpd=0 free=568268 cache=1907396 si=0 so=0 bi=148 bo=1040 cs=12450 us=26 sy=7 id=67 wa=0 st=0
+FREEMEM 50 used_mb=1674 free_mb=554 available_mb=2136
+STAT 50 char-k6|2.56%|1.83%|69.89MiB / 3.722GiB
+STAT 50 telcoflo-v1-app|39.66%|2.71%|103.5MiB / 3.722GiB
+STAT 50 telcoflo-v1-mysql|11.86%|21.06%|802.7MiB / 3.722GiB
+STAT 50 telcoflo-v1-nginx|1.45%|0.10%|3.707MiB / 3.722GiB
+STAT 50 telcoflo-v1-redis|3.45%|0.50%|18.98MiB / 3.722GiB
+LOAD 50 0.42 0.16 0.10 7/501 12715
+STAT 50 char-k6|2.61%|1.85%|70.48MiB / 3.722GiB
+STAT 50 telcoflo-v1-app|38.46%|2.71%|103.2MiB / 3.722GiB
+STAT 50 telcoflo-v1-mysql|11.62%|21.09%|803.9MiB / 3.722GiB
+STAT 50 telcoflo-v1-nginx|1.66%|0.10%|3.734MiB / 3.722GiB
+STAT 50 telcoflo-v1-redis|3.57%|0.51%|19.43MiB / 3.722GiB
+LOAD 50 0.54 0.19 0.11 8/501 12763
+STAT 50 char-k6|2.74%|1.85%|70.6MiB / 3.722GiB
+STAT 50 telcoflo-v1-app|40.91%|2.71%|103.4MiB / 3.722GiB
+STAT 50 telcoflo-v1-mysql|11.93%|21.12%|804.9MiB / 3.722GiB
+STAT 50 telcoflo-v1-nginx|1.31%|0.09%|3.488MiB / 3.722GiB
+STAT 50 telcoflo-v1-redis|6.16%|0.51%|19.48MiB / 3.722GiB
+LOAD 50 0.98 0.29 0.14 3/501 12810
+MYSQL 50 connected=17 running=2
+FPM 50 
+VMSTAT 50 r=1 b=0 swpd=0 free=566076 cache=1911544 si=0 so=0 bi=132 bo=664 cs=13324 us=26 sy=9 id=64 wa=1 st=0
+FREEMEM 50 used_mb=1671 free_mb=552 available_mb=2139
+STAT 50 char-k6|5.31%|1.85%|70.54MiB / 3.722GiB
+STAT 50 telcoflo-v1-app|51.22%|2.71%|103.2MiB / 3.722GiB
+STAT 50 telcoflo-v1-mysql|14.74%|21.17%|806.7MiB / 3.722GiB
+STAT 50 telcoflo-v1-nginx|1.35%|0.10%|3.734MiB / 3.722GiB
+STAT 50 telcoflo-v1-redis|4.53%|0.54%|20.48MiB / 3.722GiB
+LOAD 50 0.90 0.28 0.14 2/502 13042
+QPS 50 questions_delta=25893 seconds=56 qps=462
+K6JSON 50 {"vus_max":50,"http_reqs_per_s":43.56,"sessions_per_s":21.78,"start_ms":{"avg":19.31,"p50":15.78,"p90":30.62,"p95":39.71,"p99":64.81,"max":141.71},"step_ms":{"avg":16.75,"p50":13.32,"p90":26.72,"p95":35.12,"p99":61.88,"max":136.29},"http_ms":{"p95":37.62,"p99":64.07,"max":141.71},"dials_timed_out":0,"within_slo_rate":1,"http_failed_rate":0,"session_err_rate":0,"sessions_total":1681}
+
+===ENDLEVEL vus=50===
+===LEVEL vus=100===
+STAT 100 char-k6|5.43%|1.35%|51.46MiB / 3.722GiB
+STAT 100 telcoflo-v1-app|89.76%|2.72%|103.6MiB / 3.722GiB
+STAT 100 telcoflo-v1-mysql|32.82%|21.36%|813.9MiB / 3.722GiB
+STAT 100 telcoflo-v1-nginx|2.92%|0.10%|3.809MiB / 3.722GiB
+STAT 100 telcoflo-v1-redis|10.91%|0.61%|23.21MiB / 3.722GiB
+LOAD 100 2.10 0.61 0.25 9/502 13531
+STAT 100 char-k6|5.39%|1.41%|53.9MiB / 3.722GiB
+STAT 100 telcoflo-v1-app|107.31%|2.72%|103.8MiB / 3.722GiB
+STAT 100 telcoflo-v1-mysql|31.78%|21.40%|815.6MiB / 3.722GiB
+STAT 100 telcoflo-v1-nginx|2.82%|0.11%|4.152MiB / 3.722GiB
+STAT 100 telcoflo-v1-redis|6.47%|0.62%|23.78MiB / 3.722GiB
+LOAD 100 2.41 0.70 0.28 6/505 13580
+STAT 100 char-k6|5.01%|1.44%|54.88MiB / 3.722GiB
+STAT 100 telcoflo-v1-app|103.98%|2.73%|103.9MiB / 3.722GiB
+STAT 100 telcoflo-v1-mysql|29.42%|21.43%|816.9MiB / 3.722GiB
+STAT 100 telcoflo-v1-nginx|2.59%|0.11%|4.074MiB / 3.722GiB
+STAT 100 telcoflo-v1-redis|10.24%|0.66%|25MiB / 3.722GiB
+LOAD 100 2.38 0.72 0.29 4/503 13681
+MYSQL 100 connected=17 running=3
+FPM 100 
+VMSTAT 100 r=1 b=0 swpd=0 free=502868 cache=1926764 si=0 so=0 bi=164 bo=1140 cs=25732 us=73 sy=21 id=7 wa=0 st=0
+FREEMEM 100 used_mb=1712 free_mb=491 available_mb=2099
+STAT 100 char-k6|5.74%|1.44%|54.93MiB / 3.722GiB
+STAT 100 telcoflo-v1-app|117.18%|2.73%|104.1MiB / 3.722GiB
+STAT 100 telcoflo-v1-mysql|31.46%|21.49%|818.9MiB / 3.722GiB
+STAT 100 telcoflo-v1-nginx|3.03%|0.10%|3.789MiB / 3.722GiB
+STAT 100 telcoflo-v1-redis|6.93%|0.69%|26.48MiB / 3.722GiB
+LOAD 100 2.35 0.74 0.30 12/503 13913
+STAT 100 char-k6|5.06%|1.60%|61MiB / 3.722GiB
+STAT 100 telcoflo-v1-app|93.98%|2.71%|103.4MiB / 3.722GiB
+STAT 100 telcoflo-v1-mysql|25.81%|21.52%|820.1MiB / 3.722GiB
+STAT 100 telcoflo-v1-nginx|2.50%|0.10%|3.789MiB / 3.722GiB
+STAT 100 telcoflo-v1-redis|14.03%|0.71%|27.03MiB / 3.722GiB
+LOAD 100 2.48 0.79 0.32 2/503 13960
+STAT 100 char-k6|5.35%|1.61%|61.52MiB / 3.722GiB
+STAT 100 telcoflo-v1-app|98.93%|2.73%|104.1MiB / 3.722GiB
+STAT 100 telcoflo-v1-mysql|26.45%|21.54%|820.9MiB / 3.722GiB
+STAT 100 telcoflo-v1-nginx|2.76%|0.10%|3.703MiB / 3.722GiB
+STAT 100 telcoflo-v1-redis|7.98%|0.73%|27.73MiB / 3.722GiB
+LOAD 100 2.92 0.91 0.36 3/503 14009
+MYSQL 100 connected=17 running=2
+FPM 100 
+VMSTAT 100 r=16 b=0 swpd=0 free=477256 cache=1934704 si=0 so=0 bi=164 bo=1456 cs=23613 us=80 sy=21 id=0 wa=0 st=0
+FREEMEM 100 used_mb=1729 free_mb=464 available_mb=2081
+STAT 100 char-k6|5.31%|1.62%|61.63MiB / 3.722GiB
+STAT 100 telcoflo-v1-app|103.58%|2.73%|103.9MiB / 3.722GiB
+STAT 100 telcoflo-v1-mysql|26.91%|21.59%|822.9MiB / 3.722GiB
+STAT 100 telcoflo-v1-nginx|2.69%|0.11%|4.137MiB / 3.722GiB
+STAT 100 telcoflo-v1-redis|7.64%|0.76%|28.97MiB / 3.722GiB
+LOAD 100 4.72 1.37 0.52 9/503 14241
+STAT 100 char-k6|5.71%|1.65%|62.92MiB / 3.722GiB
+STAT 100 telcoflo-v1-app|118.04%|2.73%|104.2MiB / 3.722GiB
+STAT 100 telcoflo-v1-mysql|31.03%|21.62%|823.9MiB / 3.722GiB
+STAT 100 telcoflo-v1-nginx|2.98%|0.10%|3.844MiB / 3.722GiB
+STAT 100 telcoflo-v1-redis|6.91%|0.79%|29.99MiB / 3.722GiB
+LOAD 100 4.75 1.43 0.54 9/503 14289
+STAT 100 char-k6|9.50%|1.64%|62.63MiB / 3.722GiB
+STAT 100 telcoflo-v1-app|112.44%|2.74%|104.4MiB / 3.722GiB
+STAT 100 telcoflo-v1-mysql|29.40%|21.65%|825.2MiB / 3.722GiB
+STAT 100 telcoflo-v1-nginx|2.85%|0.10%|3.988MiB / 3.722GiB
+STAT 100 telcoflo-v1-redis|7.46%|0.81%|30.81MiB / 3.722GiB
+LOAD 100 4.45 1.43 0.55 6/503 14340
+MYSQL 100 connected=17 running=2
+FPM 100 
+VMSTAT 100 r=0 b=0 swpd=0 free=443468 cache=1943540 si=0 so=0 bi=84 bo=1392 cs=26482 us=77 sy=20 id=3 wa=0 st=0
+FREEMEM 100 used_mb=1752 free_mb=433 available_mb=2059
+STAT 100 char-k6|4.87%|1.64%|62.66MiB / 3.722GiB
+STAT 100 telcoflo-v1-app|95.25%|2.75%|104.9MiB / 3.722GiB
+STAT 100 telcoflo-v1-mysql|25.83%|21.68%|826.2MiB / 3.722GiB
+STAT 100 telcoflo-v1-nginx|2.50%|0.11%|4.09MiB / 3.722GiB
+STAT 100 telcoflo-v1-redis|11.60%|0.83%|31.69MiB / 3.722GiB
+LOAD 100 4.33 1.45 0.56 10/503 14605
+QPS 100 questions_delta=51352 seconds=57 qps=900
+K6JSON 100 {"vus_max":100,"http_reqs_per_s":84.88,"sessions_per_s":42.44,"start_ms":{"avg":46.99,"p50":31.32,"p90":88.35,"p95":145.63,"p99":270.36,"max":448.74},"step_ms":{"avg":43.27,"p50":26.96,"p90":82.85,"p95":140.8,"p99":260.92,"max":469.97},"http_ms":{"p95":142.6,"p99":268.37,"max":469.97},"dials_timed_out":0,"within_slo_rate":1,"http_failed_rate":0,"session_err_rate":0,"sessions_total":3280}
+
+===ENDLEVEL vus=100===
+===LEVEL vus=150===
+STAT 150 char-k6|5.33%|1.88%|71.66MiB / 3.722GiB
+STAT 150 telcoflo-v1-app|114.56%|2.74%|104.5MiB / 3.722GiB
+STAT 150 telcoflo-v1-mysql|29.58%|21.78%|830.2MiB / 3.722GiB
+STAT 150 telcoflo-v1-nginx|2.87%|0.13%|4.852MiB / 3.722GiB
+STAT 150 telcoflo-v1-redis|7.68%|0.94%|35.74MiB / 3.722GiB
+LOAD 150 4.82 1.82 0.71 29/501 15110
+STAT 150 char-k6|6.04%|2.00%|76.22MiB / 3.722GiB
+STAT 150 telcoflo-v1-app|134.49%|2.74%|104.6MiB / 3.722GiB
+STAT 150 telcoflo-v1-mysql|34.20%|21.83%|831.9MiB / 3.722GiB
+STAT 150 telcoflo-v1-nginx|3.00%|0.12%|4.746MiB / 3.722GiB
+STAT 150 telcoflo-v1-redis|8.90%|0.97%|36.96MiB / 3.722GiB
+LOAD 150 5.71 2.05 0.79 18/502 15159
+STAT 150 char-k6|11.53%|2.02%|76.87MiB / 3.722GiB
+STAT 150 telcoflo-v1-app|133.83%|2.74%|104.4MiB / 3.722GiB
+STAT 150 telcoflo-v1-mysql|33.33%|21.86%|833.2MiB / 3.722GiB
+STAT 150 telcoflo-v1-nginx|2.73%|0.13%|4.996MiB / 3.722GiB
+STAT 150 telcoflo-v1-redis|9.18%|1.01%|38.34MiB / 3.722GiB
+LOAD 150 6.54 2.29 0.87 19/503 15206
+MYSQL 150 connected=17 running=2
+FPM 150 
+VMSTAT 150 r=17 b=0 swpd=0 free=411628 cache=1920020 si=0 so=0 bi=180 bo=1428 cs=26250 us=78 sy=21 id=0 wa=0 st=0
+FREEMEM 150 used_mb=1798 free_mb=402 available_mb=2012
+STAT 150 char-k6|12.58%|2.04%|77.66MiB / 3.722GiB
+STAT 150 telcoflo-v1-app|134.97%|2.74%|104.5MiB / 3.722GiB
+STAT 150 telcoflo-v1-mysql|35.01%|21.90%|834.8MiB / 3.722GiB
+STAT 150 telcoflo-v1-nginx|3.03%|0.12%|4.672MiB / 3.722GiB
+STAT 150 telcoflo-v1-redis|8.97%|1.04%|39.73MiB / 3.722GiB
+LOAD 150 8.14 2.77 1.05 17/503 15460
+STAT 150 char-k6|6.39%|2.04%|77.83MiB / 3.722GiB
+STAT 150 telcoflo-v1-app|137.22%|2.74%|104.4MiB / 3.722GiB
+STAT 150 telcoflo-v1-mysql|34.72%|21.94%|836MiB / 3.722GiB
+STAT 150 telcoflo-v1-nginx|3.07%|0.13%|5.043MiB / 3.722GiB
+STAT 150 telcoflo-v1-redis|11.57%|1.07%|40.77MiB / 3.722GiB
+LOAD 150 8.93 3.02 1.14 21/503 15505
+STAT 150 char-k6|6.07%|2.28%|86.88MiB / 3.722GiB
+STAT 150 telcoflo-v1-app|138.25%|2.75%|104.7MiB / 3.722GiB
+STAT 150 telcoflo-v1-mysql|34.55%|21.97%|837.4MiB / 3.722GiB
+STAT 150 telcoflo-v1-nginx|3.06%|0.12%|4.492MiB / 3.722GiB
+STAT 150 telcoflo-v1-redis|9.18%|1.10%|42MiB / 3.722GiB
+LOAD 150 9.58 3.26 1.22 17/503 15552
+MYSQL 150 connected=17 running=2
+FPM 150 
+VMSTAT 150 r=17 b=0 swpd=0 free=400584 cache=1930944 si=0 so=0 bi=148 bo=1560 cs=25874 us=79 sy=21 id=0 wa=0 st=0
+FREEMEM 150 used_mb=1798 free_mb=391 available_mb=2013
+STAT 150 char-k6|5.75%|2.30%|87.68MiB / 3.722GiB
+STAT 150 telcoflo-v1-app|130.16%|2.75%|105MiB / 3.722GiB
+STAT 150 telcoflo-v1-mysql|37.53%|22.02%|839.1MiB / 3.722GiB
+STAT 150 telcoflo-v1-nginx|2.72%|0.13%|4.852MiB / 3.722GiB
+STAT 150 telcoflo-v1-redis|8.90%|1.14%|43.42MiB / 3.722GiB
+LOAD 150 11.53 3.88 1.45 17/504 15820
+STAT 150 char-k6|5.67%|2.30%|87.71MiB / 3.722GiB
+STAT 150 telcoflo-v1-app|129.14%|2.75%|104.7MiB / 3.722GiB
+STAT 150 telcoflo-v1-mysql|36.64%|22.06%|840.9MiB / 3.722GiB
+STAT 150 telcoflo-v1-nginx|2.70%|0.12%|4.504MiB / 3.722GiB
+STAT 150 telcoflo-v1-redis|9.35%|1.17%|44.78MiB / 3.722GiB
+LOAD 150 11.88 4.08 1.53 23/506 15881
+STAT 150 char-k6|6.00%|2.32%|88.56MiB / 3.722GiB
+STAT 150 telcoflo-v1-app|127.57%|2.75%|104.6MiB / 3.722GiB
+STAT 150 telcoflo-v1-mysql|35.95%|22.10%|842.3MiB / 3.722GiB
+STAT 150 telcoflo-v1-nginx|2.89%|0.13%|4.77MiB / 3.722GiB
+STAT 150 telcoflo-v1-redis|11.36%|1.19%|45.5MiB / 3.722GiB
+LOAD 150 12.53 4.34 1.62 17/504 15992
+MYSQL 150 connected=17 running=2
+FPM 150 
+VMSTAT 150 r=20 b=0 swpd=0 free=373264 cache=1942304 si=0 so=0 bi=4 bo=1620 cs=25961 us=79 sy=21 id=0 wa=0 st=0
+FREEMEM 150 used_mb=1813 free_mb=364 available_mb=1998
+STAT 150 char-k6|11.90%|2.34%|89.09MiB / 3.722GiB
+STAT 150 telcoflo-v1-app|91.59%|2.74%|104.6MiB / 3.722GiB
+STAT 150 telcoflo-v1-mysql|22.83%|22.14%|843.9MiB / 3.722GiB
+STAT 150 telcoflo-v1-nginx|2.49%|0.10%|3.98MiB / 3.722GiB
+STAT 150 telcoflo-v1-redis|6.69%|1.23%|46.95MiB / 3.722GiB
+LOAD 150 12.10 4.53 1.72 5/504 16215
+QPS 150 questions_delta=64396 seconds=62 qps=1038
+K6JSON 150 {"vus_max":150,"http_reqs_per_s":104.91,"sessions_per_s":52.45,"start_ms":{"avg":277.81,"p50":281.76,"p90":421.48,"p95":469.76,"p99":573.43,"max":667.38},"step_ms":{"avg":267.64,"p50":271.63,"p90":413.29,"p95":457.69,"p99":565.37,"max":656.06},"http_ms":{"p95":464.39,"p99":568.92,"max":667.38},"dials_timed_out":0,"within_slo_rate":1,"http_failed_rate":0,"session_err_rate":0,"sessions_total":4038}
+
+===ENDLEVEL vus=150===
+===LEVEL vus=200===
+STAT 200 char-k6|6.27%|2.43%|92.43MiB / 3.722GiB
+STAT 200 telcoflo-v1-app|136.40%|2.72%|103.8MiB / 3.722GiB
+STAT 200 telcoflo-v1-mysql|34.79%|22.24%|847.6MiB / 3.722GiB
+STAT 200 telcoflo-v1-nginx|2.89%|0.15%|5.539MiB / 3.722GiB
+STAT 200 telcoflo-v1-redis|8.87%|1.32%|50.22MiB / 3.722GiB
+LOAD 200 10.41 4.77 1.88 19/505 16646
+STAT 200 char-k6|5.81%|2.44%|92.94MiB / 3.722GiB
+STAT 200 telcoflo-v1-app|137.38%|2.73%|104.1MiB / 3.722GiB
+STAT 200 telcoflo-v1-mysql|36.32%|22.26%|848.5MiB / 3.722GiB
+STAT 200 telcoflo-v1-nginx|2.76%|0.14%|5.52MiB / 3.722GiB
+STAT 200 telcoflo-v1-redis|9.17%|1.33%|50.58MiB / 3.722GiB
+LOAD 200 10.94 4.97 1.96 18/505 16693
+STAT 200 char-k6|6.28%|2.60%|99.25MiB / 3.722GiB
+STAT 200 telcoflo-v1-app|136.16%|2.73%|104MiB / 3.722GiB
+STAT 200 telcoflo-v1-mysql|35.16%|22.29%|849.4MiB / 3.722GiB
+STAT 200 telcoflo-v1-nginx|2.92%|0.16%|6.074MiB / 3.722GiB
+STAT 200 telcoflo-v1-redis|9.38%|1.36%|51.99MiB / 3.722GiB
+LOAD 200 11.34 5.15 2.04 20/505 16742
+MYSQL 200 connected=17 running=3
+FPM 200 
+VMSTAT 200 r=19 b=0 swpd=0 free=324456 cache=1960540 si=0 so=0 bi=108 bo=2072 cs=25995 us=79 sy=21 id=0 wa=0 st=0
+FREEMEM 200 used_mb=1838 free_mb=316 available_mb=1973
+STAT 200 char-k6|6.02%|2.63%|100.1MiB / 3.722GiB
+STAT 200 telcoflo-v1-app|137.63%|2.73%|104MiB / 3.722GiB
+STAT 200 telcoflo-v1-mysql|34.57%|22.33%|850.9MiB / 3.722GiB
+STAT 200 telcoflo-v1-nginx|2.80%|0.15%|5.859MiB / 3.722GiB
+STAT 200 telcoflo-v1-redis|10.96%|1.40%|53.54MiB / 3.722GiB
+LOAD 200 11.96 5.38 2.13 17/506 17006
+STAT 200 char-k6|5.90%|2.63%|100.2MiB / 3.722GiB
+STAT 200 telcoflo-v1-app|136.47%|2.74%|104.3MiB / 3.722GiB
+STAT 200 telcoflo-v1-mysql|36.88%|22.36%|852.4MiB / 3.722GiB
+STAT 200 telcoflo-v1-nginx|2.82%|0.16%|5.965MiB / 3.722GiB
+STAT 200 telcoflo-v1-redis|9.24%|1.45%|55.43MiB / 3.722GiB
+LOAD 200 12.50 5.72 2.27 17/505 17109
+STAT 200 char-k6|6.32%|2.64%|100.6MiB / 3.722GiB
+STAT 200 telcoflo-v1-app|138.71%|2.74%|104.5MiB / 3.722GiB
+STAT 200 telcoflo-v1-mysql|34.30%|22.39%|853.3MiB / 3.722GiB
+STAT 200 telcoflo-v1-nginx|2.62%|0.16%|6.008MiB / 3.722GiB
+STAT 200 telcoflo-v1-redis|9.19%|1.48%|56.56MiB / 3.722GiB
+LOAD 200 12.86 5.90 2.35 22/505 17156
+MYSQL 200 connected=17 running=2
+FPM 200 
+VMSTAT 200 r=23 b=0 swpd=0 free=264612 cache=1972080 si=0 so=0 bi=84 bo=1664 cs=22203 us=80 sy=20 id=0 wa=0 st=0
+FREEMEM 200 used_mb=1884 free_mb=258 available_mb=1926
+STAT 200 char-k6|6.92%|2.86%|108.9MiB / 3.722GiB
+STAT 200 telcoflo-v1-app|137.16%|2.75%|104.6MiB / 3.722GiB
+STAT 200 telcoflo-v1-mysql|34.85%|22.43%|854.8MiB / 3.722GiB
+STAT 200 telcoflo-v1-nginx|3.10%|0.15%|5.777MiB / 3.722GiB
+STAT 200 telcoflo-v1-redis|11.10%|1.51%|57.73MiB / 3.722GiB
+LOAD 200 13.11 6.07 2.43 19/506 17420
+STAT 200 char-k6|5.90%|2.96%|112.8MiB / 3.722GiB
+STAT 200 telcoflo-v1-app|136.61%|2.75%|104.7MiB / 3.722GiB
+STAT 200 telcoflo-v1-mysql|35.24%|22.46%|856.1MiB / 3.722GiB
+STAT 200 telcoflo-v1-nginx|2.78%|0.16%|5.973MiB / 3.722GiB
+STAT 200 telcoflo-v1-redis|11.30%|1.55%|59.12MiB / 3.722GiB
+LOAD 200 13.96 6.48 2.60 20/506 17465
+STAT 200 char-k6|6.50%|2.95%|112.3MiB / 3.722GiB
+STAT 200 telcoflo-v1-app|137.78%|2.75%|104.7MiB / 3.722GiB
+STAT 200 telcoflo-v1-mysql|34.77%|22.48%|856.9MiB / 3.722GiB
+STAT 200 telcoflo-v1-nginx|2.94%|0.15%|5.852MiB / 3.722GiB
+STAT 200 telcoflo-v1-redis|9.13%|1.57%|59.99MiB / 3.722GiB
+LOAD 200 14.20 6.66 2.68 24/505 17516
+MYSQL 200 connected=17 running=2
+FPM 200 
+VMSTAT 200 r=18 b=0 swpd=0 free=257244 cache=1982564 si=0 so=0 bi=116 bo=1844 cs=25848 us=78 sy=22 id=0 wa=0 st=0
+FREEMEM 200 used_mb=1880 free_mb=251 available_mb=1930
+STAT 200 char-k6|5.74%|2.98%|113.5MiB / 3.722GiB
+STAT 200 telcoflo-v1-app|116.21%|2.73%|104.1MiB / 3.722GiB
+STAT 200 telcoflo-v1-mysql|28.72%|22.53%|858.7MiB / 3.722GiB
+STAT 200 telcoflo-v1-nginx|2.41%|0.11%|4.379MiB / 3.722GiB
+STAT 200 telcoflo-v1-redis|8.68%|1.61%|61.52MiB / 3.722GiB
+LOAD 200 14.42 6.83 2.75 5/507 17792
+QPS 200 questions_delta=64977 seconds=64 qps=1015
+K6JSON 200 {"vus_max":200,"http_reqs_per_s":105.81,"sessions_per_s":52.9,"start_ms":{"avg":681.35,"p50":723.59,"p90":918.56,"p95":971.77,"p99":1107.53,"max":1234.77},"step_ms":{"avg":673.46,"p50":713.12,"p90":903.04,"p95":960.03,"p99":1113.29,"max":1231},"http_ms":{"p95":965.29,"p99":1112.23,"max":1234.77},"dials_timed_out":0,"within_slo_rate":1,"http_failed_rate":0,"session_err_rate":0,"sessions_total":4108}
+
+===ENDLEVEL vus=200===
+===LEVEL vus=250===
+STAT 250 char-k6|6.09%|2.88%|109.7MiB / 3.722GiB
+STAT 250 telcoflo-v1-app|128.30%|2.73%|104.2MiB / 3.722GiB
+STAT 250 telcoflo-v1-mysql|34.48%|22.60%|861.2MiB / 3.722GiB
+STAT 250 telcoflo-v1-nginx|2.73%|0.18%|6.746MiB / 3.722GiB
+STAT 250 telcoflo-v1-redis|11.63%|1.70%|64.75MiB / 3.722GiB
+LOAD 250 11.43 6.75 2.85 18/505 18263
+STAT 250 char-k6|6.16%|3.00%|114.4MiB / 3.722GiB
+STAT 250 telcoflo-v1-app|115.89%|2.73%|104MiB / 3.722GiB
+STAT 250 telcoflo-v1-mysql|33.21%|22.63%|862.5MiB / 3.722GiB
+STAT 250 telcoflo-v1-nginx|2.87%|0.18%|6.828MiB / 3.722GiB
+STAT 250 telcoflo-v1-redis|8.62%|1.72%|65.51MiB / 3.722GiB
+LOAD 250 11.80 6.90 2.92 17/505 18314
+STAT 250 char-k6|6.04%|3.02%|115.3MiB / 3.722GiB
+STAT 250 telcoflo-v1-app|130.66%|2.72%|103.7MiB / 3.722GiB
+STAT 250 telcoflo-v1-mysql|33.99%|22.66%|863.6MiB / 3.722GiB
+STAT 250 telcoflo-v1-nginx|2.78%|0.18%|6.773MiB / 3.722GiB
+STAT 250 telcoflo-v1-redis|11.78%|1.75%|66.73MiB / 3.722GiB
+LOAD 250 12.13 7.06 2.99 24/505 18363
+MYSQL 250 connected=17 running=2
+FPM 250 
+VMSTAT 250 r=16 b=0 swpd=0 free=213688 cache=2003104 si=0 so=0 bi=228 bo=2000 cs=27022 us=80 sy=21 id=0 wa=0 st=0
+FREEMEM 250 used_mb=1898 free_mb=208 available_mb=1912
+STAT 250 char-k6|6.06%|3.19%|121.5MiB / 3.722GiB
+STAT 250 telcoflo-v1-app|132.83%|2.74%|104.5MiB / 3.722GiB
+STAT 250 telcoflo-v1-mysql|33.83%|22.70%|865.2MiB / 3.722GiB
+STAT 250 telcoflo-v1-nginx|2.88%|0.18%|6.844MiB / 3.722GiB
+STAT 250 telcoflo-v1-redis|9.12%|1.79%|68.22MiB / 3.722GiB
+LOAD 250 13.33 7.58 3.23 21/505 18626
+STAT 250 char-k6|6.13%|3.21%|122.4MiB / 3.722GiB
+STAT 250 telcoflo-v1-app|136.06%|2.74%|104.2MiB / 3.722GiB
+STAT 250 telcoflo-v1-mysql|35.14%|22.73%|866.1MiB / 3.722GiB
+STAT 250 telcoflo-v1-nginx|2.86%|0.18%|6.715MiB / 3.722GiB
+STAT 250 telcoflo-v1-redis|10.54%|1.87%|71.34MiB / 3.722GiB
+LOAD 250 14.10 7.83 3.34 21/505 18673
+STAT 250 char-k6|6.70%|3.21%|122.4MiB / 3.722GiB
+STAT 250 telcoflo-v1-app|136.55%|2.74%|104.5MiB / 3.722GiB
+STAT 250 telcoflo-v1-mysql|34.49%|22.76%|867.5MiB / 3.722GiB
+STAT 250 telcoflo-v1-nginx|2.99%|0.18%|7.008MiB / 3.722GiB
+STAT 250 telcoflo-v1-redis|9.30%|1.85%|70.48MiB / 3.722GiB
+LOAD 250 14.26 7.97 3.40 17/505 18723
+MYSQL 250 connected=17 running=2
+FPM 250 
+VMSTAT 250 r=18 b=0 swpd=0 free=197868 cache=2015104 si=0 so=0 bi=20 bo=1852 cs=26058 us=79 sy=21 id=0 wa=0 st=0
+FREEMEM 250 used_mb=1901 free_mb=193 available_mb=1909
+STAT 250 char-k6|6.34%|3.52%|134.2MiB / 3.722GiB
+STAT 250 telcoflo-v1-app|137.32%|2.74%|104.5MiB / 3.722GiB
+STAT 250 telcoflo-v1-mysql|35.34%|22.91%|873.3MiB / 3.722GiB
+STAT 250 telcoflo-v1-nginx|2.83%|0.17%|6.543MiB / 3.722GiB
+STAT 250 telcoflo-v1-redis|9.20%|1.91%|72.61MiB / 3.722GiB
+LOAD 250 14.68 8.27 3.55 17/506 19002
+STAT 250 char-k6|6.36%|3.53%|134.5MiB / 3.722GiB
+STAT 250 telcoflo-v1-app|136.04%|2.74%|104.5MiB / 3.722GiB
+STAT 250 telcoflo-v1-mysql|35.27%|22.95%|874.8MiB / 3.722GiB
+STAT 250 telcoflo-v1-nginx|3.06%|0.18%|6.809MiB / 3.722GiB
+STAT 250 telcoflo-v1-redis|9.08%|1.94%|73.94MiB / 3.722GiB
+LOAD 250 14.78 8.39 3.62 18/506 19049
+STAT 250 char-k6|6.12%|3.53%|134.6MiB / 3.722GiB
+STAT 250 telcoflo-v1-app|133.96%|2.74%|104.5MiB / 3.722GiB
+STAT 250 telcoflo-v1-mysql|35.15%|23.07%|879.2MiB / 3.722GiB
+STAT 250 telcoflo-v1-nginx|2.93%|0.18%|6.738MiB / 3.722GiB
+STAT 250 telcoflo-v1-redis|9.15%|1.98%|75.4MiB / 3.722GiB
+LOAD 250 15.28 8.60 3.71 20/506 19097
+MYSQL 250 connected=17 running=3
+FPM 250 
+VMSTAT 250 r=17 b=0 swpd=0 free=211244 cache=1988756 si=0 so=0 bi=180 bo=1344 cs=26592 us=79 sy=21 id=0 wa=0 st=0
+FREEMEM 250 used_mb=1923 free_mb=206 available_mb=1887
+STAT 250 char-k6|3.36%|3.65%|139.2MiB / 3.722GiB
+STAT 250 telcoflo-v1-app|21.28%|2.73%|104MiB / 3.722GiB
+STAT 250 telcoflo-v1-mysql|9.19%|23.13%|881.5MiB / 3.722GiB
+STAT 250 telcoflo-v1-nginx|0.77%|0.12%|4.586MiB / 3.722GiB
+STAT 250 telcoflo-v1-redis|3.07%|1.99%|75.91MiB / 3.722GiB
+LOAD 250 14.26 8.61 3.77 1/506 19414
+QPS 250 questions_delta=65701 seconds=67 qps=980
+K6JSON 250 {"vus_max":250,"http_reqs_per_s":107.95,"sessions_per_s":53.98,"start_ms":{"avg":1077.43,"p50":1163.67,"p90":1365.37,"p95":1416.91,"p99":1495.54,"max":1575.54},"step_ms":{"avg":1077.54,"p50":1152.97,"p90":1358.55,"p95":1408.7,"p99":1482.33,"max":1547.75},"http_ms":{"p95":1412.43,"p99":1489.83,"max":1575.54},"dials_timed_out":0,"within_slo_rate":1,"http_failed_rate":0,"session_err_rate":0,"sessions_total":4166}
+
+===ENDLEVEL vus=250===
+===LEVEL vus=300===
+STAT 300 char-k6|6.59%|3.27%|124.7MiB / 3.722GiB
+STAT 300 telcoflo-v1-app|138.50%|2.73%|103.9MiB / 3.722GiB
+STAT 300 telcoflo-v1-mysql|35.42%|23.26%|886.7MiB / 3.722GiB
+STAT 300 telcoflo-v1-nginx|3.07%|0.20%|7.668MiB / 3.722GiB
+STAT 300 telcoflo-v1-redis|9.18%|2.08%|79.22MiB / 3.722GiB
+LOAD 300 12.70 8.69 3.94 22/540 19843
+STAT 300 char-k6|6.95%|3.61%|137.4MiB / 3.722GiB
+STAT 300 telcoflo-v1-app|120.31%|2.73%|104MiB / 3.722GiB
+STAT 300 telcoflo-v1-mysql|33.72%|23.29%|887.7MiB / 3.722GiB
+STAT 300 telcoflo-v1-nginx|2.71%|0.21%|7.875MiB / 3.722GiB
+STAT 300 telcoflo-v1-redis|10.99%|2.10%|80MiB / 3.722GiB
+LOAD 300 13.13 8.84 4.02 19/507 19894
+STAT 300 char-k6|6.47%|3.64%|138.6MiB / 3.722GiB
+STAT 300 telcoflo-v1-app|129.58%|2.73%|104MiB / 3.722GiB
+STAT 300 telcoflo-v1-mysql|35.02%|23.31%|888.3MiB / 3.722GiB
+STAT 300 telcoflo-v1-nginx|3.03%|0.20%|7.723MiB / 3.722GiB
+STAT 300 telcoflo-v1-redis|9.30%|2.12%|80.97MiB / 3.722GiB
+LOAD 300 13.36 8.96 4.08 18/507 19941
+MYSQL 300 connected=17 running=2
+FPM 300 
+VMSTAT 300 r=17 b=0 swpd=0 free=228372 cache=1972600 si=0 so=0 bi=108 bo=2036 cs=25157 us=80 sy=20 id=0 wa=0 st=0
+FREEMEM 300 used_mb=1922 free_mb=223 available_mb=1888
+STAT 300 char-k6|11.13%|3.80%|144.8MiB / 3.722GiB
+STAT 300 telcoflo-v1-app|133.81%|2.73%|104.1MiB / 3.722GiB
+STAT 300 telcoflo-v1-mysql|34.65%|23.34%|889.6MiB / 3.722GiB
+STAT 300 telcoflo-v1-nginx|3.10%|0.20%|7.695MiB / 3.722GiB
+STAT 300 telcoflo-v1-redis|8.71%|2.01%|76.51MiB / 3.722GiB
+LOAD 300 13.65 9.10 4.15 18/507 20165
+STAT 300 char-k6|6.33%|3.80%|145MiB / 3.722GiB
+STAT 300 telcoflo-v1-app|139.21%|2.74%|104.6MiB / 3.722GiB
+STAT 300 telcoflo-v1-mysql|34.34%|23.37%|890.6MiB / 3.722GiB
+STAT 300 telcoflo-v1-nginx|3.04%|0.20%|7.711MiB / 3.722GiB
+STAT 300 telcoflo-v1-redis|9.14%|2.03%|77.46MiB / 3.722GiB
+LOAD 300 14.31 9.39 4.30 22/507 20216
+STAT 300 char-k6|6.37%|3.81%|145MiB / 3.722GiB
+STAT 300 telcoflo-v1-app|136.12%|2.74%|104.4MiB / 3.722GiB
+STAT 300 telcoflo-v1-mysql|34.40%|23.39%|891.5MiB / 3.722GiB
+STAT 300 telcoflo-v1-nginx|3.03%|0.21%|8.098MiB / 3.722GiB
+STAT 300 telcoflo-v1-redis|9.05%|2.06%|78.53MiB / 3.722GiB
+LOAD 300 14.53 9.52 4.37 20/509 20265
+MYSQL 300 connected=18 running=2
+FPM 300 
+VMSTAT 300 r=17 b=0 swpd=0 free=210356 cache=1944648 si=0 so=0 bi=160 bo=1580 cs=26327 us=80 sy=20 id=0 wa=0 st=0
+FREEMEM 300 used_mb=1968 free_mb=205 available_mb=1842
+STAT 300 char-k6|6.06%|3.84%|146.2MiB / 3.722GiB
+STAT 300 telcoflo-v1-app|133.18%|2.75%|104.9MiB / 3.722GiB
+STAT 300 telcoflo-v1-mysql|40.30%|23.45%|893.8MiB / 3.722GiB
+STAT 300 telcoflo-v1-nginx|2.79%|0.21%|8.137MiB / 3.722GiB
+STAT 300 telcoflo-v1-redis|9.17%|2.12%|80.69MiB / 3.722GiB
+LOAD 300 15.38 9.86 4.54 19/507 20623
+STAT 300 char-k6|19.40%|3.84%|146.3MiB / 3.722GiB
+STAT 300 telcoflo-v1-app|128.68%|2.75%|104.7MiB / 3.722GiB
+STAT 300 telcoflo-v1-mysql|31.74%|23.48%|895MiB / 3.722GiB
+STAT 300 telcoflo-v1-nginx|2.89%|0.21%|7.902MiB / 3.722GiB
+STAT 300 telcoflo-v1-redis|9.44%|2.15%|81.75MiB / 3.722GiB
+LOAD 300 15.43 9.96 4.60 22/507 20672
+STAT 300 char-k6|6.33%|3.84%|146.4MiB / 3.722GiB
+STAT 300 telcoflo-v1-app|137.71%|2.74%|104.5MiB / 3.722GiB
+STAT 300 telcoflo-v1-mysql|34.53%|23.50%|895.6MiB / 3.722GiB
+STAT 300 telcoflo-v1-nginx|3.07%|0.20%|7.758MiB / 3.722GiB
+STAT 300 telcoflo-v1-redis|8.91%|2.17%|82.71MiB / 3.722GiB
+LOAD 300 15.55 10.08 4.67 19/507 20719
+MYSQL 300 connected=17 running=2
+FPM 300 
+VMSTAT 300 r=16 b=0 swpd=0 free=197548 cache=1956808 si=0 so=0 bi=4 bo=1516 cs=24987 us=80 sy=20 id=0 wa=0 st=0
+FREEMEM 300 used_mb=1967 free_mb=193 available_mb=1843
+STAT 300 char-k6|0.00%|0.00%|0B / 0B
+STAT 300 telcoflo-v1-app|0.01%|2.73%|104MiB / 3.722GiB
+STAT 300 telcoflo-v1-mysql|0.30%|23.53%|896.7MiB / 3.722GiB
+STAT 300 telcoflo-v1-nginx|0.00%|0.09%|3.285MiB / 3.722GiB
+STAT 300 telcoflo-v1-redis|0.44%|2.22%|84.7MiB / 3.722GiB
+LOAD 300 14.86 10.13 4.74 1/483 21015
+QPS 300 questions_delta=64591 seconds=69 qps=936
+K6JSON 300 {"vus_max":300,"http_reqs_per_s":106.4,"sessions_per_s":53.2,"start_ms":{"avg":1513.79,"p50":1629.44,"p90":1928.9,"p95":2048.47,"p99":2404.21,"max":2517.25},"step_ms":{"avg":1529.58,"p50":1623.71,"p90":1929.23,"p95":2045.4,"p99":2374.43,"max":2485.91},"http_ms":{"p95":2047.81,"p99":2396.46,"max":2517.25},"dials_timed_out":0,"within_slo_rate":1,"http_failed_rate":0,"session_err_rate":0,"sessions_total":4132}
+
+===ENDLEVEL vus=300===
+===LEVEL vus=350===
+STAT 350 char-k6|6.30%|3.58%|136.5MiB / 3.722GiB
+STAT 350 telcoflo-v1-app|129.62%|2.74%|104.3MiB / 3.722GiB
+STAT 350 telcoflo-v1-mysql|33.29%|23.60%|899.5MiB / 3.722GiB
+STAT 350 telcoflo-v1-nginx|2.92%|0.23%|8.75MiB / 3.722GiB
+STAT 350 telcoflo-v1-redis|11.36%|2.30%|87.75MiB / 3.722GiB
+LOAD 350 11.72 9.75 4.78 30/509 21393
+STAT 350 char-k6|6.13%|3.97%|151.2MiB / 3.722GiB
+STAT 350 telcoflo-v1-app|133.73%|2.72%|103.9MiB / 3.722GiB
+STAT 350 telcoflo-v1-mysql|34.20%|23.62%|900.3MiB / 3.722GiB
+STAT 350 telcoflo-v1-nginx|2.83%|0.23%|8.949MiB / 3.722GiB
+STAT 350 telcoflo-v1-redis|8.87%|2.34%|89.16MiB / 3.722GiB
+LOAD 350 12.30 9.90 4.86 21/508 21445
+STAT 350 char-k6|6.40%|4.18%|159.4MiB / 3.722GiB
+STAT 350 telcoflo-v1-app|136.85%|2.73%|104.1MiB / 3.722GiB
+STAT 350 telcoflo-v1-mysql|34.57%|23.64%|900.8MiB / 3.722GiB
+STAT 350 telcoflo-v1-nginx|3.02%|0.23%|8.906MiB / 3.722GiB
+STAT 350 telcoflo-v1-redis|9.11%|2.36%|89.84MiB / 3.722GiB
+LOAD 350 12.76 10.04 4.93 19/506 21547
+MYSQL 350 connected=17 running=4
+FPM 350 
+VMSTAT 350 r=17 b=0 swpd=0 free=193488 cache=1940860 si=0 so=0 bi=4 bo=1388 cs=25665 us=78 sy=22 id=0 wa=0 st=0
+FREEMEM 350 used_mb=1986 free_mb=188 available_mb=1825
+STAT 350 char-k6|6.40%|4.21%|160.5MiB / 3.722GiB
+STAT 350 telcoflo-v1-app|138.34%|2.75%|104.7MiB / 3.722GiB
+STAT 350 telcoflo-v1-mysql|34.53%|23.68%|902.6MiB / 3.722GiB
+STAT 350 telcoflo-v1-nginx|3.04%|0.23%|8.676MiB / 3.722GiB
+STAT 350 telcoflo-v1-redis|11.04%|2.41%|91.83MiB / 3.722GiB
+LOAD 350 13.70 10.33 5.08 18/506 21815
+STAT 350 char-k6|6.52%|4.39%|167.2MiB / 3.722GiB
+STAT 350 telcoflo-v1-app|137.18%|2.74%|104.4MiB / 3.722GiB
+STAT 350 telcoflo-v1-mysql|36.14%|23.71%|903.6MiB / 3.722GiB
+STAT 350 telcoflo-v1-nginx|3.02%|0.23%|8.66MiB / 3.722GiB
+STAT 350 telcoflo-v1-redis|10.64%|2.42%|92.3MiB / 3.722GiB
+LOAD 350 13.89 10.42 5.14 17/507 21864
+STAT 350 char-k6|6.56%|4.39%|167.4MiB / 3.722GiB
+STAT 350 telcoflo-v1-app|138.43%|2.64%|100.6MiB / 3.722GiB
+STAT 350 telcoflo-v1-mysql|33.76%|23.73%|904.4MiB / 3.722GiB
+STAT 350 telcoflo-v1-nginx|3.10%|0.23%|8.746MiB / 3.722GiB
+STAT 350 telcoflo-v1-redis|11.33%|2.46%|93.94MiB / 3.722GiB
+LOAD 350 14.06 10.52 5.20 20/507 21915
+MYSQL 350 connected=17 running=2
+FPM 350 
+VMSTAT 350 r=19 b=0 swpd=0 free=186424 cache=1927092 si=0 so=0 bi=84 bo=1396 cs=25089 us=80 sy=21 id=0 wa=0 st=0
+FREEMEM 350 used_mb=2007 free_mb=182 available_mb=1803
+STAT 350 char-k6|6.31%|4.40%|167.8MiB / 3.722GiB
+STAT 350 telcoflo-v1-app|136.86%|2.74%|104.5MiB / 3.722GiB
+STAT 350 telcoflo-v1-mysql|34.78%|23.93%|912.1MiB / 3.722GiB
+STAT 350 telcoflo-v1-nginx|2.93%|0.23%|8.887MiB / 3.722GiB
+STAT 350 telcoflo-v1-redis|8.40%|2.52%|96.11MiB / 3.722GiB
+LOAD 350 15.24 10.89 5.38 17/508 22181
+STAT 350 char-k6|6.63%|4.40%|167.6MiB / 3.722GiB
+STAT 350 telcoflo-v1-app|137.37%|2.75%|104.7MiB / 3.722GiB
+STAT 350 telcoflo-v1-mysql|34.27%|23.95%|912.9MiB / 3.722GiB
+STAT 350 telcoflo-v1-nginx|3.12%|0.23%|8.668MiB / 3.722GiB
+STAT 350 telcoflo-v1-redis|9.16%|2.55%|97MiB / 3.722GiB
+LOAD 350 15.38 11.00 5.44 19/508 22225
+STAT 350 char-k6|6.58%|4.40%|167.8MiB / 3.722GiB
+STAT 350 telcoflo-v1-app|138.67%|2.75%|104.7MiB / 3.722GiB
+STAT 350 telcoflo-v1-mysql|34.74%|23.98%|914.1MiB / 3.722GiB
+STAT 350 telcoflo-v1-nginx|3.21%|0.23%|8.91MiB / 3.722GiB
+STAT 350 telcoflo-v1-redis|9.11%|2.57%|98MiB / 3.722GiB
+LOAD 350 16.44 11.37 5.62 19/507 22273
+MYSQL 350 connected=17 running=3
+FPM 350 
+VMSTAT 350 r=17 b=0 swpd=0 free=222624 cache=1895080 si=0 so=0 bi=48 bo=1484 cs=26888 us=80 sy=20 id=0 wa=0 st=0
+FREEMEM 350 used_mb=2005 free_mb=217 available_mb=1805
+LOAD 350 15.24 11.29 5.66 1/481 22575
+QPS 350 questions_delta=65937 seconds=69 qps=955
+K6JSON 350 {"vus_max":350,"http_reqs_per_s":107.6,"sessions_per_s":53.8,"start_ms":{"avg":1890.93,"p50":2051.85,"p90":2314.28,"p95":2400.15,"p99":2546.52,"max":2624.78},"step_ms":{"avg":1906.93,"p50":2042.41,"p90":2298.61,"p95":2385.21,"p99":2533.09,"max":2632.35},"http_ms":{"p95":2391.21,"p99":2537.34,"max":2632.35},"dials_timed_out":0,"within_slo_rate":1,"http_failed_rate":0,"session_err_rate":0,"sessions_total":4214}
+
+===ENDLEVEL vus=350===
+===LEVEL vus=400===
+STAT 400 char-k6|6.49%|4.26%|162.5MiB / 3.722GiB
+STAT 400 telcoflo-v1-app|133.76%|2.73%|103.9MiB / 3.722GiB
+STAT 400 telcoflo-v1-mysql|34.55%|24.18%|921.5MiB / 3.722GiB
+STAT 400 telcoflo-v1-nginx|2.91%|0.26%|9.805MiB / 3.722GiB
+STAT 400 telcoflo-v1-redis|9.10%|2.69%|102.7MiB / 3.722GiB
+LOAD 400 13.23 11.11 5.77 19/502 23008
+STAT 400 char-k6|6.70%|4.35%|165.7MiB / 3.722GiB
+STAT 400 telcoflo-v1-app|137.65%|2.73%|104.1MiB / 3.722GiB
+STAT 400 telcoflo-v1-mysql|35.35%|24.20%|922.5MiB / 3.722GiB
+STAT 400 telcoflo-v1-nginx|3.14%|0.24%|9.289MiB / 3.722GiB
+STAT 400 telcoflo-v1-redis|9.29%|2.72%|103.6MiB / 3.722GiB
+LOAD 400 14.17 11.34 5.88 17/502 23055
+STAT 400 char-k6|6.24%|4.38%|167MiB / 3.722GiB
+STAT 400 telcoflo-v1-app|137.21%|2.74%|104.2MiB / 3.722GiB
+STAT 400 telcoflo-v1-mysql|35.12%|24.23%|923.5MiB / 3.722GiB
+STAT 400 telcoflo-v1-nginx|2.98%|0.24%|9.297MiB / 3.722GiB
+STAT 400 telcoflo-v1-redis|9.18%|2.75%|104.9MiB / 3.722GiB
+LOAD 400 14.32 11.42 5.93 17/502 23105
+MYSQL 400 connected=17 running=3
+FPM 400 
+VMSTAT 400 r=18 b=0 swpd=0 free=193280 cache=1901808 si=0 so=0 bi=4 bo=34508 cs=22827 us=80 sy=20 id=0 wa=0 st=0
+FREEMEM 400 used_mb=2025 free_mb=188 available_mb=1785
+STAT 400 char-k6|6.48%|4.91%|187.2MiB / 3.722GiB
+STAT 400 telcoflo-v1-app|136.21%|2.74%|104.5MiB / 3.722GiB
+STAT 400 telcoflo-v1-mysql|34.27%|24.27%|925.1MiB / 3.722GiB
+STAT 400 telcoflo-v1-nginx|2.62%|0.25%|9.461MiB / 3.722GiB
+STAT 400 telcoflo-v1-redis|9.21%|2.81%|106.9MiB / 3.722GiB
+LOAD 400 14.88 11.63 6.06 22/504 23374
+STAT 400 char-k6|6.24%|4.92%|187.7MiB / 3.722GiB
+STAT 400 telcoflo-v1-app|137.81%|2.75%|104.7MiB / 3.722GiB
+STAT 400 telcoflo-v1-mysql|35.49%|24.29%|925.6MiB / 3.722GiB
+STAT 400 telcoflo-v1-nginx|2.97%|0.26%|9.926MiB / 3.722GiB
+STAT 400 telcoflo-v1-redis|9.39%|2.83%|108MiB / 3.722GiB
+LOAD 400 15.21 11.76 6.13 18/504 23422
+STAT 400 char-k6|5.30%|4.91%|187.3MiB / 3.722GiB
+STAT 400 telcoflo-v1-app|113.53%|2.74%|104.6MiB / 3.722GiB
+STAT 400 telcoflo-v1-mysql|28.34%|24.31%|926.7MiB / 3.722GiB
+STAT 400 telcoflo-v1-nginx|2.49%|0.26%|9.98MiB / 3.722GiB
+STAT 400 telcoflo-v1-redis|30.90%|2.92%|111.3MiB / 3.722GiB
+LOAD 400 15.68 11.91 6.21 20/504 23474
+MYSQL 400 connected=17 running=2
+FPM 400 
+VMSTAT 400 r=18 b=0 swpd=0 free=224148 cache=1847820 si=0 so=0 bi=84 bo=1576 cs=25660 us=81 sy=19 id=1 wa=0 st=0
+FREEMEM 400 used_mb=2048 free_mb=218 available_mb=1763
+STAT 400 char-k6|6.60%|4.97%|189.5MiB / 3.722GiB
+STAT 400 telcoflo-v1-app|137.90%|2.75%|104.7MiB / 3.722GiB
+STAT 400 telcoflo-v1-mysql|34.84%|24.36%|928.5MiB / 3.722GiB
+STAT 400 telcoflo-v1-nginx|2.99%|0.25%|9.703MiB / 3.722GiB
+STAT 400 telcoflo-v1-redis|8.99%|2.90%|110.5MiB / 3.722GiB
+LOAD 400 16.05 12.11 6.34 19/505 23798
+STAT 400 char-k6|6.21%|4.98%|189.9MiB / 3.722GiB
+STAT 400 telcoflo-v1-app|128.07%|2.74%|104.6MiB / 3.722GiB
+STAT 400 telcoflo-v1-mysql|36.45%|24.38%|929.2MiB / 3.722GiB
+STAT 400 telcoflo-v1-nginx|2.79%|0.26%|9.953MiB / 3.722GiB
+STAT 400 telcoflo-v1-redis|11.54%|2.94%|112.1MiB / 3.722GiB
+LOAD 400 16.20 12.21 6.40 17/505 23887
+STAT 400 char-k6|6.46%|4.98%|189.7MiB / 3.722GiB
+STAT 400 telcoflo-v1-app|136.20%|2.75%|104.7MiB / 3.722GiB
+STAT 400 telcoflo-v1-mysql|34.95%|24.44%|931.4MiB / 3.722GiB
+STAT 400 telcoflo-v1-nginx|3.06%|0.25%|9.684MiB / 3.722GiB
+STAT 400 telcoflo-v1-redis|11.55%|2.97%|113.2MiB / 3.722GiB
+LOAD 400 16.25 12.35 6.51 21/505 23937
+MYSQL 400 connected=17 running=2
+FPM 400 
+VMSTAT 400 r=20 b=0 swpd=0 free=204968 cache=1843924 si=0 so=0 bi=36 bo=1388 cs=25897 us=82 sy=19 id=0 wa=0 st=0
+FREEMEM 400 used_mb=2070 free_mb=200 available_mb=1740
+LOAD 400 15.25 12.27 6.55 2/480 24234
+QPS 400 questions_delta=66512 seconds=70 qps=950
+K6JSON 400 {"vus_max":400,"http_reqs_per_s":108.44,"sessions_per_s":54.22,"start_ms":{"avg":2266.72,"p50":2487.04,"p90":2793.39,"p95":2948.76,"p99":3129.15,"max":3232.34},"step_ms":{"avg":2305.17,"p50":2480.41,"p90":2792.42,"p95":2931.7,"p99":3123.65,"max":3210.18},"http_ms":{"p95":2941.11,"p99":3128.14,"max":3232.34},"dials_timed_out":0,"within_slo_rate":1,"http_failed_rate":0,"session_err_rate":0,"sessions_total":4269}
+
+===ENDLEVEL vus=400===
+===LEVEL vus=450===
+STAT 450 char-k6|6.61%|4.72%|179.8MiB / 3.722GiB
+STAT 450 telcoflo-v1-app|139.16%|2.74%|104.4MiB / 3.722GiB
+STAT 450 telcoflo-v1-mysql|34.08%|24.54%|935.1MiB / 3.722GiB
+STAT 450 telcoflo-v1-nginx|3.14%|0.27%|10.39MiB / 3.722GiB
+STAT 450 telcoflo-v1-redis|9.29%|3.08%|117.4MiB / 3.722GiB
+LOAD 450 14.09 12.16 6.68 17/506 24607
+STAT 450 char-k6|6.62%|4.86%|185.2MiB / 3.722GiB
+STAT 450 telcoflo-v1-app|135.37%|2.73%|104.1MiB / 3.722GiB
+STAT 450 telcoflo-v1-mysql|33.81%|24.56%|936MiB / 3.722GiB
+STAT 450 telcoflo-v1-nginx|2.93%|0.27%|10.25MiB / 3.722GiB
+STAT 450 telcoflo-v1-redis|9.03%|3.10%|118.3MiB / 3.722GiB
+LOAD 450 14.32 12.24 6.74 17/508 24656
+STAT 450 char-k6|7.15%|5.29%|201.6MiB / 3.722GiB
+STAT 450 telcoflo-v1-app|137.21%|2.74%|104.6MiB / 3.722GiB
+STAT 450 telcoflo-v1-mysql|34.16%|24.59%|937.3MiB / 3.722GiB
+STAT 450 telcoflo-v1-nginx|3.22%|0.28%|10.71MiB / 3.722GiB
+STAT 450 telcoflo-v1-redis|9.12%|3.14%|119.6MiB / 3.722GiB
+LOAD 450 14.46 12.31 6.79 20/506 24758
+MYSQL 450 connected=17 running=2
+FPM 450 
+VMSTAT 450 r=18 b=0 swpd=0 free=193804 cache=1828628 si=0 so=0 bi=52 bo=1704 cs=26002 us=79 sy=21 id=0 wa=0 st=0
+FREEMEM 450 used_mb=2095 free_mb=189 available_mb=1716
+STAT 450 char-k6|5.99%|5.48%|208.9MiB / 3.722GiB
+STAT 450 telcoflo-v1-app|138.76%|2.54%|96.82MiB / 3.722GiB
+STAT 450 telcoflo-v1-mysql|33.59%|24.64%|939MiB / 3.722GiB
+STAT 450 telcoflo-v1-nginx|2.82%|0.28%|10.57MiB / 3.722GiB
+STAT 450 telcoflo-v1-redis|9.05%|3.21%|122.3MiB / 3.722GiB
+LOAD 450 15.62 12.68 7.00 20/506 25033
+STAT 450 char-k6|6.02%|5.51%|210.1MiB / 3.722GiB
+STAT 450 telcoflo-v1-app|131.05%|2.55%|97.09MiB / 3.722GiB
+STAT 450 telcoflo-v1-mysql|36.36%|24.75%|943.3MiB / 3.722GiB
+STAT 450 telcoflo-v1-nginx|2.81%|0.27%|10.27MiB / 3.722GiB
+STAT 450 telcoflo-v1-redis|9.28%|3.24%|123.6MiB / 3.722GiB
+LOAD 450 15.73 12.75 7.06 19/506 25116
+STAT 450 char-k6|6.25%|5.63%|214.4MiB / 3.722GiB
+STAT 450 telcoflo-v1-app|137.05%|2.55%|97.32MiB / 3.722GiB
+STAT 450 telcoflo-v1-mysql|35.12%|24.77%|944MiB / 3.722GiB
+STAT 450 telcoflo-v1-nginx|2.92%|0.28%|10.73MiB / 3.722GiB
+STAT 450 telcoflo-v1-redis|10.49%|3.26%|124.4MiB / 3.722GiB
+LOAD 450 15.91 12.84 7.12 19/506 25162
+MYSQL 450 connected=17 running=2
+FPM 450 
+VMSTAT 450 r=19 b=0 swpd=0 free=190752 cache=1806580 si=0 so=0 bi=36 bo=1512 cs=26259 us=81 sy=20 id=0 wa=0 st=0
+FREEMEM 450 used_mb=2119 free_mb=186 available_mb=1691
+STAT 450 char-k6|6.15%|5.63%|214.6MiB / 3.722GiB
+STAT 450 telcoflo-v1-app|138.31%|2.56%|97.55MiB / 3.722GiB
+STAT 450 telcoflo-v1-mysql|34.94%|24.84%|946.7MiB / 3.722GiB
+STAT 450 telcoflo-v1-nginx|2.89%|0.28%|10.74MiB / 3.722GiB
+STAT 450 telcoflo-v1-redis|9.19%|3.33%|126.9MiB / 3.722GiB
+LOAD 450 16.01 12.96 7.22 20/506 25436
+STAT 450 char-k6|6.43%|5.62%|214.3MiB / 3.722GiB
+STAT 450 telcoflo-v1-app|137.41%|2.56%|97.55MiB / 3.722GiB
+STAT 450 telcoflo-v1-mysql|35.53%|24.86%|947.4MiB / 3.722GiB
+STAT 450 telcoflo-v1-nginx|3.04%|0.28%|10.5MiB / 3.722GiB
+STAT 450 telcoflo-v1-redis|7.75%|3.36%|128.1MiB / 3.722GiB
+LOAD 450 16.01 13.01 7.26 17/506 25489
+STAT 450 char-k6|5.63%|5.63%|214.4MiB / 3.722GiB
+STAT 450 telcoflo-v1-app|124.52%|2.55%|97.29MiB / 3.722GiB
+STAT 450 telcoflo-v1-mysql|30.58%|24.88%|948.4MiB / 3.722GiB
+STAT 450 telcoflo-v1-nginx|2.29%|0.26%|10.06MiB / 3.722GiB
+STAT 450 telcoflo-v1-redis|52.29%|3.47%|132.4MiB / 3.722GiB
+LOAD 450 16.53 13.23 7.40 19/506 25538
+MYSQL 450 connected=17 running=3
+FPM 450 
+VMSTAT 450 r=0 b=0 swpd=0 free=184744 cache=1800188 si=0 so=0 bi=4 bo=1536 cs=15399 us=39 sy=10 id=51 wa=0 st=0
+FREEMEM 450 used_mb=2131 free_mb=180 available_mb=1679
+LOAD 450 15.28 13.02 7.36 1/479 25832
+QPS 450 questions_delta=67675 seconds=72 qps=939
+K6JSON 450 {"vus_max":450,"http_reqs_per_s":109.48,"sessions_per_s":54.74,"start_ms":{"avg":2626.83,"p50":2908.76,"p90":3138.94,"p95":3188.04,"p99":3278.78,"max":3420.71},"step_ms":{"avg":2694.35,"p50":2900.1,"p90":3127.56,"p95":3180.1,"p99":3275.19,"max":3398.52},"http_ms":{"p95":3184.5,"p99":3278.01,"max":3420.71},"dials_timed_out":0,"within_slo_rate":1,"http_failed_rate":0,"session_err_rate":0,"sessions_total":4355}
+
+===ENDLEVEL vus=450===
+===LEVEL vus=500===
+STAT 500 char-k6|6.43%|4.87%|185.8MiB / 3.722GiB
+STAT 500 telcoflo-v1-app|138.04%|2.53%|96.46MiB / 3.722GiB
+STAT 500 telcoflo-v1-mysql|34.82%|24.96%|951.2MiB / 3.722GiB
+STAT 500 telcoflo-v1-nginx|2.99%|0.30%|11.36MiB / 3.722GiB
+STAT 500 telcoflo-v1-redis|11.43%|3.48%|132.7MiB / 3.722GiB
+LOAD 500 11.99 12.37 7.32 18/505 26268
+STAT 500 char-k6|5.40%|5.02%|191.3MiB / 3.722GiB
+STAT 500 telcoflo-v1-app|101.47%|2.54%|96.64MiB / 3.722GiB
+STAT 500 telcoflo-v1-mysql|25.99%|25.06%|955MiB / 3.722GiB
+STAT 500 telcoflo-v1-nginx|2.36%|0.31%|11.63MiB / 3.722GiB
+STAT 500 telcoflo-v1-redis|29.69%|3.59%|136.9MiB / 3.722GiB
+LOAD 500 12.32 12.43 7.37 20/505 26317
+STAT 500 char-k6|6.10%|5.40%|205.8MiB / 3.722GiB
+STAT 500 telcoflo-v1-app|137.59%|2.54%|96.69MiB / 3.722GiB
+STAT 500 telcoflo-v1-mysql|35.15%|25.07%|955.5MiB / 3.722GiB
+STAT 500 telcoflo-v1-nginx|2.98%|0.31%|11.63MiB / 3.722GiB
+STAT 500 telcoflo-v1-redis|9.26%|3.53%|134.5MiB / 3.722GiB
+LOAD 500 12.77 12.52 7.42 17/505 26364
+MYSQL 500 connected=17 running=2
+FPM 500 
+VMSTAT 500 r=17 b=0 swpd=0 free=220104 cache=1731888 si=0 so=0 bi=40 bo=1896 cs=25625 us=79 sy=21 id=0 wa=0 st=0
+FREEMEM 500 used_mb=2163 free_mb=214 available_mb=1648
+STAT 500 char-k6|5.43%|6.01%|229MiB / 3.722GiB
+STAT 500 telcoflo-v1-app|103.64%|2.55%|97.02MiB / 3.722GiB
+STAT 500 telcoflo-v1-mysql|26.81%|25.14%|958.3MiB / 3.722GiB
+STAT 500 telcoflo-v1-nginx|2.57%|0.30%|11.31MiB / 3.722GiB
+STAT 500 telcoflo-v1-redis|9.24%|3.60%|137.2MiB / 3.722GiB
+LOAD 500 14.79 12.99 7.66 19/506 26635
+STAT 500 char-k6|5.79%|6.01%|229.1MiB / 3.722GiB
+STAT 500 telcoflo-v1-app|136.04%|2.55%|97.37MiB / 3.722GiB
+STAT 500 telcoflo-v1-mysql|35.39%|25.15%|958.6MiB / 3.722GiB
+STAT 500 telcoflo-v1-nginx|2.74%|0.30%|11.47MiB / 3.722GiB
+STAT 500 telcoflo-v1-redis|9.24%|3.62%|138.1MiB / 3.722GiB
+LOAD 500 14.97 13.05 7.71 17/505 26679
+STAT 500 char-k6|6.23%|6.03%|230MiB / 3.722GiB
+STAT 500 telcoflo-v1-app|136.87%|2.55%|97.34MiB / 3.722GiB
+STAT 500 telcoflo-v1-mysql|34.72%|25.18%|959.6MiB / 3.722GiB
+STAT 500 telcoflo-v1-nginx|3.03%|0.30%|11.5MiB / 3.722GiB
+STAT 500 telcoflo-v1-redis|9.12%|3.65%|139.3MiB / 3.722GiB
+LOAD 500 15.93 13.29 7.81 19/505 26730
+MYSQL 500 connected=17 running=4
+FPM 500 
+VMSTAT 500 r=16 b=0 swpd=0 free=205260 cache=1728264 si=0 so=0 bi=36 bo=1372 cs=23501 us=82 sy=19 id=0 wa=0 st=0
+FREEMEM 500 used_mb=2180 free_mb=200 available_mb=1630
+STAT 500 char-k6|6.39%|6.17%|235.3MiB / 3.722GiB
+STAT 500 telcoflo-v1-app|128.12%|2.55%|97.35MiB / 3.722GiB
+STAT 500 telcoflo-v1-mysql|37.55%|25.22%|961.3MiB / 3.722GiB
+STAT 500 telcoflo-v1-nginx|2.83%|0.30%|11.51MiB / 3.722GiB
+STAT 500 telcoflo-v1-redis|9.06%|3.71%|141.5MiB / 3.722GiB
+LOAD 500 16.02 13.39 7.91 17/506 27097
+STAT 500 char-k6|6.03%|6.19%|235.8MiB / 3.722GiB
+STAT 500 telcoflo-v1-app|127.32%|2.55%|97.3MiB / 3.722GiB
+STAT 500 telcoflo-v1-mysql|35.22%|25.25%|962.3MiB / 3.722GiB
+STAT 500 telcoflo-v1-nginx|2.85%|0.31%|11.77MiB / 3.722GiB
+STAT 500 telcoflo-v1-redis|9.05%|3.74%|142.6MiB / 3.722GiB
+LOAD 500 16.34 13.50 7.97 20/506 27145
+STAT 500 char-k6|6.40%|6.18%|235.6MiB / 3.722GiB
+STAT 500 telcoflo-v1-app|129.75%|2.56%|97.44MiB / 3.722GiB
+STAT 500 telcoflo-v1-mysql|36.06%|25.26%|962.6MiB / 3.722GiB
+STAT 500 telcoflo-v1-nginx|2.84%|0.31%|11.77MiB / 3.722GiB
+STAT 500 telcoflo-v1-redis|9.30%|3.76%|143.2MiB / 3.722GiB
+LOAD 500 16.31 13.54 8.02 23/506 27192
+MYSQL 500 connected=17 running=2
+FPM 500 
+VMSTAT 500 r=16 b=0 swpd=0 free=207056 cache=1724864 si=0 so=0 bi=4 bo=1680 cs=24720 us=81 sy=20 id=0 wa=0 st=0
+FREEMEM 500 used_mb=2182 free_mb=202 available_mb=1629
+LOAD 500 15.53 13.53 8.10 2/481 27492
+QPS 500 questions_delta=68336 seconds=72 qps=949
+K6JSON 500 {"vus_max":500,"http_reqs_per_s":109.69,"sessions_per_s":54.85,"start_ms":{"avg":3010.92,"p50":3306.8,"p90":3681.05,"p95":3760.71,"p99":3829.04,"max":3925.69},"step_ms":{"avg":3079.46,"p50":3303.81,"p90":3666.88,"p95":3752.8,"p99":3816.5,"max":3903.32},"http_ms":{"p95":3756.04,"p99":3825.34,"max":3925.69},"dials_timed_out":0,"within_slo_rate":1,"http_failed_rate":0,"session_err_rate":0,"sessions_total":4377}
+
+===ENDLEVEL vus=500===
+===LEVEL vus=550===
+STAT 550 char-k6|7.04%|5.29%|201.6MiB / 3.722GiB
+STAT 550 telcoflo-v1-app|129.19%|2.55%|97.15MiB / 3.722GiB
+STAT 550 telcoflo-v1-mysql|34.02%|25.34%|965.9MiB / 3.722GiB
+STAT 550 telcoflo-v1-nginx|3.31%|0.32%|12.31MiB / 3.722GiB
+STAT 550 telcoflo-v1-redis|9.33%|3.89%|148.1MiB / 3.722GiB
+LOAD 550 13.16 13.07 8.11 17/505 27879
+STAT 550 char-k6|6.82%|5.75%|219MiB / 3.722GiB
+STAT 550 telcoflo-v1-app|133.77%|2.54%|96.95MiB / 3.722GiB
+STAT 550 telcoflo-v1-mysql|34.71%|25.37%|966.9MiB / 3.722GiB
+STAT 550 telcoflo-v1-nginx|2.89%|0.32%|12.02MiB / 3.722GiB
+STAT 550 telcoflo-v1-redis|9.22%|3.90%|148.6MiB / 3.722GiB
+LOAD 550 14.11 13.26 8.21 25/510 27933
+STAT 550 char-k6|5.76%|6.08%|231.8MiB / 3.722GiB
+STAT 550 telcoflo-v1-app|136.30%|2.54%|96.81MiB / 3.722GiB
+STAT 550 telcoflo-v1-mysql|34.57%|25.40%|967.9MiB / 3.722GiB
+STAT 550 telcoflo-v1-nginx|2.59%|0.33%|12.43MiB / 3.722GiB
+STAT 550 telcoflo-v1-redis|7.89%|3.93%|149.7MiB / 3.722GiB
+LOAD 550 14.42 13.34 8.26 24/505 28041
+MYSQL 550 connected=17 running=2
+FPM 550 
+VMSTAT 550 r=16 b=0 swpd=0 free=193348 cache=1727592 si=0 so=0 bi=20 bo=2632 cs=26021 us=79 sy=21 id=0 wa=0 st=0
+FREEMEM 550 used_mb=2192 free_mb=188 available_mb=1619
+STAT 550 char-k6|6.16%|6.12%|233.1MiB / 3.722GiB
+STAT 550 telcoflo-v1-app|137.02%|2.55%|97.16MiB / 3.722GiB
+STAT 550 telcoflo-v1-mysql|34.79%|25.44%|969.8MiB / 3.722GiB
+STAT 550 telcoflo-v1-nginx|2.89%|0.33%|12.48MiB / 3.722GiB
+STAT 550 telcoflo-v1-redis|9.42%|4.00%|152.6MiB / 3.722GiB
+LOAD 550 15.06 13.51 8.37 17/507 28303
+STAT 550 char-k6|6.35%|6.22%|236.9MiB / 3.722GiB
+STAT 550 telcoflo-v1-app|136.10%|2.56%|97.46MiB / 3.722GiB
+STAT 550 telcoflo-v1-mysql|34.69%|25.47%|970.6MiB / 3.722GiB
+STAT 550 telcoflo-v1-nginx|2.89%|0.33%|12.62MiB / 3.722GiB
+STAT 550 telcoflo-v1-redis|9.31%|4.03%|153.5MiB / 3.722GiB
+LOAD 550 15.53 13.64 8.44 18/506 28351
+STAT 550 char-k6|18.72%|6.72%|256.1MiB / 3.722GiB
+STAT 550 telcoflo-v1-app|128.37%|2.56%|97.55MiB / 3.722GiB
+STAT 550 telcoflo-v1-mysql|33.19%|25.49%|971.6MiB / 3.722GiB
+STAT 550 telcoflo-v1-nginx|2.89%|0.33%|12.58MiB / 3.722GiB
+STAT 550 telcoflo-v1-redis|9.38%|4.05%|154.4MiB / 3.722GiB
+LOAD 550 15.57 13.68 8.48 22/506 28402
+MYSQL 550 connected=17 running=3
+FPM 550 
+VMSTAT 550 r=16 b=0 swpd=0 free=190872 cache=1690552 si=0 so=0 bi=24 bo=1508 cs=26962 us=79 sy=21 id=0 wa=0 st=0
+FREEMEM 550 used_mb=2230 free_mb=186 available_mb=1580
+STAT 550 char-k6|5.68%|6.73%|256.6MiB / 3.722GiB
+STAT 550 telcoflo-v1-app|137.18%|2.56%|97.75MiB / 3.722GiB
+STAT 550 telcoflo-v1-mysql|36.21%|25.53%|973.2MiB / 3.722GiB
+STAT 550 telcoflo-v1-nginx|2.65%|0.32%|12.24MiB / 3.722GiB
+STAT 550 telcoflo-v1-redis|11.60%|4.12%|156.9MiB / 3.722GiB
+LOAD 550 16.98 14.10 8.70 26/506 28704
+STAT 550 char-k6|5.23%|6.72%|256.3MiB / 3.722GiB
+STAT 550 telcoflo-v1-app|96.19%|2.56%|97.42MiB / 3.722GiB
+STAT 550 telcoflo-v1-mysql|23.18%|25.56%|974.2MiB / 3.722GiB
+STAT 550 telcoflo-v1-nginx|2.47%|0.33%|12.72MiB / 3.722GiB
+STAT 550 telcoflo-v1-redis|33.79%|4.23%|161.1MiB / 3.722GiB
+LOAD 550 17.06 14.16 8.75 17/506 28751
+STAT 550 char-k6|6.11%|6.73%|256.5MiB / 3.722GiB
+STAT 550 telcoflo-v1-app|135.87%|2.57%|97.78MiB / 3.722GiB
+STAT 550 telcoflo-v1-mysql|34.82%|25.57%|974.7MiB / 3.722GiB
+STAT 550 telcoflo-v1-nginx|2.62%|0.32%|12.32MiB / 3.722GiB
+STAT 550 telcoflo-v1-redis|11.76%|4.17%|158.9MiB / 3.722GiB
+LOAD 550 16.98 14.20 8.79 21/506 28799
+MYSQL 550 connected=17 running=2
+FPM 550 
+VMSTAT 550 r=17 b=0 swpd=0 free=195148 cache=1689272 si=0 so=0 bi=36 bo=1352 cs=24240 us=80 sy=20 id=1 wa=0 st=0
+FREEMEM 550 used_mb=2227 free_mb=190 available_mb=1583
+LOAD 550 15.84 14.05 8.80 1/482 29093
+QPS 550 questions_delta=69194 seconds=73 qps=947
+K6JSON 550 {"vus_max":550,"http_reqs_per_s":109.69,"sessions_per_s":54.84,"start_ms":{"avg":3402.83,"p50":3690.47,"p90":4136.89,"p95":4224.71,"p99":4381.61,"max":4500.02},"step_ms":{"avg":3493.06,"p50":3680.35,"p90":4125.05,"p95":4202.9,"p99":4352.31,"max":4483.75},"http_ms":{"p95":4216.73,"p99":4372.35,"max":4500.02},"dials_timed_out":0,"within_slo_rate":0.79,"http_failed_rate":0,"session_err_rate":0,"sessions_total":4422}
+
+===ENDLEVEL vus=550===
+===LEVEL vus=600===
+STAT 600 char-k6|6.78%|5.77%|219.8MiB / 3.722GiB
+STAT 600 telcoflo-v1-app|135.86%|2.54%|96.79MiB / 3.722GiB
+STAT 600 telcoflo-v1-mysql|33.63%|25.67%|978.2MiB / 3.722GiB
+STAT 600 telcoflo-v1-nginx|3.07%|0.34%|13.1MiB / 3.722GiB
+STAT 600 telcoflo-v1-redis|12.65%|4.39%|167.4MiB / 3.722GiB
+LOAD 600 13.35 13.54 8.79 21/505 29535
+STAT 600 char-k6|6.51%|6.03%|229.7MiB / 3.722GiB
+STAT 600 telcoflo-v1-app|134.56%|2.55%|97.18MiB / 3.722GiB
+STAT 600 telcoflo-v1-mysql|35.06%|25.69%|979.2MiB / 3.722GiB
+STAT 600 telcoflo-v1-nginx|3.00%|0.35%|13.38MiB / 3.722GiB
+STAT 600 telcoflo-v1-redis|12.66%|4.40%|167.8MiB / 3.722GiB
+LOAD 600 14.20 13.72 8.88 20/506 29585
+STAT 600 char-k6|6.31%|6.36%|242.5MiB / 3.722GiB
+STAT 600 telcoflo-v1-app|135.81%|2.55%|97.12MiB / 3.722GiB
+STAT 600 telcoflo-v1-mysql|36.44%|25.71%|979.9MiB / 3.722GiB
+STAT 600 telcoflo-v1-nginx|2.84%|0.36%|13.53MiB / 3.722GiB
+STAT 600 telcoflo-v1-redis|11.30%|4.39%|167.4MiB / 3.722GiB
+LOAD 600 14.59 13.81 8.93 19/506 29636
+MYSQL 600 connected=17 running=2
+FPM 600 
+VMSTAT 600 r=16 b=0 swpd=0 free=207296 cache=1663532 si=0 so=0 bi=20 bo=34076 cs=21760 us=79 sy=21 id=0 wa=0 st=0
+FREEMEM 600 used_mb=2240 free_mb=202 available_mb=1570
+STAT 600 char-k6|5.88%|6.82%|260.1MiB / 3.722GiB
+STAT 600 telcoflo-v1-app|136.43%|2.55%|97.13MiB / 3.722GiB
+STAT 600 telcoflo-v1-mysql|37.10%|25.74%|981.2MiB / 3.722GiB
+STAT 600 telcoflo-v1-nginx|2.69%|0.35%|13.52MiB / 3.722GiB
+STAT 600 telcoflo-v1-redis|9.10%|4.44%|169.4MiB / 3.722GiB
+LOAD 600 14.96 13.91 9.02 21/508 29912
+STAT 600 char-k6|6.39%|6.83%|260.5MiB / 3.722GiB
+STAT 600 telcoflo-v1-app|137.44%|2.55%|97.34MiB / 3.722GiB
+STAT 600 telcoflo-v1-mysql|34.39%|25.77%|982.3MiB / 3.722GiB
+STAT 600 telcoflo-v1-nginx|3.07%|0.35%|13.32MiB / 3.722GiB
+STAT 600 telcoflo-v1-redis|9.14%|4.49%|170.9MiB / 3.722GiB
+LOAD 600 15.12 13.96 9.06 19/508 29962
+STAT 600 char-k6|5.93%|6.88%|262.1MiB / 3.722GiB
+STAT 600 telcoflo-v1-app|118.83%|2.55%|97.32MiB / 3.722GiB
+STAT 600 telcoflo-v1-mysql|30.61%|25.80%|983.5MiB / 3.722GiB
+STAT 600 telcoflo-v1-nginx|2.84%|0.35%|13.43MiB / 3.722GiB
+STAT 600 telcoflo-v1-redis|69.63%|4.62%|176MiB / 3.722GiB
+LOAD 600 15.26 14.03 9.14 20/508 30012
+MYSQL 600 connected=17 running=3
+FPM 600 
+VMSTAT 600 r=16 b=0 swpd=0 free=200316 cache=1651188 si=0 so=0 bi=4 bo=1524 cs=26640 us=79 sy=21 id=0 wa=0 st=0
+FREEMEM 600 used_mb=2259 free_mb=195 available_mb=1551
+STAT 600 char-k6|6.38%|7.32%|279MiB / 3.722GiB
+STAT 600 telcoflo-v1-app|128.45%|2.55%|97.3MiB / 3.722GiB
+STAT 600 telcoflo-v1-mysql|36.04%|25.85%|985MiB / 3.722GiB
+STAT 600 telcoflo-v1-nginx|2.90%|0.35%|13.36MiB / 3.722GiB
+STAT 600 telcoflo-v1-redis|11.45%|4.57%|174.2MiB / 3.722GiB
+LOAD 600 15.52 14.13 9.22 17/508 30375
+STAT 600 char-k6|5.93%|7.33%|279.3MiB / 3.722GiB
+STAT 600 telcoflo-v1-app|127.68%|2.56%|97.48MiB / 3.722GiB
+STAT 600 telcoflo-v1-mysql|35.80%|25.87%|986.1MiB / 3.722GiB
+STAT 600 telcoflo-v1-nginx|2.73%|0.35%|13.47MiB / 3.722GiB
+STAT 600 telcoflo-v1-redis|9.31%|4.59%|175MiB / 3.722GiB
+LOAD 600 15.72 14.19 9.27 24/508 30422
+STAT 600 char-k6|6.35%|7.32%|279.1MiB / 3.722GiB
+STAT 600 telcoflo-v1-app|127.95%|2.56%|97.63MiB / 3.722GiB
+STAT 600 telcoflo-v1-mysql|36.27%|25.89%|986.9MiB / 3.722GiB
+STAT 600 telcoflo-v1-nginx|2.75%|0.35%|13.48MiB / 3.722GiB
+STAT 600 telcoflo-v1-redis|9.27%|4.62%|176.1MiB / 3.722GiB
+LOAD 600 15.75 14.22 9.30 21/508 30470
+MYSQL 600 connected=17 running=2
+FPM 600 
+VMSTAT 600 r=18 b=0 swpd=0 free=189876 cache=1608904 si=0 so=0 bi=4 bo=1540 cs=21952 us=81 sy=20 id=0 wa=0 st=0
+FREEMEM 600 used_mb=2309 free_mb=186 available_mb=1501
+LOAD 600 16.02 14.33 9.39 1/483 30773
+QPS 600 questions_delta=69152 seconds=72 qps=960
+K6JSON 600 {"vus_max":600,"http_reqs_per_s":110.31,"sessions_per_s":55.15,"start_ms":{"avg":3751.86,"p50":4142.43,"p90":4664.66,"p95":4966.49,"p99":5086.94,"max":5164.57},"step_ms":{"avg":3861.02,"p50":4123.39,"p90":4680.06,"p95":4944.35,"p99":5073.1,"max":5168.02},"http_ms":{"p95":4956.31,"p99":5079.01,"max":5168.02},"dials_timed_out":0,"within_slo_rate":0.29,"http_failed_rate":0,"session_err_rate":0,"sessions_total":4440}
+
+===ENDLEVEL vus=600===
+===LEVEL vus=650===
+STAT 650 char-k6|6.85%|6.12%|233.2MiB / 3.722GiB
+STAT 650 telcoflo-v1-app|134.96%|2.55%|97.02MiB / 3.722GiB
+STAT 650 telcoflo-v1-mysql|33.47%|26.05%|993MiB / 3.722GiB
+STAT 650 telcoflo-v1-nginx|3.17%|0.37%|14.09MiB / 3.722GiB
+STAT 650 telcoflo-v1-redis|11.23%|4.75%|181MiB / 3.722GiB
+LOAD 650 12.78 13.63 9.31 21/508 31172
+STAT 650 char-k6|6.46%|6.52%|248.5MiB / 3.722GiB
+STAT 650 telcoflo-v1-app|127.19%|2.54%|96.92MiB / 3.722GiB
+STAT 650 telcoflo-v1-mysql|35.05%|26.07%|993.7MiB / 3.722GiB
+STAT 650 telcoflo-v1-nginx|2.89%|0.37%|14.04MiB / 3.722GiB
+STAT 650 telcoflo-v1-redis|11.20%|4.77%|181.7MiB / 3.722GiB
+LOAD 650 13.04 13.67 9.35 17/508 31275
+STAT 650 char-k6|6.43%|6.99%|266.3MiB / 3.722GiB
+STAT 650 telcoflo-v1-app|131.67%|2.54%|96.92MiB / 3.722GiB
+STAT 650 telcoflo-v1-mysql|34.23%|26.09%|994.4MiB / 3.722GiB
+STAT 650 telcoflo-v1-nginx|2.99%|0.38%|14.44MiB / 3.722GiB
+STAT 650 telcoflo-v1-redis|11.18%|4.80%|183.1MiB / 3.722GiB
+LOAD 650 13.35 13.73 9.39 22/508 31325
+MYSQL 650 connected=17 running=2
+FPM 650 
+VMSTAT 650 r=18 b=0 swpd=0 free=207740 cache=1617296 si=0 so=0 bi=4 bo=2312 cs=25963 us=79 sy=21 id=0 wa=0 st=0
+FREEMEM 650 used_mb=2284 free_mb=202 available_mb=1526
+STAT 650 char-k6|6.66%|7.10%|270.7MiB / 3.722GiB
+STAT 650 telcoflo-v1-app|137.70%|2.55%|97.02MiB / 3.722GiB
+STAT 650 telcoflo-v1-mysql|34.90%|26.14%|996.1MiB / 3.722GiB
+STAT 650 telcoflo-v1-nginx|3.18%|0.38%|14.57MiB / 3.722GiB
+STAT 650 telcoflo-v1-redis|8.98%|4.87%|185.6MiB / 3.722GiB
+LOAD 650 14.41 13.95 9.53 20/509 31595
+STAT 650 char-k6|6.19%|7.12%|271.3MiB / 3.722GiB
+STAT 650 telcoflo-v1-app|134.54%|2.55%|97.35MiB / 3.722GiB
+STAT 650 telcoflo-v1-mysql|35.82%|26.16%|997MiB / 3.722GiB
+STAT 650 telcoflo-v1-nginx|2.81%|0.37%|14.05MiB / 3.722GiB
+STAT 650 telcoflo-v1-redis|9.26%|4.88%|186MiB / 3.722GiB
+LOAD 650 14.62 14.00 9.57 22/508 31649
+STAT 650 char-k6|7.02%|7.28%|277.4MiB / 3.722GiB
+STAT 650 telcoflo-v1-app|136.90%|2.55%|97.23MiB / 3.722GiB
+STAT 650 telcoflo-v1-mysql|34.33%|26.18%|997.7MiB / 3.722GiB
+STAT 650 telcoflo-v1-nginx|3.22%|0.38%|14.49MiB / 3.722GiB
+STAT 650 telcoflo-v1-redis|9.31%|4.91%|187MiB / 3.722GiB
+LOAD 650 15.29 14.15 9.65 17/508 31692
+MYSQL 650 connected=17 running=2
+FPM 650 
+VMSTAT 650 r=17 b=0 swpd=0 free=186348 cache=1604772 si=0 so=0 bi=4 bo=1540 cs=25848 us=79 sy=21 id=0 wa=0 st=0
+FREEMEM 650 used_mb=2318 free_mb=181 available_mb=1493
+STAT 650 char-k6|6.31%|7.89%|300.7MiB / 3.722GiB
+STAT 650 telcoflo-v1-app|136.57%|2.56%|97.42MiB / 3.722GiB
+STAT 650 telcoflo-v1-mysql|35.16%|26.21%|999.1MiB / 3.722GiB
+STAT 650 telcoflo-v1-nginx|2.92%|0.38%|14.57MiB / 3.722GiB
+STAT 650 telcoflo-v1-redis|9.33%|4.98%|189.6MiB / 3.722GiB
+LOAD 650 15.48 14.23 9.72 19/508 31957
+STAT 650 char-k6|5.97%|7.89%|300.7MiB / 3.722GiB
+STAT 650 telcoflo-v1-app|129.17%|2.56%|97.47MiB / 3.722GiB
+STAT 650 telcoflo-v1-mysql|36.36%|26.23%|999.7MiB / 3.722GiB
+STAT 650 telcoflo-v1-nginx|2.80%|0.37%|14.05MiB / 3.722GiB
+STAT 650 telcoflo-v1-redis|9.28%|4.99%|190.3MiB / 3.722GiB
+LOAD 650 15.76 14.31 9.77 19/508 32041
+STAT 650 char-k6|6.63%|7.90%|300.9MiB / 3.722GiB
+STAT 650 telcoflo-v1-app|130.48%|2.56%|97.42MiB / 3.722GiB
+STAT 650 telcoflo-v1-mysql|36.30%|26.25%|1000MiB / 3.722GiB
+STAT 650 telcoflo-v1-nginx|3.01%|0.37%|14.09MiB / 3.722GiB
+STAT 650 telcoflo-v1-redis|9.14%|5.03%|191.8MiB / 3.722GiB
+LOAD 650 15.86 14.35 9.81 17/508 32087
+MYSQL 650 connected=17 running=2
+FPM 650 
+VMSTAT 650 r=17 b=0 swpd=0 free=190332 cache=1591536 si=0 so=0 bi=24 bo=1880 cs=25475 us=80 sy=20 id=0 wa=0 st=0
+FREEMEM 650 used_mb=2326 free_mb=185 available_mb=1484
+LOAD 650 16.19 14.47 9.90 1/487 32402
+QPS 650 questions_delta=70856 seconds=71 qps=997
+K6JSON 650 {"vus_max":650,"http_reqs_per_s":112.31,"sessions_per_s":56.16,"start_ms":{"avg":4118.38,"p50":4619.71,"p90":4920.86,"p95":5226.48,"p99":5357.18,"max":5424.64},"step_ms":{"avg":4229.84,"p50":4598.67,"p90":4906.1,"p95":5195.21,"p99":5332.51,"max":5484.56},"http_ms":{"p95":5213.21,"p99":5345.05,"max":5484.56},"dials_timed_out":0,"within_slo_rate":0.18,"http_failed_rate":0,"session_err_rate":0,"sessions_total":4529}
+
+===ENDLEVEL vus=650===
+===LEVEL vus=700===
+STAT 700 char-k6|6.72%|6.81%|259.5MiB / 3.722GiB
+STAT 700 telcoflo-v1-app|134.50%|2.54%|96.88MiB / 3.722GiB
+STAT 700 telcoflo-v1-mysql|34.73%|26.35%|1004MiB / 3.722GiB
+STAT 700 telcoflo-v1-nginx|2.98%|0.40%|15.17MiB / 3.722GiB
+STAT 700 telcoflo-v1-redis|11.65%|5.16%|196.8MiB / 3.722GiB
+LOAD 700 13.33 13.85 9.85 21/508 32846
+STAT 700 char-k6|6.21%|7.11%|271.2MiB / 3.722GiB
+STAT 700 telcoflo-v1-app|138.03%|2.54%|96.89MiB / 3.722GiB
+STAT 700 telcoflo-v1-mysql|35.70%|26.37%|1005MiB / 3.722GiB
+STAT 700 telcoflo-v1-nginx|2.63%|0.41%|15.5MiB / 3.722GiB
+STAT 700 telcoflo-v1-redis|9.13%|5.18%|197.5MiB / 3.722GiB
+LOAD 700 13.54 13.88 9.89 20/510 32894
+STAT 700 char-k6|6.26%|7.12%|271.4MiB / 3.722GiB
+STAT 700 telcoflo-v1-app|136.24%|2.55%|97.26MiB / 3.722GiB
+STAT 700 telcoflo-v1-mysql|35.97%|26.38%|1005MiB / 3.722GiB
+STAT 700 telcoflo-v1-nginx|2.90%|0.40%|15.36MiB / 3.722GiB
+STAT 700 telcoflo-v1-redis|11.37%|5.20%|198.4MiB / 3.722GiB
+LOAD 700 13.74 13.92 9.92 17/510 32943
+MYSQL 700 connected=17 running=2
+FPM 700 
+VMSTAT 700 r=17 b=0 swpd=0 free=187876 cache=1598936 si=0 so=0 bi=4 bo=2116 cs=25451 us=80 sy=21 id=0 wa=0 st=0
+FREEMEM 700 used_mb=2321 free_mb=183 available_mb=1489
+STAT 700 char-k6|6.83%|7.18%|273.8MiB / 3.722GiB
+STAT 700 telcoflo-v1-app|133.94%|2.55%|97.21MiB / 3.722GiB
+STAT 700 telcoflo-v1-mysql|36.48%|26.43%|1007MiB / 3.722GiB
+STAT 700 telcoflo-v1-nginx|2.87%|0.40%|15.12MiB / 3.722GiB
+STAT 700 telcoflo-v1-redis|9.11%|5.27%|201MiB / 3.722GiB
+LOAD 700 14.31 14.04 10.00 20/510 33201
+STAT 700 char-k6|6.68%|7.56%|288.2MiB / 3.722GiB
+STAT 700 telcoflo-v1-app|138.72%|2.55%|97.31MiB / 3.722GiB
+STAT 700 telcoflo-v1-mysql|34.79%|26.44%|1008MiB / 3.722GiB
+STAT 700 telcoflo-v1-nginx|3.04%|0.41%|15.48MiB / 3.722GiB
+STAT 700 telcoflo-v1-redis|9.38%|5.29%|201.7MiB / 3.722GiB
+LOAD 700 14.53 14.09 10.04 22/510 33257
+STAT 700 char-k6|6.84%|8.05%|306.9MiB / 3.722GiB
+STAT 700 telcoflo-v1-app|136.79%|2.55%|97.15MiB / 3.722GiB
+STAT 700 telcoflo-v1-mysql|35.99%|26.46%|1008MiB / 3.722GiB
+STAT 700 telcoflo-v1-nginx|3.03%|0.40%|15.35MiB / 3.722GiB
+STAT 700 telcoflo-v1-redis|9.33%|5.32%|202.8MiB / 3.722GiB
+LOAD 700 14.73 14.13 10.08 18/507 33306
+MYSQL 700 connected=17 running=2
+FPM 700 
+VMSTAT 700 r=18 b=0 swpd=0 free=214784 cache=1527496 si=0 so=0 bi=4 bo=1696 cs=26196 us=80 sy=20 id=0 wa=0 st=0
+FREEMEM 700 used_mb=2365 free_mb=209 available_mb=1445
+STAT 700 char-k6|5.79%|8.41%|320.7MiB / 3.722GiB
+STAT 700 telcoflo-v1-app|136.85%|2.56%|97.5MiB / 3.722GiB
+STAT 700 telcoflo-v1-mysql|37.24%|26.49%|1010MiB / 3.722GiB
+STAT 700 telcoflo-v1-nginx|2.66%|0.40%|15.12MiB / 3.722GiB
+STAT 700 telcoflo-v1-redis|9.16%|5.37%|204.6MiB / 3.722GiB
+LOAD 700 15.97 14.43 10.21 18/510 33646
+STAT 700 char-k6|6.58%|8.41%|320.5MiB / 3.722GiB
+STAT 700 telcoflo-v1-app|136.54%|2.49%|94.86MiB / 3.722GiB
+STAT 700 telcoflo-v1-mysql|33.55%|26.51%|1010MiB / 3.722GiB
+STAT 700 telcoflo-v1-nginx|3.15%|0.39%|14.97MiB / 3.722GiB
+STAT 700 telcoflo-v1-redis|9.38%|5.40%|205.9MiB / 3.722GiB
+LOAD 700 16.05 14.47 10.25 18/512 33696
+STAT 700 char-k6|6.36%|8.42%|320.8MiB / 3.722GiB
+STAT 700 telcoflo-v1-app|133.72%|2.56%|97.56MiB / 3.722GiB
+STAT 700 telcoflo-v1-mysql|34.21%|26.54%|1012MiB / 3.722GiB
+STAT 700 telcoflo-v1-nginx|2.95%|0.40%|15.42MiB / 3.722GiB
+STAT 700 telcoflo-v1-redis|9.34%|5.43%|207MiB / 3.722GiB
+LOAD 700 16.05 14.49 10.28 20/510 33756
+MYSQL 700 connected=17 running=2
+FPM 700 
+VMSTAT 700 r=16 b=0 swpd=0 free=201200 cache=1529672 si=0 so=0 bi=4 bo=1252 cs=26036 us=78 sy=22 id=0 wa=0 st=0
+FREEMEM 700 used_mb=2376 free_mb=196 available_mb=1434
+STAT 700 char-k6|3.09%|8.41%|320.7MiB / 3.722GiB
+STAT 700 telcoflo-v1-app|96.25%|2.54%|96.94MiB / 3.722GiB
+STAT 700 telcoflo-v1-mysql|20.73%|26.58%|1013MiB / 3.722GiB
+STAT 700 telcoflo-v1-nginx|2.11%|0.30%|11.5MiB / 3.722GiB
+STAT 700 telcoflo-v1-redis|6.52%|5.49%|209.3MiB / 3.722GiB
+LOAD 700 16.71 14.69 10.39 1/510 34030
+QPS 700 questions_delta=69426 seconds=69 qps=1006
+K6JSON 700 {"vus_max":700,"http_reqs_per_s":111.75,"sessions_per_s":55.88,"start_ms":{"avg":4510.76,"p50":5057.59,"p90":5482.44,"p95":5678.38,"p99":5933.57,"max":6021.9},"step_ms":{"avg":4642.66,"p50":5031.06,"p90":5458.07,"p95":5566.79,"p99":5902.5,"max":6021.22},"http_ms":{"p95":5602.99,"p99":5920.78,"max":6021.9},"dials_timed_out":0,"within_slo_rate":0.17,"http_failed_rate":0,"session_err_rate":0,"sessions_total":4547}
+
+===ENDLEVEL vus=700===
+===LEVEL vus=750===
+STAT 750 char-k6|6.77%|7.17%|273.4MiB / 3.722GiB
+STAT 750 telcoflo-v1-app|136.06%|2.55%|97.05MiB / 3.722GiB
+STAT 750 telcoflo-v1-mysql|35.44%|26.64%|1015MiB / 3.722GiB
+STAT 750 telcoflo-v1-nginx|3.04%|0.40%|15.41MiB / 3.722GiB
+STAT 750 telcoflo-v1-redis|9.10%|5.55%|211.7MiB / 3.722GiB
+LOAD 750 13.58 14.04 10.31 17/508 34447
+STAT 750 char-k6|6.31%|7.44%|283.7MiB / 3.722GiB
+STAT 750 telcoflo-v1-app|132.12%|2.54%|96.84MiB / 3.722GiB
+STAT 750 telcoflo-v1-mysql|33.58%|26.66%|1016MiB / 3.722GiB
+STAT 750 telcoflo-v1-nginx|2.88%|0.42%|16.19MiB / 3.722GiB
+STAT 750 telcoflo-v1-redis|8.88%|5.59%|213.2MiB / 3.722GiB
+LOAD 750 13.77 14.07 10.34 19/510 34555
+STAT 750 char-k6|6.19%|7.47%|284.7MiB / 3.722GiB
+STAT 750 telcoflo-v1-app|137.43%|2.55%|97.27MiB / 3.722GiB
+STAT 750 telcoflo-v1-mysql|36.46%|26.68%|1017MiB / 3.722GiB
+STAT 750 telcoflo-v1-nginx|2.84%|0.42%|15.88MiB / 3.722GiB
+STAT 750 telcoflo-v1-redis|9.46%|5.62%|214.2MiB / 3.722GiB
+LOAD 750 14.11 14.14 10.38 19/508 34605
+MYSQL 750 connected=17 running=2
+FPM 750 
+VMSTAT 750 r=19 b=0 swpd=0 free=203920 cache=1502996 si=0 so=0 bi=4 bo=1620 cs=24848 us=80 sy=20 id=0 wa=0 st=0
+FREEMEM 750 used_mb=2399 free_mb=199 available_mb=1411
+STAT 750 char-k6|6.50%|7.65%|291.5MiB / 3.722GiB
+STAT 750 telcoflo-v1-app|136.58%|2.56%|97.59MiB / 3.722GiB
+STAT 750 telcoflo-v1-mysql|35.67%|26.71%|1018MiB / 3.722GiB
+STAT 750 telcoflo-v1-nginx|3.00%|0.43%|16.45MiB / 3.722GiB
+STAT 750 telcoflo-v1-redis|9.30%|5.67%|216MiB / 3.722GiB
+LOAD 750 14.73 14.28 10.49 18/508 34875
+STAT 750 char-k6|6.53%|8.07%|307.4MiB / 3.722GiB
+STAT 750 telcoflo-v1-app|134.63%|2.56%|97.6MiB / 3.722GiB
+STAT 750 telcoflo-v1-mysql|35.31%|26.73%|1019MiB / 3.722GiB
+STAT 750 telcoflo-v1-nginx|2.97%|0.43%|16.45MiB / 3.722GiB
+STAT 750 telcoflo-v1-redis|9.18%|5.69%|216.9MiB / 3.722GiB
+LOAD 750 14.91 14.32 10.52 22/508 34924
+STAT 750 char-k6|4.77%|8.55%|325.9MiB / 3.722GiB
+STAT 750 telcoflo-v1-app|108.22%|2.55%|97.25MiB / 3.722GiB
+STAT 750 telcoflo-v1-mysql|22.14%|26.76%|1020MiB / 3.722GiB
+STAT 750 telcoflo-v1-nginx|2.27%|0.43%|16.34MiB / 3.722GiB
+STAT 750 telcoflo-v1-redis|75.45%|5.84%|222.4MiB / 3.722GiB
+LOAD 750 15.40 14.43 10.58 16/509 34972
+MYSQL 750 connected=17 running=2
+FPM 750 
+VMSTAT 750 r=17 b=0 swpd=0 free=208100 cache=1484172 si=0 so=0 bi=68 bo=39476 cs=17628 us=81 sy=19 id=0 wa=0 st=0
+FREEMEM 750 used_mb=2413 free_mb=203 available_mb=1397
+STAT 750 char-k6|7.09%|9.01%|343.4MiB / 3.722GiB
+STAT 750 telcoflo-v1-app|129.36%|2.56%|97.52MiB / 3.722GiB
+STAT 750 telcoflo-v1-mysql|34.79%|26.80%|1021MiB / 3.722GiB
+STAT 750 telcoflo-v1-nginx|3.39%|0.44%|16.64MiB / 3.722GiB
+STAT 750 telcoflo-v1-redis|8.99%|5.78%|220.3MiB / 3.722GiB
+LOAD 750 16.10 14.62 10.68 22/508 35277
+STAT 750 char-k6|6.41%|9.02%|343.7MiB / 3.722GiB
+STAT 750 telcoflo-v1-app|128.22%|2.56%|97.44MiB / 3.722GiB
+STAT 750 telcoflo-v1-mysql|36.36%|26.81%|1022MiB / 3.722GiB
+STAT 750 telcoflo-v1-nginx|2.70%|0.42%|16.04MiB / 3.722GiB
+STAT 750 telcoflo-v1-redis|11.29%|5.81%|221.5MiB / 3.722GiB
+LOAD 750 16.41 14.71 10.73 20/509 35324
+STAT 750 char-k6|6.56%|9.02%|343.8MiB / 3.722GiB
+STAT 750 telcoflo-v1-app|129.01%|2.56%|97.65MiB / 3.722GiB
+STAT 750 telcoflo-v1-mysql|35.82%|26.84%|1023MiB / 3.722GiB
+STAT 750 telcoflo-v1-nginx|3.11%|0.43%|16.49MiB / 3.722GiB
+STAT 750 telcoflo-v1-redis|9.27%|5.85%|222.8MiB / 3.722GiB
+LOAD 750 16.38 14.73 10.76 20/509 35370
+MYSQL 750 connected=17 running=2
+FPM 750 
+VMSTAT 750 r=17 b=0 swpd=0 free=185948 cache=1485652 si=0 so=0 bi=4 bo=1280 cs=28373 us=80 sy=21 id=0 wa=0 st=0
+FREEMEM 750 used_mb=2434 free_mb=181 available_mb=1377
+STAT 750 char-k6|4.84%|9.01%|343.5MiB / 3.722GiB
+STAT 750 telcoflo-v1-app|139.35%|2.55%|97.3MiB / 3.722GiB
+STAT 750 telcoflo-v1-mysql|32.65%|26.88%|1GiB / 3.722GiB
+STAT 750 telcoflo-v1-nginx|2.17%|0.35%|13.48MiB / 3.722GiB
+STAT 750 telcoflo-v1-redis|11.40%|5.90%|224.9MiB / 3.722GiB
+LOAD 750 16.48 14.80 10.82 20/510 35628
+QPS 750 questions_delta=70617 seconds=69 qps=1023
+K6JSON 750 {"vus_max":750,"http_reqs_per_s":112.1,"sessions_per_s":56.05,"start_ms":{"avg":4882.77,"p50":5469.28,"p90":6216.61,"p95":6454.87,"p99":7208.57,"max":7377.64},"step_ms":{"avg":5031.03,"p50":5434.5,"p90":5963.22,"p95":6402.02,"p99":7206.98,"max":7369.55},"http_ms":{"p95":6433.11,"p99":7207.35,"max":7377.64},"dials_timed_out":0,"within_slo_rate":0.17,"http_failed_rate":0,"session_err_rate":0,"sessions_total":4550}
+
+===ENDLEVEL vus=750===
+===LEVEL vus=800===
+STAT 800 char-k6|6.66%|7.56%|288.1MiB / 3.722GiB
+STAT 800 telcoflo-v1-app|134.48%|2.54%|96.92MiB / 3.722GiB
+STAT 800 telcoflo-v1-mysql|35.63%|26.96%|1.003GiB / 3.722GiB
+STAT 800 telcoflo-v1-nginx|2.91%|0.43%|16.48MiB / 3.722GiB
+STAT 800 telcoflo-v1-redis|7.30%|5.97%|227.7MiB / 3.722GiB
+LOAD 800 13.98 14.28 10.77 19/511 36070
+STAT 800 char-k6|6.59%|7.59%|289.3MiB / 3.722GiB
+STAT 800 telcoflo-v1-app|138.89%|2.55%|97.28MiB / 3.722GiB
+STAT 800 telcoflo-v1-mysql|32.04%|26.98%|1.004GiB / 3.722GiB
+STAT 800 telcoflo-v1-nginx|3.02%|0.45%|17.23MiB / 3.722GiB
+STAT 800 telcoflo-v1-redis|17.32%|6.08%|231.8MiB / 3.722GiB
+LOAD 800 14.30 14.35 10.81 20/526 36135
+STAT 800 char-k6|6.14%|7.61%|290.2MiB / 3.722GiB
+STAT 800 telcoflo-v1-app|134.91%|2.55%|97.12MiB / 3.722GiB
+STAT 800 telcoflo-v1-mysql|43.70%|26.99%|1.004GiB / 3.722GiB
+STAT 800 telcoflo-v1-nginx|2.85%|0.44%|16.91MiB / 3.722GiB
+STAT 800 telcoflo-v1-redis|9.21%|6.03%|230MiB / 3.722GiB
+LOAD 800 14.60 14.41 10.85 17/511 36185
+MYSQL 800 connected=17 running=2
+FPM 800 
+VMSTAT 800 r=17 b=0 swpd=0 free=198440 cache=1498156 si=0 so=0 bi=68 bo=2260 cs=25222 us=80 sy=20 id=0 wa=0 st=0
+FREEMEM 800 used_mb=2409 free_mb=193 available_mb=1401
+STAT 800 char-k6|6.27%|8.44%|321.6MiB / 3.722GiB
+STAT 800 telcoflo-v1-app|135.85%|2.55%|97.07MiB / 3.722GiB
+STAT 800 telcoflo-v1-mysql|35.03%|27.03%|1.006GiB / 3.722GiB
+STAT 800 telcoflo-v1-nginx|3.08%|0.45%|17.21MiB / 3.722GiB
+STAT 800 telcoflo-v1-redis|9.20%|6.09%|232.1MiB / 3.722GiB
+LOAD 800 15.67 14.65 10.99 19/511 36463
+STAT 800 char-k6|6.72%|8.90%|339.1MiB / 3.722GiB
+STAT 800 telcoflo-v1-app|137.74%|2.56%|97.61MiB / 3.722GiB
+STAT 800 telcoflo-v1-mysql|34.21%|27.05%|1.007GiB / 3.722GiB
+STAT 800 telcoflo-v1-nginx|2.95%|0.44%|16.86MiB / 3.722GiB
+STAT 800 telcoflo-v1-redis|9.34%|6.13%|233.5MiB / 3.722GiB
+LOAD 800 15.85 14.71 11.03 20/511 36511
+STAT 800 char-k6|6.11%|9.41%|358.8MiB / 3.722GiB
+STAT 800 telcoflo-v1-app|137.13%|2.55%|97.32MiB / 3.722GiB
+STAT 800 telcoflo-v1-mysql|32.57%|27.06%|1.007GiB / 3.722GiB
+STAT 800 telcoflo-v1-nginx|2.76%|0.45%|17.25MiB / 3.722GiB
+STAT 800 telcoflo-v1-redis|9.14%|6.16%|234.6MiB / 3.722GiB
+LOAD 800 15.87 14.73 11.05 21/511 36573
+MYSQL 800 connected=17 running=3
+FPM 800 
+VMSTAT 800 r=17 b=0 swpd=0 free=210248 cache=1410708 si=0 so=0 bi=160 bo=1564 cs=25365 us=78 sy=22 id=0 wa=0 st=0
+FREEMEM 800 used_mb=2483 free_mb=205 available_mb=1328
+STAT 800 char-k6|6.40%|9.50%|361.9MiB / 3.722GiB
+STAT 800 telcoflo-v1-app|137.29%|2.56%|97.56MiB / 3.722GiB
+STAT 800 telcoflo-v1-mysql|34.17%|27.13%|1.01GiB / 3.722GiB
+STAT 800 telcoflo-v1-nginx|3.18%|0.46%|17.44MiB / 3.722GiB
+STAT 800 telcoflo-v1-redis|9.22%|6.21%|236.7MiB / 3.722GiB
+LOAD 800 17.22 15.06 11.20 20/511 36904
+STAT 800 char-k6|6.16%|9.49%|361.8MiB / 3.722GiB
+STAT 800 telcoflo-v1-app|137.21%|2.56%|97.7MiB / 3.722GiB
+STAT 800 telcoflo-v1-mysql|35.84%|27.14%|1.01GiB / 3.722GiB
+STAT 800 telcoflo-v1-nginx|2.84%|0.44%|16.88MiB / 3.722GiB
+STAT 800 telcoflo-v1-redis|9.31%|6.24%|237.7MiB / 3.722GiB
+LOAD 800 17.28 15.11 11.24 21/527 36970
+STAT 800 char-k6|6.82%|9.50%|362MiB / 3.722GiB
+STAT 800 telcoflo-v1-app|128.54%|2.55%|97.31MiB / 3.722GiB
+STAT 800 telcoflo-v1-mysql|36.02%|27.16%|1.011GiB / 3.722GiB
+STAT 800 telcoflo-v1-nginx|2.86%|0.44%|16.96MiB / 3.722GiB
+STAT 800 telcoflo-v1-redis|9.06%|6.27%|239.1MiB / 3.722GiB
+LOAD 800 17.26 15.14 11.27 17/511 37035
+MYSQL 800 connected=17 running=2
+FPM 800 
+VMSTAT 800 r=18 b=0 swpd=0 free=206912 cache=1415896 si=0 so=0 bi=4 bo=1552 cs=25082 us=79 sy=21 id=0 wa=0 st=0
+FREEMEM 800 used_mb=2481 free_mb=202 available_mb=1329
+LOAD 800 17.18 15.26 11.37 2/486 37350
+QPS 800 questions_delta=72058 seconds=75 qps=960
+K6JSON 800 {"vus_max":800,"http_reqs_per_s":112.32,"sessions_per_s":56.16,"start_ms":{"avg":5260.8,"p50":5929.11,"p90":6618.79,"p95":6761.06,"p99":6993.16,"max":7136.53},"step_ms":{"avg":5440.15,"p50":5915.52,"p90":6507.82,"p95":6712.69,"p99":6960.29,"max":7093.88},"http_ms":{"p95":6739.22,"p99":6977.15,"max":7136.53},"dials_timed_out":0,"within_slo_rate":0.16,"http_failed_rate":0,"session_err_rate":0,"sessions_total":4623}
+
+===ENDLEVEL vus=800===
+===LEVEL vus=850===
+STAT 850 char-k6|6.58%|8.26%|314.8MiB / 3.722GiB
+STAT 850 telcoflo-v1-app|134.65%|2.54%|96.76MiB / 3.722GiB
+STAT 850 telcoflo-v1-mysql|36.30%|27.25%|1.014GiB / 3.722GiB
+STAT 850 telcoflo-v1-nginx|3.03%|0.46%|17.37MiB / 3.722GiB
+STAT 850 telcoflo-v1-redis|9.11%|6.40%|243.8MiB / 3.722GiB
+LOAD 850 14.36 14.68 11.30 17/508 37732
+STAT 850 char-k6|6.53%|8.31%|316.6MiB / 3.722GiB
+STAT 850 telcoflo-v1-app|134.43%|2.55%|97.2MiB / 3.722GiB
+STAT 850 telcoflo-v1-mysql|32.87%|27.28%|1.015GiB / 3.722GiB
+STAT 850 telcoflo-v1-nginx|2.84%|0.49%|18.51MiB / 3.722GiB
+STAT 850 telcoflo-v1-redis|8.84%|6.42%|244.6MiB / 3.722GiB
+LOAD 850 14.73 14.75 11.34 19/512 37810
+STAT 850 char-k6|5.97%|8.45%|322.1MiB / 3.722GiB
+STAT 850 telcoflo-v1-app|135.91%|2.55%|97.03MiB / 3.722GiB
+STAT 850 telcoflo-v1-mysql|36.69%|27.29%|1.016GiB / 3.722GiB
+STAT 850 telcoflo-v1-nginx|2.74%|0.47%|17.96MiB / 3.722GiB
+STAT 850 telcoflo-v1-redis|9.30%|6.45%|245.8MiB / 3.722GiB
+LOAD 850 14.83 14.78 11.37 19/508 37890
+MYSQL 850 connected=17 running=2
+FPM 850 
+VMSTAT 850 r=19 b=0 swpd=0 free=210288 cache=1435672 si=0 so=0 bi=20 bo=2296 cs=25430 us=80 sy=20 id=0 wa=0 st=0
+FREEMEM 850 used_mb=2458 free_mb=205 available_mb=1352
+STAT 850 char-k6|6.77%|9.10%|346.7MiB / 3.722GiB
+STAT 850 telcoflo-v1-app|136.62%|2.54%|96.97MiB / 3.722GiB
+STAT 850 telcoflo-v1-mysql|33.09%|27.33%|1.017GiB / 3.722GiB
+STAT 850 telcoflo-v1-nginx|3.10%|0.47%|17.97MiB / 3.722GiB
+STAT 850 telcoflo-v1-redis|9.19%|6.50%|247.8MiB / 3.722GiB
+LOAD 850 15.17 14.85 11.43 22/508 38156
+STAT 850 char-k6|6.49%|9.64%|367.5MiB / 3.722GiB
+STAT 850 telcoflo-v1-app|136.41%|2.55%|97.12MiB / 3.722GiB
+STAT 850 telcoflo-v1-mysql|36.75%|27.35%|1.018GiB / 3.722GiB
+STAT 850 telcoflo-v1-nginx|2.96%|0.47%|17.9MiB / 3.722GiB
+STAT 850 telcoflo-v1-redis|9.43%|6.55%|249.8MiB / 3.722GiB
+LOAD 850 15.32 14.89 11.46 18/508 38206
+STAT 850 char-k6|6.47%|10.00%|380.9MiB / 3.722GiB
+STAT 850 telcoflo-v1-app|137.79%|2.56%|97.5MiB / 3.722GiB
+STAT 850 telcoflo-v1-mysql|34.58%|27.36%|1.018GiB / 3.722GiB
+STAT 850 telcoflo-v1-nginx|3.04%|0.47%|18.01MiB / 3.722GiB
+STAT 850 telcoflo-v1-redis|17.21%|6.57%|250.3MiB / 3.722GiB
+LOAD 850 15.53 14.94 11.49 17/508 38253
+MYSQL 850 connected=17 running=2
+FPM 850 
+VMSTAT 850 r=16 b=0 swpd=0 free=199416 cache=1392244 si=0 so=0 bi=4 bo=1516 cs=25239 us=81 sy=20 id=0 wa=0 st=0
+FREEMEM 850 used_mb=2511 free_mb=194 available_mb=1299
+STAT 850 char-k6|5.91%|10.00%|381MiB / 3.722GiB
+STAT 850 telcoflo-v1-app|135.54%|2.55%|97.31MiB / 3.722GiB
+STAT 850 telcoflo-v1-mysql|36.10%|27.37%|1.019GiB / 3.722GiB
+STAT 850 telcoflo-v1-nginx|2.71%|0.47%|17.78MiB / 3.722GiB
+STAT 850 telcoflo-v1-redis|9.23%|6.62%|252.5MiB / 3.722GiB
+LOAD 850 15.91 15.04 11.56 17/508 38513
+STAT 850 char-k6|7.10%|10.00%|381.2MiB / 3.722GiB
+STAT 850 telcoflo-v1-app|137.16%|2.55%|97.16MiB / 3.722GiB
+STAT 850 telcoflo-v1-mysql|33.96%|27.39%|1.019GiB / 3.722GiB
+STAT 850 telcoflo-v1-nginx|3.28%|0.48%|18.11MiB / 3.722GiB
+STAT 850 telcoflo-v1-redis|9.30%|6.65%|253.5MiB / 3.722GiB
+LOAD 850 16.08 15.09 11.60 19/508 38560
+STAT 850 char-k6|6.13%|10.01%|381.6MiB / 3.722GiB
+STAT 850 telcoflo-v1-app|137.63%|2.55%|97.18MiB / 3.722GiB
+STAT 850 telcoflo-v1-mysql|35.20%|27.41%|1.02GiB / 3.722GiB
+STAT 850 telcoflo-v1-nginx|2.83%|0.47%|18.04MiB / 3.722GiB
+STAT 850 telcoflo-v1-redis|9.38%|6.67%|254.3MiB / 3.722GiB
+LOAD 850 16.23 15.14 11.63 23/518 38627
+MYSQL 850 connected=17 running=2
+FPM 850 
+VMSTAT 850 r=17 b=0 swpd=0 free=204980 cache=1386264 si=0 so=0 bi=20 bo=1388 cs=28548 us=77 sy=24 id=0 wa=0 st=0
+FREEMEM 850 used_mb=2512 free_mb=200 available_mb=1299
+STAT 850 char-k6|4.98%|10.08%|384MiB / 3.722GiB
+STAT 850 telcoflo-v1-app|139.21%|2.55%|97.38MiB / 3.722GiB
+STAT 850 telcoflo-v1-mysql|31.32%|27.44%|1.021GiB / 3.722GiB
+STAT 850 telcoflo-v1-nginx|2.13%|0.41%|15.67MiB / 3.722GiB
+STAT 850 telcoflo-v1-redis|7.84%|6.73%|256.6MiB / 3.722GiB
+LOAD 850 17.00 15.37 11.77 21/506 38893
+QPS 850 questions_delta=73369 seconds=70 qps=1048
+K6JSON 850 {"vus_max":850,"http_reqs_per_s":113.28,"sessions_per_s":56.64,"start_ms":{"avg":5587.83,"p50":6343.67,"p90":6885.8,"p95":7102.06,"p99":7287.59,"max":7449.43},"step_ms":{"avg":5806.83,"p50":6197.98,"p90":6983.32,"p95":7205.35,"p99":7327.14,"max":7461.41},"http_ms":{"p95":7185.59,"p99":7304.64,"max":7461.41},"dials_timed_out":0,"within_slo_rate":0.14,"http_failed_rate":0,"session_err_rate":0,"sessions_total":4698}
+
+===ENDLEVEL vus=850===
+===LEVEL vus=900===
+STAT 900 char-k6|5.18%|8.45%|322.1MiB / 3.722GiB
+STAT 900 telcoflo-v1-app|89.45%|2.55%|97.17MiB / 3.722GiB
+STAT 900 telcoflo-v1-mysql|24.32%|27.49%|1.023GiB / 3.722GiB
+STAT 900 telcoflo-v1-nginx|2.40%|0.49%|18.72MiB / 3.722GiB
+STAT 900 telcoflo-v1-redis|59.03%|6.92%|263.8MiB / 3.722GiB
+LOAD 900 14.73 14.90 11.72 21/523 39367
+STAT 900 char-k6|6.33%|8.49%|323.8MiB / 3.722GiB
+STAT 900 telcoflo-v1-app|137.50%|2.55%|97.12MiB / 3.722GiB
+STAT 900 telcoflo-v1-mysql|32.44%|27.51%|1.024GiB / 3.722GiB
+STAT 900 telcoflo-v1-nginx|2.97%|0.49%|18.76MiB / 3.722GiB
+STAT 900 telcoflo-v1-redis|9.15%|6.85%|261.2MiB / 3.722GiB
+LOAD 900 14.91 14.93 11.75 17/506 39415
+STAT 900 char-k6|5.73%|8.53%|325.1MiB / 3.722GiB
+STAT 900 telcoflo-v1-app|132.01%|2.55%|97.27MiB / 3.722GiB
+STAT 900 telcoflo-v1-mysql|35.10%|27.53%|1.025GiB / 3.722GiB
+STAT 900 telcoflo-v1-nginx|2.64%|0.50%|18.93MiB / 3.722GiB
+STAT 900 telcoflo-v1-redis|12.00%|6.89%|262.5MiB / 3.722GiB
+LOAD 900 15.00 14.95 11.77 17/506 39469
+MYSQL 900 connected=17 running=3
+FPM 900 
+VMSTAT 900 r=16 b=0 swpd=0 free=205404 cache=1399072 si=0 so=0 bi=4 bo=1968 cs=26337 us=78 sy=22 id=0 wa=0 st=0
+FREEMEM 900 used_mb=2498 free_mb=200 available_mb=1312
+STAT 900 char-k6|6.67%|9.01%|343.6MiB / 3.722GiB
+STAT 900 telcoflo-v1-app|135.49%|2.55%|97.01MiB / 3.722GiB
+STAT 900 telcoflo-v1-mysql|32.16%|27.66%|1.03GiB / 3.722GiB
+STAT 900 telcoflo-v1-nginx|3.16%|0.50%|19.05MiB / 3.722GiB
+STAT 900 telcoflo-v1-redis|9.04%|6.93%|264.2MiB / 3.722GiB
+LOAD 900 15.31 15.02 11.83 23/524 39768
+STAT 900 char-k6|5.80%|9.51%|362.3MiB / 3.722GiB
+STAT 900 telcoflo-v1-app|128.14%|2.56%|97.61MiB / 3.722GiB
+STAT 900 telcoflo-v1-mysql|38.27%|27.68%|1.03GiB / 3.722GiB
+STAT 900 telcoflo-v1-nginx|2.61%|0.49%|18.68MiB / 3.722GiB
+STAT 900 telcoflo-v1-redis|9.28%|6.95%|264.9MiB / 3.722GiB
+LOAD 900 15.36 15.03 11.85 18/507 39816
+STAT 900 char-k6|6.53%|10.00%|380.9MiB / 3.722GiB
+STAT 900 telcoflo-v1-app|125.28%|2.56%|97.47MiB / 3.722GiB
+STAT 900 telcoflo-v1-mysql|35.74%|27.69%|1.031GiB / 3.722GiB
+STAT 900 telcoflo-v1-nginx|2.94%|0.50%|18.96MiB / 3.722GiB
+STAT 900 telcoflo-v1-redis|9.16%|7.00%|266.6MiB / 3.722GiB
+LOAD 900 15.49 15.07 11.88 26/506 39870
+MYSQL 900 connected=17 running=2
+FPM 900 
+VMSTAT 900 r=22 b=1 swpd=0 free=194588 cache=1352116 si=0 so=0 bi=84 bo=2100 cs=27082 us=83 sy=16 id=0 wa=0 st=0
+FREEMEM 900 used_mb=2555 free_mb=189 available_mb=1255
+STAT 900 char-k6|6.57%|10.69%|407.3MiB / 3.722GiB
+STAT 900 telcoflo-v1-app|134.95%|2.56%|97.46MiB / 3.722GiB
+STAT 900 telcoflo-v1-mysql|35.82%|27.71%|1.031GiB / 3.722GiB
+STAT 900 telcoflo-v1-nginx|2.98%|0.50%|18.88MiB / 3.722GiB
+STAT 900 telcoflo-v1-redis|9.92%|7.09%|270.2MiB / 3.722GiB
+LOAD 900 16.27 15.26 11.99 28/507 40219
+STAT 900 char-k6|7.07%|10.68%|407.2MiB / 3.722GiB
+STAT 900 telcoflo-v1-app|131.23%|2.55%|97.22MiB / 3.722GiB
+STAT 900 telcoflo-v1-mysql|33.36%|27.72%|1.032GiB / 3.722GiB
+STAT 900 telcoflo-v1-nginx|2.82%|0.51%|19.32MiB / 3.722GiB
+STAT 900 telcoflo-v1-redis|11.76%|7.10%|270.6MiB / 3.722GiB
+LOAD 900 16.41 15.31 12.03 24/523 40283
+STAT 900 char-k6|5.66%|10.69%|407.5MiB / 3.722GiB
+STAT 900 telcoflo-v1-app|129.58%|2.56%|97.64MiB / 3.722GiB
+STAT 900 telcoflo-v1-mysql|37.09%|27.74%|1.032GiB / 3.722GiB
+STAT 900 telcoflo-v1-nginx|2.26%|0.49%|18.79MiB / 3.722GiB
+STAT 900 telcoflo-v1-redis|9.28%|7.12%|271.2MiB / 3.722GiB
+LOAD 900 16.54 15.35 12.06 23/507 40329
+MYSQL 900 connected=17 running=2
+FPM 900 
+VMSTAT 900 r=20 b=0 swpd=0 free=192624 cache=1330472 si=0 so=0 bi=4 bo=62692 cs=19846 us=78 sy=22 id=0 wa=0 st=0
+FREEMEM 900 used_mb=2578 free_mb=188 available_mb=1233
+STAT 900 char-k6|4.10%|10.70%|407.9MiB / 3.722GiB
+STAT 900 telcoflo-v1-app|142.88%|2.56%|97.52MiB / 3.722GiB
+STAT 900 telcoflo-v1-mysql|30.44%|27.76%|1.033GiB / 3.722GiB
+STAT 900 telcoflo-v1-nginx|1.78%|0.29%|10.88MiB / 3.722GiB
+STAT 900 telcoflo-v1-redis|11.36%|7.16%|273MiB / 3.722GiB
+LOAD 900 16.61 15.41 12.11 18/508 40598
+QPS 900 questions_delta=73062 seconds=73 qps=1000
+K6JSON 900 {"vus_max":900,"http_reqs_per_s":112.27,"sessions_per_s":56.14,"start_ms":{"avg":5939.11,"p50":6773.66,"p90":7386.55,"p95":7507.56,"p99":7663.07,"max":7868.85},"step_ms":{"avg":6269.79,"p50":6765.61,"p90":7393.47,"p95":7543.19,"p99":7703.71,"max":7835.15},"http_ms":{"p95":7528.1,"p99":7683.77,"max":7868.85},"dials_timed_out":0,"within_slo_rate":0.14,"http_failed_rate":0,"session_err_rate":0,"sessions_total":4713}
+
+===ENDLEVEL vus=900===
+===LEVEL vus=950===
+STAT 950 char-k6|6.59%|8.56%|326.2MiB / 3.722GiB
+STAT 950 telcoflo-v1-app|132.39%|2.54%|96.7MiB / 3.722GiB
+STAT 950 telcoflo-v1-mysql|38.53%|27.82%|1.035GiB / 3.722GiB
+STAT 950 telcoflo-v1-nginx|2.95%|0.50%|19.08MiB / 3.722GiB
+STAT 950 telcoflo-v1-redis|8.94%|7.26%|276.7MiB / 3.722GiB
+LOAD 950 14.01 14.80 12.01 22/506 41020
+STAT 950 char-k6|6.76%|9.21%|351.2MiB / 3.722GiB
+STAT 950 telcoflo-v1-app|133.54%|2.54%|96.89MiB / 3.722GiB
+STAT 950 telcoflo-v1-mysql|34.69%|27.84%|1.036GiB / 3.722GiB
+STAT 950 telcoflo-v1-nginx|3.12%|0.52%|19.71MiB / 3.722GiB
+STAT 950 telcoflo-v1-redis|8.91%|7.29%|277.7MiB / 3.722GiB
+LOAD 950 14.17 14.82 12.03 20/508 41070
+STAT 950 char-k6|4.12%|9.45%|360MiB / 3.722GiB
+STAT 950 telcoflo-v1-app|82.67%|2.55%|97.29MiB / 3.722GiB
+STAT 950 telcoflo-v1-mysql|22.19%|27.85%|1.037GiB / 3.722GiB
+STAT 950 telcoflo-v1-nginx|1.94%|0.52%|19.75MiB / 3.722GiB
+STAT 950 telcoflo-v1-redis|52.65%|7.41%|282.5MiB / 3.722GiB
+LOAD 950 14.64 14.91 12.07 22/507 41171
+MYSQL 950 connected=17 running=2
+FPM 950 
+VMSTAT 950 r=16 b=0 swpd=0 free=199164 cache=1345744 si=0 so=0 bi=4 bo=2016 cs=26485 us=79 sy=21 id=0 wa=0 st=0
+FREEMEM 950 used_mb=2556 free_mb=194 available_mb=1254
+STAT 950 char-k6|6.61%|9.49%|361.8MiB / 3.722GiB
+STAT 950 telcoflo-v1-app|137.17%|2.55%|97.33MiB / 3.722GiB
+STAT 950 telcoflo-v1-mysql|34.40%|27.90%|1.038GiB / 3.722GiB
+STAT 950 telcoflo-v1-nginx|3.13%|0.52%|19.9MiB / 3.722GiB
+STAT 950 telcoflo-v1-redis|9.42%|7.36%|280.7MiB / 3.722GiB
+LOAD 950 15.78 15.14 12.20 18/506 41439
+STAT 950 char-k6|4.93%|9.53%|363.3MiB / 3.722GiB
+STAT 950 telcoflo-v1-app|96.28%|2.54%|96.92MiB / 3.722GiB
+STAT 950 telcoflo-v1-mysql|23.58%|27.92%|1.039GiB / 3.722GiB
+STAT 950 telcoflo-v1-nginx|2.30%|0.52%|19.82MiB / 3.722GiB
+STAT 950 telcoflo-v1-redis|16.01%|7.47%|284.8MiB / 3.722GiB
+LOAD 950 15.96 15.19 12.23 22/507 41487
+STAT 950 char-k6|6.48%|9.66%|368.1MiB / 3.722GiB
+STAT 950 telcoflo-v1-app|133.21%|2.55%|97.2MiB / 3.722GiB
+STAT 950 telcoflo-v1-mysql|35.18%|27.93%|1.039GiB / 3.722GiB
+STAT 950 telcoflo-v1-nginx|3.01%|0.51%|19.44MiB / 3.722GiB
+STAT 950 telcoflo-v1-redis|9.28%|7.42%|282.8MiB / 3.722GiB
+LOAD 950 16.20 15.25 12.26 23/506 41535
+MYSQL 950 connected=17 running=2
+FPM 950 
+VMSTAT 950 r=17 b=0 swpd=0 free=207200 cache=1319860 si=0 so=0 bi=4 bo=2012 cs=25839 us=77 sy=23 id=0 wa=0 st=0
+FREEMEM 950 used_mb=2573 free_mb=201 available_mb=1237
+STAT 950 char-k6|5.58%|10.55%|402.1MiB / 3.722GiB
+STAT 950 telcoflo-v1-app|138.68%|2.55%|97.34MiB / 3.722GiB
+STAT 950 telcoflo-v1-mysql|35.54%|27.91%|1.039GiB / 3.722GiB
+STAT 950 telcoflo-v1-nginx|2.49%|0.52%|19.88MiB / 3.722GiB
+STAT 950 telcoflo-v1-redis|9.48%|7.48%|285.2MiB / 3.722GiB
+LOAD 950 17.30 15.52 12.39 19/514 41819
+STAT 950 char-k6|5.99%|11.01%|419.6MiB / 3.722GiB
+STAT 950 telcoflo-v1-app|137.90%|2.55%|97.34MiB / 3.722GiB
+STAT 950 telcoflo-v1-mysql|36.61%|27.93%|1.04GiB / 3.722GiB
+STAT 950 telcoflo-v1-nginx|2.69%|0.52%|19.74MiB / 3.722GiB
+STAT 950 telcoflo-v1-redis|9.35%|7.49%|285.5MiB / 3.722GiB
+LOAD 950 17.28 15.55 12.41 22/514 41871
+STAT 950 char-k6|6.05%|11.33%|431.7MiB / 3.722GiB
+STAT 950 telcoflo-v1-app|135.18%|2.56%|97.41MiB / 3.722GiB
+STAT 950 telcoflo-v1-mysql|34.84%|27.94%|1.04GiB / 3.722GiB
+STAT 950 telcoflo-v1-nginx|2.94%|0.52%|19.94MiB / 3.722GiB
+STAT 950 telcoflo-v1-redis|9.26%|7.53%|286.8MiB / 3.722GiB
+LOAD 950 17.25 15.57 12.43 18/510 41923
+MYSQL 950 connected=17 running=3
+FPM 950 
+VMSTAT 950 r=17 b=0 swpd=0 free=198448 cache=1259420 si=0 so=0 bi=20 bo=1572 cs=26163 us=79 sy=21 id=0 wa=0 st=0
+FREEMEM 950 used_mb=2641 free_mb=193 available_mb=1169
+STAT 950 char-k6|5.48%|11.33%|431.6MiB / 3.722GiB
+STAT 950 telcoflo-v1-app|139.84%|2.55%|97.09MiB / 3.722GiB
+STAT 950 telcoflo-v1-mysql|28.83%|27.96%|1.041GiB / 3.722GiB
+STAT 950 telcoflo-v1-nginx|2.23%|0.42%|15.99MiB / 3.722GiB
+STAT 950 telcoflo-v1-redis|11.84%|7.59%|289.4MiB / 3.722GiB
+LOAD 950 17.06 15.59 12.47 21/510 42208
+QPS 950 questions_delta=72480 seconds=71 qps=1020
+K6JSON 950 {"vus_max":950,"http_reqs_per_s":111.54,"sessions_per_s":55.77,"start_ms":{"avg":6442.53,"p50":7246.01,"p90":8406.79,"p95":8669.63,"p99":8779.13,"max":8884.31},"step_ms":{"avg":6616.94,"p50":7191.17,"p90":8168.52,"p95":8467.24,"p99":8746.08,"max":8868.05},"http_ms":{"p95":8610.15,"p99":8769.11,"max":8884.31},"dials_timed_out":0,"within_slo_rate":0.14,"http_failed_rate":0,"session_err_rate":0,"sessions_total":4673}
+
+===ENDLEVEL vus=950===
+===LEVEL vus=1000===
+STAT 1000 char-k6|6.44%|9.59%|365.6MiB / 3.722GiB
+STAT 1000 telcoflo-v1-app|136.07%|2.55%|97.02MiB / 3.722GiB
+STAT 1000 telcoflo-v1-mysql|35.38%|28.07%|1.045GiB / 3.722GiB
+STAT 1000 telcoflo-v1-nginx|2.92%|0.53%|20.29MiB / 3.722GiB
+STAT 1000 telcoflo-v1-redis|11.69%|7.67%|292.4MiB / 3.722GiB
+LOAD 1000 15.23 15.25 12.46 19/511 42718
+STAT 1000 char-k6|6.32%|9.67%|368.4MiB / 3.722GiB
+STAT 1000 telcoflo-v1-app|130.16%|2.54%|96.79MiB / 3.722GiB
+STAT 1000 telcoflo-v1-mysql|36.28%|28.04%|1.044GiB / 3.722GiB
+STAT 1000 telcoflo-v1-nginx|2.75%|0.55%|20.9MiB / 3.722GiB
+STAT 1000 telcoflo-v1-redis|9.06%|7.69%|293.3MiB / 3.722GiB
+LOAD 1000 15.29 15.27 12.48 20/509 42765
+STAT 1000 char-k6|5.86%|9.81%|373.9MiB / 3.722GiB
+STAT 1000 telcoflo-v1-app|129.48%|2.56%|97.45MiB / 3.722GiB
+STAT 1000 telcoflo-v1-mysql|36.84%|28.07%|1.045GiB / 3.722GiB
+STAT 1000 telcoflo-v1-nginx|2.56%|0.55%|20.87MiB / 3.722GiB
+STAT 1000 telcoflo-v1-redis|9.13%|7.74%|294.8MiB / 3.722GiB
+LOAD 1000 15.43 15.29 12.50 17/509 42811
+MYSQL 1000 connected=17 running=2
+FPM 1000 
+VMSTAT 1000 r=19 b=0 swpd=0 free=219124 cache=1274432 si=0 so=0 bi=4 bo=2320 cs=25852 us=77 sy=23 id=0 wa=0 st=0
+FREEMEM 1000 used_mb=2606 free_mb=213 available_mb=1204
+STAT 1000 char-k6|6.71%|10.24%|390.3MiB / 3.722GiB
+STAT 1000 telcoflo-v1-app|132.78%|2.56%|97.39MiB / 3.722GiB
+STAT 1000 telcoflo-v1-mysql|37.18%|28.10%|1.046GiB / 3.722GiB
+STAT 1000 telcoflo-v1-nginx|3.03%|0.55%|20.9MiB / 3.722GiB
+STAT 1000 telcoflo-v1-redis|11.34%|7.79%|297MiB / 3.722GiB
+LOAD 1000 16.18 15.47 12.61 18/509 43089
+STAT 1000 char-k6|6.69%|10.85%|413.4MiB / 3.722GiB
+STAT 1000 telcoflo-v1-app|137.99%|2.56%|97.51MiB / 3.722GiB
+STAT 1000 telcoflo-v1-mysql|34.63%|28.13%|1.047GiB / 3.722GiB
+STAT 1000 telcoflo-v1-nginx|3.00%|0.55%|20.86MiB / 3.722GiB
+STAT 1000 telcoflo-v1-redis|9.35%|7.82%|298MiB / 3.722GiB
+LOAD 1000 16.17 15.48 12.63 22/509 43135
+STAT 1000 char-k6|6.52%|11.44%|435.9MiB / 3.722GiB
+STAT 1000 telcoflo-v1-app|135.69%|2.55%|97.32MiB / 3.722GiB
+STAT 1000 telcoflo-v1-mysql|36.36%|28.14%|1.047GiB / 3.722GiB
+STAT 1000 telcoflo-v1-nginx|3.01%|0.55%|20.8MiB / 3.722GiB
+STAT 1000 telcoflo-v1-redis|8.98%|7.86%|299.5MiB / 3.722GiB
+LOAD 1000 16.80 15.62 12.69 24/509 43183
+MYSQL 1000 connected=17 running=2
+FPM 1000 
+VMSTAT 1000 r=16 b=0 swpd=0 free=196376 cache=1232852 si=0 so=0 bi=68 bo=1764 cs=25400 us=78 sy=23 id=0 wa=0 st=0
+FREEMEM 1000 used_mb=2669 free_mb=191 available_mb=1141
+STAT 1000 char-k6|6.12%|11.79%|449.4MiB / 3.722GiB
+STAT 1000 telcoflo-v1-app|136.51%|2.56%|97.45MiB / 3.722GiB
+STAT 1000 telcoflo-v1-mysql|34.81%|28.13%|1.047GiB / 3.722GiB
+STAT 1000 telcoflo-v1-nginx|2.71%|0.55%|20.85MiB / 3.722GiB
+STAT 1000 telcoflo-v1-redis|9.37%|7.90%|301.2MiB / 3.722GiB
+LOAD 1000 17.06 15.72 12.75 20/509 43514
+STAT 1000 char-k6|6.39%|11.80%|449.6MiB / 3.722GiB
+STAT 1000 telcoflo-v1-app|132.73%|2.56%|97.52MiB / 3.722GiB
+STAT 1000 telcoflo-v1-mysql|35.24%|28.14%|1.048GiB / 3.722GiB
+STAT 1000 telcoflo-v1-nginx|3.00%|0.54%|20.64MiB / 3.722GiB
+STAT 1000 telcoflo-v1-redis|9.35%|7.93%|302.4MiB / 3.722GiB
+LOAD 1000 16.97 15.72 12.77 18/509 43562
+STAT 1000 char-k6|7.31%|11.80%|449.8MiB / 3.722GiB
+STAT 1000 telcoflo-v1-app|137.02%|2.56%|97.59MiB / 3.722GiB
+STAT 1000 telcoflo-v1-mysql|34.36%|28.16%|1.048GiB / 3.722GiB
+STAT 1000 telcoflo-v1-nginx|3.24%|0.54%|20.73MiB / 3.722GiB
+STAT 1000 telcoflo-v1-redis|9.01%|7.95%|303.1MiB / 3.722GiB
+LOAD 1000 16.89 15.73 12.79 17/509 43607
+MYSQL 1000 connected=17 running=2
+FPM 1000 
+VMSTAT 1000 r=16 b=0 swpd=0 free=196964 cache=1216276 si=0 so=0 bi=36 bo=1376 cs=24451 us=80 sy=20 id=0 wa=0 st=0
+FREEMEM 1000 used_mb=2685 free_mb=192 available_mb=1126
+STAT 1000 char-k6|4.40%|11.83%|450.8MiB / 3.722GiB
+STAT 1000 telcoflo-v1-app|144.26%|2.55%|97.38MiB / 3.722GiB
+STAT 1000 telcoflo-v1-mysql|30.49%|28.20%|1.05GiB / 3.722GiB
+STAT 1000 telcoflo-v1-nginx|1.96%|0.33%|12.57MiB / 3.722GiB
+STAT 1000 telcoflo-v1-redis|11.50%|8.02%|305.7MiB / 3.722GiB
+LOAD 1000 17.03 15.82 12.86 18/510 43911
+QPS 1000 questions_delta=74208 seconds=73 qps=1016
+K6JSON 1000 {"vus_max":1000,"http_reqs_per_s":112.21,"sessions_per_s":56.11,"start_ms":{"avg":6721.65,"p50":7691.73,"p90":8392.97,"p95":8532.27,"p99":8654.13,"max":8767.45},"step_ms":{"avg":7018.71,"p50":7683.26,"p90":8413.27,"p95":8555.61,"p99":8652.41,"max":8737.67},"http_ms":{"p95":8546.49,"p99":8653.41,"max":8767.45},"dials_timed_out":0,"within_slo_rate":0.13,"http_failed_rate":0,"session_err_rate":0,"sessions_total":4755}
+
+===ENDLEVEL vus=1000===
+CHAR_END_UTC 2026-07-05T15:27:06Z
+___CHAR_DONE___
