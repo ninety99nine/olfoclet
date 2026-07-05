@@ -241,8 +241,15 @@ jobs:
             # Roll the stack. The app entrypoint migrates + caches on boot.
             docker compose $COMPOSE_FILES up -d
 
-            # Smoke check.
+            # The app container gets a NEW docker-network IP when it is recreated with
+            # the new image, but nginx (unchanged, so not recreated) keeps the old
+            # upstream IP cached from its last start and serves an instant 502. Reload
+            # nginx so it re-resolves fastcgi_pass app:9000 (fall back to a restart).
             sleep 8
+            docker compose $COMPOSE_FILES exec -T nginx nginx -s reload 2>/dev/null \
+              || docker compose $COMPOSE_FILES restart nginx
+
+            # Smoke check.
             docker compose $COMPOSE_FILES ps
 
             # Post-deploy disk hygiene (mirrors V2: prune images/build-cache, vacuum logs, clean apt).
