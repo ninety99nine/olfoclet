@@ -262,7 +262,14 @@ Rough % impacts are directional estimates to be confirmed by A/B, not guarantees
 - **Validation:** the uncontended 10–16ms dial should drop measurably; ceiling ↑ across
   all sizes. *(Listed in Tier C by mechanism, but treated as the flagship — see §5.)*
 
-#### C2. Cap unbounded session payloads
+#### C2. Cap unbounded session payloads — **DECISION: WON'T DO (unsafe)**
+> On deeper code study this was rejected. `reply_records` is **navigation-critical**
+> — `manageGoBackRequests` (~1920-2068) walks it and `handleExistingSession`
+> (~1038-1047) rebuilds session state from it, so capping it would **break "go
+> back"** for sessions deeper than the cap. The write-amplification is bounded by
+> navigation depth (small for normal sessions) and the archival already keeps the
+> hot table small, so the benefit is marginal against a real behaviour-break risk.
+> Left as-is deliberately.
 - **Cost removed:** `reply_records` and `inputs_and_outputs` grow **unbounded** (only
   `session_execution_times` is capped at 50); every continuation `json_encode`s the
   growing mediumtext columns (`~1377`) and writes 2–3 rows/request.
