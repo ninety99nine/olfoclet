@@ -100,17 +100,20 @@ class File01TargetTest extends TestCase
 
     // ---- Problem 10 — scheduled session archiving ---------------------------
 
-    public function test_problem10_archiving_moves_sessions_older_than_90_days(): void
+    public function test_problem10_archiving_moves_old_sessions_to_archive(): void
     {
         $ready = $this->artisanCommandExists('sessions:archive') && Schema::hasTable('ussd_sessions_archive');
         $this->pendingUnless($ready, 'File 01 Problem 10 — sessions:archive command + archive table');
 
+        // 2 days old: past the 24h move window but well within the 3-month retention,
+        // so it is moved to the archive and NOT purged. (See ArchiveOldSessionsTest
+        // for the move/cap/purge phases in detail.)
         $app = FirstAidApp::create();
         $oldId = DB::table('ussd_sessions')->insertGetId([
             'ussd_account_id' => 1, 'ussd_account_connection_id' => 1,
             'session_id' => 'old-session', 'service_code' => '*217#', 'request_type' => '3',
             'app_id' => $app->app->id, 'version_id' => $app->version->id,
-            'created_at' => now()->subDays(100), 'updated_at' => now()->subDays(100),
+            'created_at' => now()->subDays(2), 'updated_at' => now()->subDays(2),
         ]);
 
         $this->artisan('sessions:archive')->assertExitCode(0);
