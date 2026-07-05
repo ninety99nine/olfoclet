@@ -1,0 +1,17 @@
+{
+    "transcript": [
+        {
+            "step": "start",
+            "input": "*250#",
+            "request_type": "2",
+            "msg": "\n1. Buy\n2. Sell\n3. AI chat\n4. My Account"
+        }
+    ],
+    "session": {
+        "request_type": "1",
+        "service_code": "*250#",
+        "type": "dedicated",
+        "fatal_error": false,
+        "reply_records": []
+    }
+}
