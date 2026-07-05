@@ -12,8 +12,15 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        //  File 01 Problem 10 — keep the hot ussd_sessions table small.
-        $schedule->command('sessions:archive')->dailyAt('03:00')->withoutOverlapping();
+        //  Keep the hot ussd_sessions table small: every midnight (UTC) move
+        //  sessions older than 24h to the archive, cap live rows at 1M per app,
+        //  and purge archived rows older than 3 months. runInBackground so a long
+        //  purge never delays other scheduled work; withoutOverlapping guards a
+        //  slow run from stacking on the next midnight tick.
+        $schedule->command('sessions:archive')
+            ->dailyAt('00:00')
+            ->withoutOverlapping()
+            ->runInBackground();
     }
 
     /**
