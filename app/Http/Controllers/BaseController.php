@@ -7,6 +7,7 @@ use App\Models\Version;
 use App\Models\Project;
 use App\Models\UssdAccount;
 use App\Models\UssdSession;
+use App\Models\SessionHistory;
 use App\Models\GlobalVariable;
 
 class BaseController extends Controller
@@ -53,9 +54,12 @@ class BaseController extends Controller
             request()->ussd_account = $this->ussd_account = UssdAccount::findOrFail(request()->ussd_account);
         }
 
-        //  Set the Session Model (If exists on the route)
+        //  Set the Session Model (If exists on the route). Resolve via SessionHistory
+        //  (the ussd_sessions_all view) so the read-only session-detail view can open
+        //  archived sessions too, not just the last 24h in the hot table. SessionHistory
+        //  extends UssdSession, so the instanceof guard above still holds.
         if( !empty(request()->ussd_session) && !(request()->ussd_session instanceof UssdSession) ) {
-            request()->ussd_session = $this->ussd_session = UssdSession::findOrFail(request()->ussd_session);
+            request()->ussd_session = $this->ussd_session = SessionHistory::findOrFail(request()->ussd_session);
         }
 
         //  Set the Global Variable Model (If exists on the route)

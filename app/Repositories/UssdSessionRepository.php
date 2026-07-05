@@ -4,12 +4,15 @@ namespace App\Repositories;
 
 use App\Models\App;
 use App\Models\Project;
-use App\Models\UssdSession;
+use App\Models\SessionHistory;
 use App\Models\Version;
 
 class UssdSessionRepository extends BaseRepository
 {
-    protected $modelClass = UssdSession::class;
+    //  Read the ussd_sessions_all UNION view (24h live + up to 3 months archived)
+    //  so the Sessions list shows the full history window. The USSD runtime and
+    //  writes stay on the base UssdSession model (hot table).
+    protected $modelClass = SessionHistory::class;
 
     /**
      *  Query the sessions
