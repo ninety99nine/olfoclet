@@ -1134,7 +1134,7 @@ class ReportPayloadService extends BasePayloadService
     {
         $instance = DB::table('ussd_accounts')
             ->select('ussd_accounts.id', DB::raw("MAX(ussd_sessions.updated_at) as updated_at"))
-            ->join('ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
+            ->join('ussd_sessions_all as ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
             ->groupBy('ussd_accounts.id');
 
         return $count ? $instance->count() : $instance->get();
@@ -1170,7 +1170,7 @@ class ReportPayloadService extends BasePayloadService
         $instance = DB::table('ussd_accounts')
             ->select('ussd_accounts.id', DB::raw("MAX(ussd_sessions.updated_at) as updated_at"))
             ->havingRaw('MAX(ussd_sessions.updated_at) >= ?', [Carbon::now()->subDays($duration)])
-            ->join('ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
+            ->join('ussd_sessions_all as ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
             ->groupBy('ussd_accounts.id');
 
         return $count ? $instance->count() : $instance->get();
@@ -1206,7 +1206,7 @@ class ReportPayloadService extends BasePayloadService
         $instance = DB::table('ussd_accounts')
             ->select('ussd_accounts.id', DB::raw("MAX(ussd_sessions.updated_at) as updated_at"))
             ->havingRaw('MAX(ussd_sessions.updated_at) < ?', [Carbon::now()->subDays($duration)])
-            ->join('ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
+            ->join('ussd_sessions_all as ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
             ->groupBy('ussd_accounts.id');
 
         return $count ? $instance->count() : $instance->get();
@@ -1244,7 +1244,7 @@ class ReportPayloadService extends BasePayloadService
     {
         $instance = DB::table('ussd_accounts')
             ->select('ussd_accounts.id', 'ussd_sessions.fatal_error', DB::raw("MAX(ussd_sessions.updated_at) as updated_at"))
-            ->join('ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
+            ->join('ussd_sessions_all as ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
             ->groupBy('ussd_accounts.id', 'fatal_error')
             ->havingRaw('fatal_error = ?', ['1']);
 
@@ -1284,7 +1284,7 @@ class ReportPayloadService extends BasePayloadService
     {
         $collection = DB::table('ussd_accounts')
             ->select('ussd_accounts.id', 'ussd_sessions.fatal_error', DB::raw("MAX(ussd_sessions.updated_at) as updated_at"))
-            ->join('ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
+            ->join('ussd_sessions_all as ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
             ->groupBy('ussd_accounts.id', 'fatal_error')
             ->orderByDesc('updated_at')
             ->get();
@@ -1353,7 +1353,7 @@ class ReportPayloadService extends BasePayloadService
     {
         $instance = DB::table('ussd_accounts')
             ->select('ussd_accounts.id', 'ussd_sessions.request_type', DB::raw("MAX(ussd_sessions.timeout_at) as timeout_at"))
-            ->join('ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
+            ->join('ussd_sessions_all as ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
             ->havingRaw('request_type = ? AND timeout_at <= ?', ['1', Carbon::now()])
             ->groupBy('ussd_accounts.id', 'request_type');
 
@@ -1397,7 +1397,7 @@ class ReportPayloadService extends BasePayloadService
         $collection = DB::table('ussd_accounts')
             ->select('ussd_accounts.id', 'ussd_sessions.request_type', DB::raw("MAX(ussd_sessions.timeout_at) as timeout_at"))
             ->havingRaw('(request_type = ? AND timeout_at <= ?) OR (request_type != 1)', ['1', Carbon::now()])
-            ->join('ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
+            ->join('ussd_sessions_all as ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
             ->groupBy('ussd_accounts.id', 'request_type')
             ->orderByDesc('timeout_at')
             ->get();
@@ -1487,7 +1487,7 @@ class ReportPayloadService extends BasePayloadService
     public static function getActiveAccountsThatHaveAttemptedPayment($count = false, $duration = 1)
     {
         $instance = DB::table('ussd_accounts')
-            ->join('ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
+            ->join('ussd_sessions_all as ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
             ->join('airtime_billing_payments', 'ussd_sessions.id', '=', 'airtime_billing_payments.ussd_session_id')
             ->select('ussd_accounts.id', DB::raw("MAX(airtime_billing_payments.created_at) as created_at"))
             ->havingRaw('MAX(ussd_sessions.updated_at) >= ?', [Carbon::now()->subDays($duration)])
@@ -1506,7 +1506,7 @@ class ReportPayloadService extends BasePayloadService
     public static function getInactiveAccountsThatHaveAttemptedPayment($count = false, $duration = 1)
     {
         $instance = DB::table('ussd_accounts')
-            ->join('ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
+            ->join('ussd_sessions_all as ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
             ->join('airtime_billing_payments', 'ussd_sessions.id', '=', 'airtime_billing_payments.ussd_session_id')
             ->select('ussd_accounts.id', DB::raw("MAX(airtime_billing_payments.created_at) as created_at"))
             ->havingRaw('MAX(ussd_sessions.updated_at) < ?', [Carbon::now()->subDays($duration)])
@@ -1584,7 +1584,7 @@ class ReportPayloadService extends BasePayloadService
     public static function getActiveAccountsThatHaveOneSuccessfulPayment($count = false, $duration = 1)
     {
         $instance = DB::table('ussd_accounts')
-            ->join('ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
+            ->join('ussd_sessions_all as ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
             ->join('airtime_billing_payments', 'ussd_sessions.id', '=', 'airtime_billing_payments.ussd_session_id')
             ->select('ussd_accounts.id', DB::raw("MAX(airtime_billing_payments.created_at) as created_at"))
             ->havingRaw('MAX(ussd_sessions.updated_at) >= ?', [Carbon::now()->subDays($duration)])
@@ -1602,7 +1602,7 @@ class ReportPayloadService extends BasePayloadService
     public static function getInactiveAccountsThatHaveOneSuccessfulPayment($count = false, $duration = 1)
     {
         $instance = DB::table('ussd_accounts')
-            ->join('ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
+            ->join('ussd_sessions_all as ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
             ->join('airtime_billing_payments', 'ussd_sessions.id', '=', 'airtime_billing_payments.ussd_session_id')
             ->select('ussd_accounts.id', DB::raw("MAX(airtime_billing_payments.created_at) as created_at"))
             ->havingRaw('MAX(ussd_sessions.updated_at) >= ?', [Carbon::now()->subDays($duration)])
@@ -1620,7 +1620,7 @@ class ReportPayloadService extends BasePayloadService
     public static function getAccountsThatHaveMoreThanOneSuccessfulPayment($count = false)
     {
         $instance = DB::table('ussd_accounts')
-            ->join('ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
+            ->join('ussd_sessions_all as ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
             ->join('airtime_billing_payments', 'ussd_sessions.id', '=', 'airtime_billing_payments.ussd_session_id')
             ->select('ussd_accounts.id', DB::raw("MAX(airtime_billing_payments.created_at) as created_at"))
             ->havingRaw('COUNT(airtime_billing_payments.id) > 1')
@@ -1637,7 +1637,7 @@ class ReportPayloadService extends BasePayloadService
     public static function getActiveAccountsThatHaveMoreThanOneSuccessfulPayment($count = false, $duration = 1)
     {
         $instance = DB::table('ussd_accounts')
-            ->join('ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
+            ->join('ussd_sessions_all as ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
             ->join('airtime_billing_payments', 'ussd_sessions.id', '=', 'airtime_billing_payments.ussd_session_id')
             ->select('ussd_accounts.id', DB::raw("MAX(airtime_billing_payments.created_at) as created_at"))
             ->havingRaw('MAX(ussd_sessions.updated_at) >= ?', [Carbon::now()->subDays($duration)])
@@ -1655,7 +1655,7 @@ class ReportPayloadService extends BasePayloadService
     public static function getInactiveAccountsThatHaveMoreThanOneSuccessfulPayment($count = false, $duration = 1)
     {
         $instance = DB::table('ussd_accounts')
-            ->join('ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
+            ->join('ussd_sessions_all as ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
             ->join('airtime_billing_payments', 'ussd_sessions.id', '=', 'airtime_billing_payments.ussd_session_id')
             ->select('ussd_accounts.id', DB::raw("MAX(airtime_billing_payments.created_at) as created_at"))
             ->havingRaw('MAX(ussd_sessions.updated_at) < ?', [Carbon::now()->subDays($duration)])
@@ -1703,7 +1703,7 @@ class ReportPayloadService extends BasePayloadService
     public static function getActiveAccountsThatHaveOneFailedPayment($count = false, $duration = 1)
     {
         $instance = DB::table('ussd_accounts')
-            ->join('ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
+            ->join('ussd_sessions_all as ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
             ->join('airtime_billing_payments', 'ussd_accounts.id', '=', 'airtime_billing_payments.ussd_account_id')
             ->select('ussd_accounts.id', DB::raw("MAX(airtime_billing_payments.created_at) as created_at"))
             ->havingRaw('MAX(ussd_sessions.updated_at) >= ?', [Carbon::now()->subDays($duration)])
@@ -1721,7 +1721,7 @@ class ReportPayloadService extends BasePayloadService
     public static function getInactiveAccountsThatHaveOneFailedPayment($count = false, $duration = 1)
     {
         $instance = DB::table('ussd_accounts')
-            ->join('ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
+            ->join('ussd_sessions_all as ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
             ->join('airtime_billing_payments', 'ussd_accounts.id', '=', 'airtime_billing_payments.ussd_account_id')
             ->select('ussd_accounts.id', DB::raw("MAX(airtime_billing_payments.created_at) as created_at"))
             ->havingRaw('MAX(ussd_sessions.updated_at) < ?', [Carbon::now()->subDays($duration)])
@@ -1755,7 +1755,7 @@ class ReportPayloadService extends BasePayloadService
     public static function getActiveAccountsThatHaveMoreThanOneFailedPayment($count = false, $duration = 1)
     {
         $instance = DB::table('ussd_accounts')
-            ->join('ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
+            ->join('ussd_sessions_all as ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
             ->join('airtime_billing_payments', 'ussd_accounts.id', '=', 'airtime_billing_payments.ussd_account_id')
             ->select('ussd_accounts.id', DB::raw("MAX(airtime_billing_payments.created_at) as created_at"))
             ->havingRaw('MAX(ussd_sessions.updated_at) >= ?', [Carbon::now()->subDays($duration)])
@@ -1773,7 +1773,7 @@ class ReportPayloadService extends BasePayloadService
     public static function getInactiveAccountsThatHaveMoreThanOneFailedPayment($count = false, $duration = 1)
     {
         $instance = DB::table('ussd_accounts')
-            ->join('ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
+            ->join('ussd_sessions_all as ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
             ->join('airtime_billing_payments', 'ussd_accounts.id', '=', 'airtime_billing_payments.ussd_account_id')
             ->select('ussd_accounts.id', DB::raw("MAX(airtime_billing_payments.created_at) as created_at"))
             ->havingRaw('MAX(ussd_sessions.updated_at) < ?', [Carbon::now()->subDays($duration)])
@@ -2246,7 +2246,7 @@ class ReportPayloadService extends BasePayloadService
     {
         return DB::table('ussd_accounts')
             ->select('ussd_accounts.id', DB::raw("TIMESTAMPDIFF(SECOND, MIN(ussd_sessions.created_at), NOW()) as duration"))
-            ->join('ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
+            ->join('ussd_sessions_all as ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
             ->groupBy('ussd_accounts.id')
             ->orderBy('duration')
             ->get();
@@ -2273,7 +2273,7 @@ class ReportPayloadService extends BasePayloadService
         return DB::table('ussd_accounts')
             ->select('ussd_accounts.id', DB::raw("TIMESTAMPDIFF(SECOND, MIN(ussd_sessions.created_at), NOW()) as duration"))
             ->havingRaw('MAX(ussd_sessions.updated_at) >= ?', [Carbon::now()->subDays($duration)])
-            ->join('ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
+            ->join('ussd_sessions_all as ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
             ->groupBy('ussd_accounts.id')
             ->orderBy('duration')
             ->get();
@@ -2300,7 +2300,7 @@ class ReportPayloadService extends BasePayloadService
         return DB::table('ussd_accounts')
             ->select('ussd_accounts.id', DB::raw("TIMESTAMPDIFF(SECOND, MIN(ussd_sessions.created_at), NOW()) as duration"))
             ->havingRaw('MAX(ussd_sessions.updated_at) < ?', [Carbon::now()->subDays($duration)])
-            ->join('ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
+            ->join('ussd_sessions_all as ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
             ->groupBy('ussd_accounts.id')
             ->orderBy('duration')
             ->get();
@@ -2349,7 +2349,7 @@ class ReportPayloadService extends BasePayloadService
     {
         return DB::table('ussd_accounts')
             ->select('ussd_accounts.id', DB::raw("COUNT('*') as total_sessions"))
-            ->join('ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
+            ->join('ussd_sessions_all as ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
             ->groupBy('ussd_accounts.id')
             ->orderBy('total_sessions')
             ->get();
@@ -2376,7 +2376,7 @@ class ReportPayloadService extends BasePayloadService
         return DB::table('ussd_accounts')
             ->select('ussd_accounts.id', DB::raw("COUNT('*') as total_sessions"))
             ->havingRaw('MAX(ussd_sessions.updated_at) >= ?', [Carbon::now()->subDays($duration)])
-            ->join('ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
+            ->join('ussd_sessions_all as ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
             ->groupBy('ussd_accounts.id')
             ->orderBy('total_sessions')
             ->get();
@@ -2403,7 +2403,7 @@ class ReportPayloadService extends BasePayloadService
         return DB::table('ussd_accounts')
             ->select('ussd_accounts.id', DB::raw("COUNT('*') as total_sessions"))
             ->havingRaw('MAX(ussd_sessions.updated_at) < ?', [Carbon::now()->subDays($duration)])
-            ->join('ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
+            ->join('ussd_sessions_all as ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
             ->groupBy('ussd_accounts.id')
             ->orderBy('total_sessions')
             ->get();
@@ -2450,7 +2450,7 @@ class ReportPayloadService extends BasePayloadService
     {
         return DB::table('ussd_accounts')
             ->select('ussd_accounts.id', DB::raw("SUM(TIMESTAMPDIFF(SECOND, ussd_sessions.created_at, ussd_sessions.updated_at)) as duration"))
-            ->join('ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
+            ->join('ussd_sessions_all as ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
             ->groupBy('ussd_accounts.id')
             ->orderBy('duration')
             ->get();
@@ -2477,7 +2477,7 @@ class ReportPayloadService extends BasePayloadService
         return DB::table('ussd_accounts')
             ->select('ussd_accounts.id', DB::raw("SUM(TIMESTAMPDIFF(SECOND, ussd_sessions.created_at, ussd_sessions.updated_at)) as duration"))
             ->havingRaw('MAX(ussd_sessions.updated_at) >= ?', [Carbon::now()->subDays($duration)])
-            ->join('ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
+            ->join('ussd_sessions_all as ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
             ->groupBy('ussd_accounts.id')
             ->orderBy('duration')
             ->get();
@@ -2504,7 +2504,7 @@ class ReportPayloadService extends BasePayloadService
         return DB::table('ussd_accounts')
             ->select('ussd_accounts.id', DB::raw("SUM(TIMESTAMPDIFF(SECOND, ussd_sessions.created_at, ussd_sessions.updated_at)) as duration"))
             ->havingRaw('MAX(ussd_sessions.updated_at) < ?', [Carbon::now()->subDays($duration)])
-            ->join('ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
+            ->join('ussd_sessions_all as ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
             ->groupBy('ussd_accounts.id')
             ->orderBy('duration')
             ->get();
@@ -2547,7 +2547,7 @@ class ReportPayloadService extends BasePayloadService
     {
         return DB::table('ussd_accounts')
             ->select('ussd_accounts.id', DB::raw("ROUND(AVG(TIMESTAMPDIFF(SECOND, ussd_sessions.created_at, ussd_sessions.updated_at))) as duration"))
-            ->join('ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
+            ->join('ussd_sessions_all as ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
             ->groupBy('ussd_accounts.id')
             ->orderBy('duration')
             ->get();
@@ -2574,7 +2574,7 @@ class ReportPayloadService extends BasePayloadService
         return DB::table('ussd_accounts')
             ->select('ussd_accounts.id', DB::raw("ROUND(AVG(TIMESTAMPDIFF(SECOND, ussd_sessions.created_at, ussd_sessions.updated_at))) as duration"))
             ->havingRaw('MAX(ussd_sessions.updated_at) >= ?', [Carbon::now()->subDays($duration)])
-            ->join('ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
+            ->join('ussd_sessions_all as ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
             ->groupBy('ussd_accounts.id')
             ->orderBy('duration')
             ->get();
@@ -2601,7 +2601,7 @@ class ReportPayloadService extends BasePayloadService
         return DB::table('ussd_accounts')
             ->select('ussd_accounts.id', DB::raw("ROUND(AVG(TIMESTAMPDIFF(SECOND, ussd_sessions.created_at, ussd_sessions.updated_at))) as duration"))
             ->havingRaw('MAX(ussd_sessions.updated_at) < ?', [Carbon::now()->subDays($duration)])
-            ->join('ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
+            ->join('ussd_sessions_all as ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
             ->groupBy('ussd_accounts.id')
             ->orderBy('duration')
             ->get();
@@ -2641,7 +2641,7 @@ class ReportPayloadService extends BasePayloadService
     public static function getAccountsByShortcodeColumnChartReport()
     {
         $queryCollection = DB::table('ussd_accounts')
-            ->join('ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
+            ->join('ussd_sessions_all as ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
             ->groupBy('ussd_sessions.service_code', 'ussd_sessions.ussd_account_id')
             ->select('ussd_sessions.service_code', DB::raw("COUNT('*') as total"))
             ->orderByDesc('total')
@@ -2660,7 +2660,7 @@ class ReportPayloadService extends BasePayloadService
     {
         $queryCollection = DB::table('ussd_accounts')
             ->havingRaw('MAX(ussd_sessions.updated_at) >= ?', [Carbon::now()->subDays($duration)])
-            ->join('ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
+            ->join('ussd_sessions_all as ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
             ->groupBy('ussd_sessions.service_code', 'ussd_sessions.ussd_account_id')
             ->select('ussd_sessions.service_code', DB::raw("COUNT('*') as total"))
             ->orderByDesc('total')
@@ -2679,7 +2679,7 @@ class ReportPayloadService extends BasePayloadService
     {
         $queryCollection = DB::table('ussd_accounts')
             ->havingRaw('MAX(ussd_sessions.updated_at) < ?', [Carbon::now()->subDays($duration)])
-            ->join('ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
+            ->join('ussd_sessions_all as ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
             ->groupBy('ussd_sessions.service_code', 'ussd_sessions.ussd_account_id')
             ->select('ussd_sessions.service_code', DB::raw("COUNT('*') as total"))
             ->orderByDesc('total')
@@ -2767,7 +2767,7 @@ class ReportPayloadService extends BasePayloadService
              */
             $queryCollection = resolve(UssdAccountConnection::class)
                 ->select('projects.name', 'ussd_account_connections.project_id', 'ussd_account_connections.ussd_account_id', DB::raw("MAX(ussd_sessions.updated_at) as last_active_at"))
-                ->join('ussd_sessions', 'ussd_account_connections.id', '=', 'ussd_sessions.ussd_account_connection_id')
+                ->join('ussd_sessions_all as ussd_sessions', 'ussd_account_connections.id', '=', 'ussd_sessions.ussd_account_connection_id')
                 ->groupBy('ussd_account_connections.ussd_account_id', 'ussd_account_connections.project_id')
                 ->havingRaw('MAX(ussd_sessions.updated_at) >= ?', [Carbon::now()->subDays($duration)])
                 ->join('projects', 'projects.id', '=', 'ussd_account_connections.project_id')
@@ -2801,7 +2801,7 @@ class ReportPayloadService extends BasePayloadService
              */
             $queryCollection = resolve(UssdAccountConnection::class)
                 ->select('projects.name', 'ussd_account_connections.project_id', 'ussd_account_connections.ussd_account_id', DB::raw("MAX(ussd_sessions.updated_at) as last_active_at"))
-                ->join('ussd_sessions', 'ussd_account_connections.id', '=', 'ussd_sessions.ussd_account_connection_id')
+                ->join('ussd_sessions_all as ussd_sessions', 'ussd_account_connections.id', '=', 'ussd_sessions.ussd_account_connection_id')
                 ->groupBy('ussd_account_connections.ussd_account_id', 'ussd_account_connections.project_id')
                 ->havingRaw('MAX(ussd_sessions.updated_at) < ?', [Carbon::now()->subDays($duration)])
                 ->join('projects', 'projects.id', '=', 'ussd_account_connections.project_id')
@@ -2928,7 +2928,7 @@ class ReportPayloadService extends BasePayloadService
              */
             $queryCollection = resolve(UssdAccountConnection::class)
                 ->select('apps.name', 'ussd_account_connections.app_id', 'ussd_account_connections.ussd_account_id', DB::raw("MAX(ussd_sessions.updated_at) as last_active_at"))
-                ->join('ussd_sessions', 'ussd_account_connections.id', '=', 'ussd_sessions.ussd_account_connection_id')
+                ->join('ussd_sessions_all as ussd_sessions', 'ussd_account_connections.id', '=', 'ussd_sessions.ussd_account_connection_id')
                 ->groupBy('ussd_account_connections.ussd_account_id', 'ussd_account_connections.app_id')
                 ->havingRaw('MAX(ussd_sessions.updated_at) >= ?', [Carbon::now()->subDays($duration)])
                 ->join('apps', 'apps.id', '=', 'ussd_account_connections.app_id')
@@ -2962,7 +2962,7 @@ class ReportPayloadService extends BasePayloadService
              */
             $queryCollection = resolve(UssdAccountConnection::class)
                 ->select('apps.name', 'ussd_account_connections.app_id', 'ussd_account_connections.ussd_account_id', DB::raw("MAX(ussd_sessions.updated_at) as last_active_at"))
-                ->join('ussd_sessions', 'ussd_account_connections.id', '=', 'ussd_sessions.ussd_account_connection_id')
+                ->join('ussd_sessions_all as ussd_sessions', 'ussd_account_connections.id', '=', 'ussd_sessions.ussd_account_connection_id')
                 ->groupBy('ussd_account_connections.ussd_account_id', 'ussd_account_connections.app_id')
                 ->havingRaw('MAX(ussd_sessions.updated_at) < ?', [Carbon::now()->subDays($duration)])
                 ->join('apps', 'apps.id', '=', 'ussd_account_connections.app_id')
@@ -3094,7 +3094,7 @@ class ReportPayloadService extends BasePayloadService
             $queryCollection = resolve(UssdAccountConnection::class)
                 ->select(DB::raw("CONCAT(name, ' (v ' , number, ')') AS name"), 'ussd_account_connections.version_id', 'ussd_account_connections.ussd_account_id', DB::raw("MAX(ussd_sessions.updated_at) as last_active_at"))
                 ->groupBy('apps.name', 'ussd_account_connections.ussd_account_id', 'ussd_account_connections.version_id')
-                ->join('ussd_sessions', 'ussd_account_connections.id', '=', 'ussd_sessions.ussd_account_connection_id')
+                ->join('ussd_sessions_all as ussd_sessions', 'ussd_account_connections.id', '=', 'ussd_sessions.ussd_account_connection_id')
                 ->havingRaw('MAX(ussd_sessions.updated_at) >= ?', [Carbon::now()->subDays($duration)])
                 ->join('versions', 'versions.id', '=', 'ussd_account_connections.version_id')
                 ->join('apps', 'apps.id', '=', 'ussd_account_connections.app_id')
@@ -3130,7 +3130,7 @@ class ReportPayloadService extends BasePayloadService
             $queryCollection = resolve(UssdAccountConnection::class)
             ->select(DB::raw("CONCAT(name, ' (v ' , number, ')') AS name"), 'ussd_account_connections.version_id', 'ussd_account_connections.ussd_account_id', DB::raw("MAX(ussd_sessions.updated_at) as last_active_at"))
             ->groupBy('apps.name', 'ussd_account_connections.ussd_account_id', 'ussd_account_connections.version_id')
-            ->join('ussd_sessions', 'ussd_account_connections.id', '=', 'ussd_sessions.ussd_account_connection_id')
+            ->join('ussd_sessions_all as ussd_sessions', 'ussd_account_connections.id', '=', 'ussd_sessions.ussd_account_connection_id')
             ->havingRaw('MAX(ussd_sessions.updated_at) < ?', [Carbon::now()->subDays($duration)])
             ->join('versions', 'versions.id', '=', 'ussd_account_connections.version_id')
             ->join('apps', 'apps.id', '=', 'ussd_account_connections.app_id')
