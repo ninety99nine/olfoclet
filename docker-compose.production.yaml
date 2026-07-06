@@ -20,6 +20,12 @@ services:
   app:
     <<: *app-image
     container_name: telcoflo-v1-app
+    #  TEMP (verification): enable the session-state fast-path on the box so real
+    #  *217#/*250# flows can be tested against the live CMS. Overrides .env; the
+    #  entrypoint's `config:cache` picks it up on container (re)create. Revert to
+    #  remove once verified (code default remains OFF for local/tests).
+    environment:
+      USSD_FAST_PATH: "true"
     depends_on:
       mysql: { condition: service_healthy }
       redis: { condition: service_healthy }
