@@ -46,880 +46,159 @@ class ReportPayloadService extends BasePayloadService
      */
     public static function getReportsPayload()
     {
-        //  This dashboard runs dozens of heavy per-account aggregations. Cache the
-        //  fully assembled payload per scope + query filters so it computes ONCE and
-        //  serves instantly for ~30 min (analytics tolerate slight staleness). The
-        //  cold computation is fast now that the (ussd_account_id, updated_at/created_at)
-        //  covering indexes exist. Cache driver is redis in production.
-        return \Illuminate\Support\Facades\Cache::remember(
-            self::reportsCacheKey(),
-            now()->addMinutes(30),
-            fn () => self::buildReportsPayload()
-        );
-    }
-
-    /** Cache key scoped to the current project/app/version + all query filters. */
-    private static function reportsCacheKey(): string
-    {
-        $scope = implode('_', [
-            optional(request()->project)->id ?? '0',
-            optional(request()->app)->id ?? '0',
-            optional(request()->version)->id ?? '0',
-        ]);
-
-        return 'reports_payload_'.$scope.'_'.md5(json_encode(request()->query()));
+        //  Loaded on demand — no cache, no pre-warm. The payload is deliberately lean (a
+        //  handful of indexed aggregations that build in well under a second), so the
+        //  Reports page just computes fresh on every request. mergeAdditionalPayloads adds
+        //  the per-user / per-scope navigation.
+        return self::mergeAdditionalPayloads(self::buildReportsPayload());
     }
 
     private static function buildReportsPayload()
     {
-        $payload = [
+        //  Deliberately lean: the handful of numbers/charts that matter for day-to-day
+        //  operations. (Airtime-billing/payment + SMS reports and the redundant
+        //  active/inactive/final-activity/connection variants were removed — the platform
+        //  no longer does direct billing/SMS, and those cards were noise.) Every value
+        //  below is a single indexed aggregation, so the page loads on demand in <1s.
+        return [
             'reportPayload' => [
                 'accountReport' => [
                     'overview' => [
 
-                        array_merge([
-                            'title' => 'Total',
-                            'subtitle' => 'This is the total number of unique accounts ever created.'.self::breakHtmlTags(2).'Refer to the '.self::primaryHtmlTags('Accounts Created').' chart below to visualize account creation over time.',
-                        ], collect(self::getAccountCreationTotalReport())->toArray()),
-
-                        array_merge([
-                            'title' => 'Active',
-                            'subtitle' => 'This is the total number of unique accounts ever created and currently showing signs of more recent activity (active). These accounts dialed to consume services not too long ago.'.self::breakHtmlTags(2).'Refer to the '.self::primaryHtmlTags('Accounts By More Recent Activity').' chart below to visualize account activity over time.',
-                        ], collect(self::getActiveAccountsByLastActivityTotalReport())->toArray()),
-
-                        array_merge([
-                            'title' => 'Inactive',
-                            'subtitle' => 'This is the total number of unique accounts ever created and currently showing signs of more recent activity (inactive). These accounts dialed to consume services some time ago.'.self::breakHtmlTags(2).'Refer to the '.self::primaryHtmlTags('Accounts By Less Recent Activity').' chart below to visualize account activity over time.',
-                        ], collect(self::getInactiveAccountsByLastActivityTotalReport())->toArray()),
-
-                        array_merge([
-                            'title' => 'Experienced Failures',
-                            'subtitle' => 'This is the total number of unique accounts ever created but experienced a failed activity. These accounts dialed to consume services some time ago.'.self::breakHtmlTags(2).'Refer to the '.self::primaryHtmlTags('Accounts By Failed Activity').' chart below to visualize account activity over time.',
-                        ], collect(self::getAccountsByLastFailedActivityTotalReport())->toArray()),
-
-                        array_merge([
-                            'title' => "Experienced Failures \n And Left",
-                            'subtitle' => 'This is the total number of unique accounts ever created but experienced a failed activity being the final activity by that account. These accounts dialed to consume services some time ago.'.self::breakHtmlTags(2).'Refer to the '.self::primaryHtmlTags('Accounts By Failed Activity (Being Final Activity)').' chart below to visualize account activity over time.',
-                        ], collect(self::getAccountsByLastFailedActivityAsFinalActivityTotalReport())->toArray()),
-
-                        array_merge([
-                            'title' => 'Bounced',
-                            'subtitle' => 'This is the total number of unique accounts ever created but bounced (dialed and left) on their last activity. These accounts dialed to consume services some time ago.'.self::breakHtmlTags(2).'Refer to the '.self::primaryHtmlTags('Accounts By Bounce Activity').' chart below to visualize account bounce activity over time.',
-                        ], collect(self::getAccountsByBouncedActivityTotalReport())->toArray()),
-
-                        array_merge([
-                            'title' => 'Bounced And Left',
-                            'subtitle' => 'This is the total number of unique accounts ever created but bounced (dialed and left) on their last activity. These accounts dialed to consume services some time ago and never returned.'.self::breakHtmlTags(2).'. Refer to the '.self::primaryHtmlTags('Accounts By Bounce Activity').' chart below to visualize account bounce activity over time.',
-                        ], collect(self::getAccountsByBouncedActivityAsFinalActivityTotalReport())->toArray()),
-
-
-
-                        //
-                        array_merge([
-                            'title' => 'Never Attempted Payment',
-                            'subtitle' => 'This is the total number of unique accounts ever created that have never attempted to initiate a payment',
-                        ], collect(self::getAccountsThatHaveNeverAttemptedPaymentTotalReport())->toArray()),
-
-                        array_merge([
-                            'title' => 'Attempted Payment',
-                            'subtitle' => 'This is the total number of unique accounts ever created that have attempted to initiate a payment (whether it was successful or not)',
-                        ], collect(self::getAccountsThatHaveAttemptedPaymentTotalReport())->toArray()),
-
-
-
-
-                        array_merge([
-                            'title' => 'Paid Once',
-                            'subtitle' => 'This is the total number of unique accounts ever created that have initiated one successful payment',
-                        ], collect(self::getAccountsThatHaveOneSuccessfulPaymentTotalReport())->toArray()),
-
-                        array_merge([
-                            'title' => 'Paid More Than Once',
-                            'subtitle' => 'This is the total number of unique accounts ever created that have initiated more than one successful payment',
-                        ], collect(self::getAccountsThatHaveMoreThanOneSuccessfulPaymentTotalReport())->toArray()),
-
-                        array_merge([
-                            'title' => 'Never Failed Payment',
-                            'subtitle' => 'This is the total number of unique accounts ever created that have initiated payments that never failed',
-                        ], collect(self::getAccountsThatHaveNoFailedPaymentsTotalReport())->toArray()),
-
-                        array_merge([
-                            'title' => 'Failed Payment Once',
-                            'subtitle' => 'This is the total number of unique accounts ever created that have initiated one failed payment',
-                        ], collect(self::getAccountsThatHaveOneFailedPaymentTotalReport())->toArray()),
-
-                        array_merge([
-                            'title' => 'Failed Payment More Than Once',
-                            'subtitle' => 'This is the total number of unique accounts ever created that have initiated more than one failed payment',
-                        ], collect(self::getAccountsThatHaveMoreThanOneFailedPaymentTotalReport())->toArray()),
-
-
-
-
-                        array_merge([
-                            'title' => "Attempted \n Prepaid Payment",
-                            'subtitle' => 'This is the total number of unique accounts ever created that have initiated a prepaid payment',
-                        ], collect(self::getAccountsThatHaveAttemptedPrepaidPaymentTotalReport())->toArray()),
-
-                        array_merge([
-                            'title' => "Attempted \n Postpaid Payment",
-                            'subtitle' => 'This is the total number of unique accounts ever created that have initiated a postpaid payment',
-                        ], collect(self::getAccountsThatHaveAttemptedPostpaidPaymentTotalReport())->toArray()),
-
-                        array_merge([
-                            'title' => "Attempted \n Prepaid & Postpaid Payment",
-                            'subtitle' => 'This is the total number of unique accounts ever created that have initiated a prepaid and postpaid payment',
-                        ], collect(self::getAccountsThatHaveAttemptedPrepaidAndPostpaidPaymentTotalReport())->toArray()),
-
-
-
-
-
-
-
-
-
-
-                        //  Project connections
-
-                        array_merge([
-                            'title' => 'Project Connections',
-                            'subtitle' => 'This is the total number of unique connections established between accounts and various projects e.g If 2 accounts are associated with 10 projects each, then we have 20 connections. This includes active and inactive connections.'.self::breakHtmlTags(2).'Refer to the '.self::primaryHtmlTags('Project Connections').' chart below to visualize total connections vs project names.',
-                        ], collect(self::getProjectConnectionsTotalReport())->toArray()),
-
-                        array_merge([
-                            'title' => 'Active Project Connections',
-                            'subtitle' => 'This is the total number of unique active connections established between accounts and various projects e.g If 2 accounts are associated with 10 projects each, then we have 20 active connections. The connection is considered active if the subscriber interacted with the project recently.'.self::breakHtmlTags(2).'Refer to the '.self::primaryHtmlTags('Project Active Connections').' chart below to visualize total active connections vs project names.',
-                        ], collect(self::getActiveProjectConnectionsTotalReport())->toArray()),
-
-                        array_merge([
-                            'title' => 'Inactive Project Connections',
-                            'subtitle' => 'This is the total number of unique inactive connections established between accounts and various projects e.g If 2 accounts are associated with 10 projects each, then we have 20 inactive connections. The connection is considered inactive if the subscriber never interacted with the project recently.'.self::breakHtmlTags(2).'Refer to the '.self::primaryHtmlTags('Project Inactive Connections').' chart below to visualize total inactive connections vs project names.',
-                        ], collect(self::getInactiveProjectConnectionsTotalReport())->toArray()),
-
-                        //  App connections
-
-                        array_merge([
-                            'title' => 'App Connections',
-                            'subtitle' => 'This is the total number of unique connections established between accounts and various project apps e.g If 2 accounts are associated with 10 project apps each, then we have 20 connections. This includes active and inactive connections.'.self::breakHtmlTags(2).'Refer to the '.self::primaryHtmlTags('App Connections').' chart below to visualize total connections vs app names.',
-                        ], collect(self::getAppConnectionsTotalReport())->toArray()),
-
-                        array_merge([
-                            'title' => 'Active App Connections',
-                            'subtitle' => 'This is the total number of unique active connections established between accounts and various project apps e.g If 2 accounts are associated with 10 project apps each, then we have 20 active connections. The connection is considered active if the subscriber interacted with the app recently.'.self::breakHtmlTags(2).'Refer to the '.self::primaryHtmlTags('App Active Connections').' chart below to visualize total active connections vs app names.',
-                        ], collect(self::getActiveAppConnectionsTotalReport())->toArray()),
-
-                        array_merge([
-                            'title' => 'Inactive App Connections',
-                            'subtitle' => 'This is the total number of unique inactive connections established between accounts and various project apps e.g If 2 accounts are associated with 10 project apps each, then we have 20 inactive connections. The connection is considered inactive if the subscriber never interacted with the app recently.'.self::breakHtmlTags(2).'Refer to the '.self::primaryHtmlTags('App Inactive Connections').' chart below to visualize total inactive connections vs app names.',
-                        ], collect(self::getInactiveAppConnectionsTotalReport())->toArray()),
-
-                        //  Version connections
-
-                        array_merge([
-                            'title' => 'Version Connections',
-                            'subtitle' => 'This is the total number of unique connections established between accounts and various app versions e.g If 2 accounts are associated with 10 app versions each, then we have 20 connections. This includes active and inactive connections.'.self::breakHtmlTags(2).'Refer to the '.self::primaryHtmlTags('Version Connections').' chart below to visualize total connections vs version numbers.',
-                        ], collect(self::getVersionConnectionsTotalReport())->toArray()),
-
-                        array_merge([
-                            'title' => 'Active Version Connections',
-                            'subtitle' => 'This is the total number of unique active connections established between accounts and various app versions e.g If 2 accounts are associated with 10 app versions each, then we have 20 active connections. The connection is considered active if the subscriber interacted with the version recently.'.self::breakHtmlTags(2).'Refer to the '.self::primaryHtmlTags('Version Active Connections').' chart below to visualize total active connections vs version numbers.',
-                        ], collect(self::getActiveVersionConnectionsTotalReport())->toArray()),
-
-                        array_merge([
-                            'title' => 'Inactive Version Connections',
-                            'subtitle' => 'This is the total number of unique inactive connections established between accounts and various app versions e.g If 2 accounts are associated with 10 app versions each, then we have 20 inactive connections. The connection is considered inactive if the subscriber never interacted with the version recently.'.self::breakHtmlTags(2).'Refer to the '.self::primaryHtmlTags('Version Inactive Connections').' chart below to visualize total inactive connections vs version numbers.',
-                        ], collect(self::getInactiveVersionConnectionsTotalReport())->toArray()),
-
-                        array_merge([
-                            'title' => 'Recently Created',
-                            'subtitle' => 'This is the total number of unique accounts created ' . self::getDateRangeText().self::breakHtmlTags(2).'Refer to the '.self::primaryHtmlTags('Accounts Created').' chart below to visualize recent account creation over time.',
-                        ], collect(self::getAccountCreationTotalReport(true, true, true))->toArray()),
-
+                        [
+                            'title' => 'Total Accounts',
+                            'subtitle' => 'The total number of unique subscriber accounts ever created for this service.',
+                            'total' => number_format(self::totalAccountsReport()),
+                        ],
+                        [
+                            'title' => "Active \n (30 days)",
+                            'subtitle' => 'Subscriber accounts that dialed a service within the last 30 days.',
+                            'total' => number_format(self::getActiveAccountsByLastActivity(true, 30)),
+                        ],
+                        [
+                            'title' => 'New Accounts',
+                            'subtitle' => 'Subscriber accounts created '.self::getDateRangeText().'.',
+                            'total' => number_format(self::accountsCreatedInRangeReport()),
+                        ],
+                        [
+                            'title' => 'Sessions',
+                            'subtitle' => 'USSD sessions '.self::getDateRangeText().'.',
+                            'total' => number_format(self::sessionsInRangeReport()),
+                        ],
+                        [
+                            'title' => 'Successful',
+                            'subtitle' => 'Sessions that completed without an error '.self::getDateRangeText().'.',
+                            'total' => number_format(self::sessionsInRangeReport('success')),
+                        ],
+                        [
+                            'title' => 'Failed',
+                            'subtitle' => 'Sessions that ended in an error '.self::getDateRangeText().'.',
+                            'total' => number_format(self::sessionsInRangeReport('fail')),
+                        ],
 
                     ],
                     'charts' => [
 
-
-
-
-
-
-                        //  Account activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-4',
-                            'title' => 'Accounts By Activity',
-                            'subtitle' => 'Total accounts based on their last activity (more and less recent activity combined)',
-                            'series_name' => self::getDateType(),
-                            'series_data' => self::getAccountsByLastActivityLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getAccountsByLastActivityLineChartComparisonReport()
-                        ],
-
-                        //  Accounts more recent activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-4',
-                            'title' => 'Accounts By More Recent Activity',
-                            'subtitle' => 'Total accounts that are gaining momentum due to signs of recent activity',
-                            'description' => 'Total accounts that are gaining momentum due to signs of recent activity. These accounts are shown in respective to the time they were last active',
-                            'series_name' => self::getDateType(),
-                            'series_color' => '#83cc16',
-                            'series_data' => self::getActiveAccountsByLastActivityLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getActiveAccountsByLastActivityLineChartComparisonReport()
-                        ],
-
-                        //  Accounts less recent activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-4',
-                            'title' => 'Accounts By Less Recent Activity',
-                            'subtitle' => 'Total accounts that are losing momentum due to signs of less recent activity',
-                            'description' => 'Total accounts that are losing momentum due to signs of less recent activity. These accounts are shown in respective to the time they were last active',
-                            'series_name' => self::getDateType(),
-                            'series_color' => '#f59e0b',
-                            'series_data' => self::getInactiveAccountsByLastActivityLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getInactiveAccountsByLastActivityLineChartComparisonReport()
-                        ],
-
-                        //  Account failed activity total over time
                         [
                             'chart' => 'area',
                             'col_span' => 'col-span-6',
-                            'title' => 'Accounts By Failed Activity',
-                            'subtitle' => 'Total accounts based on their last failed activity',
-                            'description' => 'Total accounts based on their last failed activity while using a service. These accounts are shown in respective to the last time they experienced a failure while trying to use a service.'.self::breakHtmlTags(2).'Assume a subscriber dials a service and while using the service they encounter an error. At this point the account will be captured on this chart as an account that experienced a failure. If the subscriber dials again and does not encounter any issues, their last failed activity that was recorded will still show on this chart respective to the time that the failure occurred.'.self::breakHtmlTags(2).'This chart can be used to study the occurance of service failures as recent as they occur.',
-                            'series_name' => self::getDateType(),
-                            'series_color' => '#ef4444',
-                            'series_data' => self::getAccountsByLastFailedActivityLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getAccountsByLastFailedActivityLineChartComparisonReport()
-                        ],
-
-                        //  Account failed activity as final activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-6',
-                            'title' => 'Accounts By Failed Activity (Being Final Activity)',
-                            'subtitle' => 'Total accounts based on their last failed activity being the final activity by that account',
-                            'description' => 'Total accounts based on their last failed activity being the final activity by that account while using a service. These accounts are shown in respective to the last time they experienced a failure while trying to use a service. The same accounts never attempted to use services after the failure was encountered.'.self::breakHtmlTags(2).'Assume a subscriber dials a service and while using the service they encounter an error. At this point the account will be captured on this chart as an account that experienced a failure as its final activity. If the subscriber dials again and does not encounter any issues, the previous failed activity that was recorded will no longer show on this chart since the subscribers final activity was successful.'.self::breakHtmlTags(2).'This chart can be used to study subscribers that stopped using a service after experiencing a failure. These subscribers abandoned using services after these failures occured',
-                            'series_name' => self::getDateType(),
-                            'series_color' => '#ef4444',
-                            'series_data' => self::getAccountsByLastFailedActivityAsFinalActivityLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getAccountsByLastFailedActivityAsFinalActivityLineChartComparisonReport()
-                        ],
-
-                        //  Account bounce activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-6',
-                            'title' => 'Accounts By Bounce Activity',
-                            'subtitle' => 'Total accounts based on their bounce activity (Dialing once and leaving)',
-                            'description' => 'Total accounts based on their bounce activity (Dialing once and leaving). These accounts are shown in respective to the last time they dialed once and left.'.self::breakHtmlTags(2).'Assume a subscriber dials a service and while using the service they never reply to the main menu. At this point the account will be captured on this chart after the timeout limit has been exceeded (usually 120 seconds)',
-                            'series_name' => self::getDateType(),
-                            'series_color' => '#f59e0b',
-                            'series_data' => self::getAccountsByBouncedActivityLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getAccountsByBouncedActivityLineChartComparisonReport()
-                        ],
-
-                        //  Account bounce activity as final activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-6',
-                            'title' => 'Accounts By Bounce Activity (Being Final Activity)',
-                            'subtitle' => 'Total accounts based on their bounce activity being the final activity',
-                            'description' => 'Total accounts based on their bounce activity (Dialing once and leaving). These accounts are shown in respective to the last time they dialed once and left.'.self::breakHtmlTags(2).'Assume a subscriber dials a service and while using the service they never reply to the main menu. At this point the account will be captured on this chart after the timeout limit has been exceeded (usually 120 seconds)',
-                            'series_name' => self::getDateType(),
-                            'series_color' => '#f59e0b',
-                            'series_data' => self::getAccountsByBouncedActivityAsFinalActivityLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getAccountsByBouncedActivityAsFinalActivityLineChartComparisonReport()
-                        ],
-
-
-
-
-
-
-
-                        //  Account by lifespan
-                        [
-                            'chart' => 'bar',
-                            'col_span' => 'col-span-12',
-                            'title' => 'Accounts By Lifespan',
-                            'subtitle' => 'Total accounts based on their lifespan since creation',
-                            'description' => 'Total accounts based on their lifespan since creation. The account lifespan is the time elapsed between the first session ever recorded for each account and the current time.'.self::breakHtmlTags(2).'Assume a subscriber dials a service today, and 7 days elapse whether or not the subscriber returns again. The time difference between that first session and the current time now (after 7 days) means this account falls under the '.self::primaryHtmlTags('≤ 1 week').' category.'.self::breakHtmlTags(2).'This chart will capture every account whether active or inactive and can be used to study the various accounts as assigned to respective age groups since creation to date. This gives offers clarity to the age of accounts',
-                            'series_name' => 'total accounts',
-                            'series_data' => self::getAccountsByLifespanLineChartReport()
-                        ],
-
-                        //  Active account by lifespan
-                        [
-                            'chart' => 'bar',
-                            'col_span' => 'col-span-6',
-                            'title' => 'Active Accounts By Lifespan',
-                            'subtitle' => 'Total active accounts based on their lifespan',
-                            'description' => 'Total active accounts based on their lifespan since creation. The account lifespan is the time elapsed between the first session ever recorded for each account and the current time.'.self::breakHtmlTags(2).'Assume a subscriber dials a service today, and 7 days elapse whether or not the subscriber returns again. The time difference between that first session and the current time now (after 7 days) means this account falls under the '.self::primaryHtmlTags('≤ 1 week').' category.'.self::breakHtmlTags(2).'This chart will capture every account as long as it remains active and can be used to study the various active accounts as assigned to respective age groups since creation to date. This gives offers clarity to the age of active accounts',
-                            'series_name' => 'total active accounts',
-                            'series_color' => '#83cc16',
-                            'series_data' => self::getActiveAccountsByLifespanLineChartReport()
-                        ],
-
-                        //  Inactive account by lifespan
-                        [
-                            'chart' => 'bar',
-                            'col_span' => 'col-span-6',
-                            'title' => 'Inactive Accounts By Lifespan',
-                            'subtitle' => 'Total inactive accounts based on their lifespan',
-                            'description' => 'Total inactive accounts based on their lifespan since creation. The account lifespan is the time elapsed between the first session ever recorded for each account and the current time.'.self::breakHtmlTags(2).'Assume a subscriber dials a service today, and 7 days elapse whether or not the subscriber returns again. The time difference between that first session and the current time now (after 7 days) means this account falls under the '.self::primaryHtmlTags('≤ 1 week').' category.'.self::breakHtmlTags(2).'This chart will capture every account as long as it remains inactive and can be used to study the various inactive accounts as assigned to respective age groups since creation to date. This gives offers clarity to the age of inactive accounts',
-                            'series_name' => 'total inactive accounts',
-                            'series_color' => '#f59e0b',
-                            'series_data' => self::getInactiveAccountsByLifespanLineChartReport()
-                        ],
-
-
-
-
-
-
-
-
-
-
-
-                        //  Account by session count
-                        [
-                            'chart' => 'bar',
-                            'col_span' => 'col-span-12',
-                            'title' => 'Accounts By Sessions',
-                            'subtitle' => 'Total accounts based on their session count',
-                            'description' => 'Total accounts based on their session count. Accounts are shown in respective to the total number of sessions produced.'.self::breakHtmlTags(2).'Assume a subscriber dials a service 25 times over a period of time therefore resulting in 25 different sessions. This means that this account falls under the '.self::primaryHtmlTags('20 < x ≤ 30').' category indicating the class respective to the total sessions.'.self::breakHtmlTags(2).'This chart will capture every account whether active or inactive and can be used to study the common range of sessions executed by various accounts.',
-                            'series_name' => 'total accounts',
-                            'series_data' => self::getAccountsBySessionsLineChartReport()
-                        ],
-
-                        //  Active account by session count
-                        [
-                            'chart' => 'bar',
-                            'col_span' => 'col-span-6',
-                            'title' => 'Active Accounts By Sessions',
-                            'subtitle' => 'Total active accounts based on their session count',
-                            'description' => 'Total active accounts based on their session count. Accounts are shown in respective to the total number of sessions produced.'.self::breakHtmlTags(2).'Assume a subscriber dials a service 25 times over a period of time therefore resulting in 25 different sessions. This means that this account falls under the '.self::primaryHtmlTags('20 < x ≤ 30').' category indicating the class respective to the total sessions.'.self::breakHtmlTags(2).'This chart will capture every account as long as it remains active and can be used to study the common range of sessions executed by various active accounts.',
-                            'series_name' => 'total active accounts',
-                            'series_color' => '#83cc16',
-                            'series_data' => self::getActiveAccountsBySessionsLineChartReport()
-                        ],
-
-                        //  Inactive account by session count
-                        [
-                            'chart' => 'bar',
-                            'col_span' => 'col-span-6',
-                            'title' => 'Inactive Accounts By Sessions',
-                            'subtitle' => 'Total inactive accounts based on their session count',
-                            'description' => 'Total inactive accounts based on their session count. Accounts are shown in respective to the total number of sessions produced.'.self::breakHtmlTags(2).'Assume a subscriber dials a service 25 times over a period of time therefore resulting in 25 different sessions. This means that this account falls under the '.self::primaryHtmlTags('20 < x ≤ 30').' category indicating the class respective to the total sessions.'.self::breakHtmlTags(2).'This chart will capture every account as long as it remains inactive and can be used to study the common range of sessions executed by various inactive accounts.',
-                            'series_name' => 'total inactive accounts',
-                            'series_color' => '#f59e0b',
-                            'series_data' => self::getInactiveAccountsBySessionsLineChartReport()
-                        ],
-
-
-
-
-
-
-
-
-
-                        //  Account by session duration
-                        [
-                            'chart' => 'bar',
-                            'col_span' => 'col-span-12',
-                            'title' => 'Accounts By Overall Session Duration',
-                            'subtitle' => 'Total accounts based on their overall session duration',
-                            'description' => 'Total accounts based on their overall session duration. Accounts are shown in respective to the total session duration which is the total time spent interacting with a single service or multiple services.'.self::breakHtmlTags(2).'Assume a subscriber dials a service and spends 5 minutes and then later dials again and spends 10 minutes. This means that this account falls under the '.self::primaryHtmlTags('14 < x < 16').' category indicating the class respective to the total time spent.'.self::breakHtmlTags(2).'This chart will capture every account whether active or inactive and can be used to study the common range of session duration (time spent using services) executed by various accounts.',
-                            'series_name' => 'total accounts',
-                            'series_data' => self::getAccountsByOverallSessionDurationLineChartReport()
-                        ],
-
-                        //  Active account by session duration
-                        [
-                            'chart' => 'bar',
-                            'col_span' => 'col-span-6',
-                            'title' => 'Active Accounts By Overall Session Duration',
-                            'subtitle' => 'Total active accounts based on their overall session duration',
-                            'description' => 'Total accounts based on their overall session duration. Accounts are shown in respective to the total session duration which is the total time spent interacting with a single service or multiple services.'.self::breakHtmlTags(2).'Assume a subscriber dials a service and spends 5 minutes and then later dials again and spends 10 minutes. This means that this account falls under the '.self::primaryHtmlTags('14 < x < 16').' category indicating the class respective to the total time spent.'.self::breakHtmlTags(2).'This chart will capture every account as long as it remains active and can be used to study the common range of session duration (time spent using services) executed by various active accounts.',
-                            'series_name' => 'total active accounts',
-                            'series_color' => '#83cc16',
-                            'series_data' => self::getActiveAccountsByOverallSessionDurationLineChartReport()
-                        ],
-
-                        //  Inactive account by session duration
-                        [
-                            'chart' => 'bar',
-                            'col_span' => 'col-span-6',
-                            'title' => 'Inactive Accounts By Overall Session Duration',
-                            'subtitle' => 'Total inactive accounts based on their overall session duration',
-                            'description' => 'Total accounts based on their overall session duration. Accounts are shown in respective to the total session duration which is the total time spent interacting with a single service or multiple services.'.self::breakHtmlTags(2).'Assume a subscriber dials a service and spends 5 minutes and then later dials again and spends 10 minutes. This means that this account falls under the '.self::primaryHtmlTags('14 < x < 16').' category indicating the class respective to the total time spent.'.self::breakHtmlTags(2).'This chart will capture every account as long as it remains inactive and can be used to study the common range of session duration (time spent using services) executed by various inactive accounts.',
-                            'series_name' => 'total inactive accounts',
-                            'series_color' => '#f59e0b',
-                            'series_data' => self::getInactiveAccountsByOverallSessionDurationLineChartReport()
-                        ],
-
-
-
-
-
-
-
-
-
-
-
-                        //  Account by average session duration
-                        [
-                            'chart' => 'bar',
-                            'col_span' => 'col-span-12',
-                            'title' => 'Accounts By Average Session Duration',
-                            'subtitle' => 'Total accounts based on their average session duration',
-                            'description' => 'Total accounts based on their average session duration. Accounts are shown in respective to the total average session duration which is the total time spent interacting with a single service or multiple services.'.self::breakHtmlTags(2).'Assume a subscriber dials a service and spends 5 minutes and then later dials again and spends 10 minutes. This means that this account falls under the '.self::primaryHtmlTags('14 mins < x < 16 mins').' category indicating the class respective to the total time spent.'.self::breakHtmlTags(2).'This chart will capture every account whether active or inactive and can be used to study the common range of average session duration (time spent using services) executed by various accounts.',
-                            'series_name' => 'total accounts',
-                            'series_data' => self::getAccountsByAverageSessionDurationLineChartReport()
-                        ],
-
-                        //  Active account by average session duration
-                        [
-                            'chart' => 'bar',
-                            'col_span' => 'col-span-6',
-                            'title' => 'Active Accounts By Average Session Duration',
-                            'subtitle' => 'Total active accounts based on their average session duration',
-                            'description' => 'Total accounts based on their average session duration. Accounts are shown in respective to the total average session duration which is the total time spent interacting with a single service or multiple services.'.self::breakHtmlTags(2).'Assume a subscriber dials a service and spends 5 minutes and then later dials again and spends 10 minutes. This means that this account falls under the '.self::primaryHtmlTags('14 < x < 16').' category indicating the class respective to the total time spent.'.self::breakHtmlTags(2).'This chart will capture every account as long as it remains active and can be used to study the common range of average session duration (time spent using services) executed by various active accounts.',
-                            'series_name' => 'total active accounts',
-                            'series_color' => '#83cc16',
-                            'series_data' => self::getActiveAccountsByAverageSessionDurationLineChartReport()
-                        ],
-
-                        //  Inactive account by average session duration
-                        [
-                            'chart' => 'bar',
-                            'col_span' => 'col-span-6',
-                            'title' => 'Inactive Accounts By Average Session Duration',
-                            'subtitle' => 'Total inactive accounts based on their average session duration',
-                            'description' => 'Total accounts based on their average session duration. Accounts are shown in respective to the total average session duration which is the total time spent interacting with a single service or multiple services.'.self::breakHtmlTags(2).'Assume a subscriber dials a service and spends 5 minutes and then later dials again and spends 10 minutes. This means that this account falls under the '.self::primaryHtmlTags('14 < x < 16').' category indicating the class respective to the total time spent.'.self::breakHtmlTags(2).'This chart will capture every account as long as it remains inactive and can be used to study the common range of average session duration (time spent using services) executed by various inactive accounts.',
-                            'series_name' => 'total inactive accounts',
-                            'series_color' => '#f59e0b',
-                            'series_data' => self::getInactiveAccountsByAverageSessionDurationLineChartReport()
-                        ],
-
-
-
-
-
-
-
-
-
-
-
-
-
-                        //  Account creation total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-12',
                             'title' => 'Accounts Created',
-                            'subtitle' => 'Total accounts created over time',
+                            'subtitle' => 'New subscriber accounts over the selected period.',
                             'series_name' => self::getDateType(),
+                            'series_color' => '#3b82f6',
                             'series_data' => self::getAccountCreationLineChartReport(),
                             'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getAccountCreationLineChartComparisonReport()
+                            'comparison_series_data' => self::getAccountCreationLineChartComparisonReport(),
                         ],
 
-
-
-
-                        //  Account By Shortcode (Name vs Total)
                         [
-                            'chart' => 'column',
-                            'title' => 'Accounts By Dialed Shortcodes',
-                            'subtitle' => 'Total accounts by shortcodes dialed',
-                            'description' => 'Total accounts based on shortcodes dialed. Each shortcode consists of the total number of unique accounts that have dialed that particular shortcode atleast once since that account was created.'.self::breakHtmlTags(2).'This chart will capture every account whether it dialed the shortcode more or less recently and can be used to study the popularity of shortcodes among existing accounts',
-                            'series_name' => 'shortcodes',
-                            'series_data' => self::getAccountsByShortcodeColumnChartReport()
-                        ],
-
-                        //  Active Account By Shortcode (Name vs Total)
-                        [
-                            'chart' => 'column',
-                            'title' => 'Accounts By More Recently Dialed Shortcodes',
-                            'subtitle' => 'Total accounts by shortcodes dialed more recently (gaining momentum)',
-                            'description' => 'Total accounts based on shortcodes dialed more recently. Each shortcode consists of the total number of unique accounts that have dialed that particular shortcode atleast once since that account was created.'.self::breakHtmlTags(2).'This chart will capture every account as long as the last time that the account dialed the shortcode was a more recent event. Assume a subscriber dials *100#, then this account will be counted since this activity just happened. If the same account does not dial the same shortcode for some time, the account will no longer be counted due to signs of inactivity on this shortcode.'.self::breakHtmlTags(2).'This can be used to study shortcodes that have been dialed more recently and momentarily gaining momentum (activity from subscribers). Read this as "This many accounts (subscribers) dialed this shortcode" recently',
-                            'series_name' => 'shortcodes',
+                            'chart' => 'area',
+                            'col_span' => 'col-span-6',
+                            'title' => 'Sessions',
+                            'subtitle' => 'USSD sessions over the selected period.',
+                            'series_name' => self::getDateType(),
                             'series_color' => '#83cc16',
-                            'series_data' => self::getActiveAccountsByShortcodeColumnChartReport()
+                            'series_data' => self::getSessionsLineChartReport(),
+                            'comparison_series_name' => self::getComparisonDateType(),
+                            'comparison_series_data' => self::getSessionsLineChartComparisonReport(),
                         ],
 
-                        //  Inactive Account By Shortcode (Name vs Total)
                         [
                             'chart' => 'column',
-                            'title' => 'Accounts By Less Recently Dialed Shortcodes (losing momentum)',
-                            'description' => 'Total accounts based on shortcodes dialed less recently. Each shortcode consists of the total number of unique accounts that have dialed that particular shortcode atleast once since that account was created.'.self::breakHtmlTags(2).'This chart will capture every account as long as the last time that the account dialed the shortcode was a less recent event. Assume a subscriber dials *100#, then this account will not be counted since this activity just happened. If the same account does not dial the same shortcode for some time, the account will then be counted due to signs of inactivity on this shortcode.'.self::breakHtmlTags(2).'This can be used to study shortcodes that have been dialed less recently and momentarily losing momentum (activity from subscribers). Read this as "This many accounts (subscribers) haven\'t dialed this shortcode" recently',
-                            'series_name' => 'shortcodes',
-                            'series_color' => '#f59e0b',
-                            'series_data' => self::getInactiveAccountsByShortcodeColumnChartReport()
+                            'col_span' => 'col-span-6',
+                            'title' => 'Sessions by Service Code',
+                            'subtitle' => 'Which USSD short codes are being dialed '.self::getDateRangeText().'.',
+                            'series_name' => 'Sessions',
+                            'series_data' => self::getSessionsByServiceCodeColumnChartReport(),
                         ],
 
-
-
-
-
-
-
-                        //  Project Connections (Name vs Total)
                         [
                             'chart' => 'column',
-                            'title' => 'Project Connections',
-                            'subtitle' => 'Total account to project associations',
-                            'series_name' => 'connections',
-                            'series_data' => self::getProjectConnectionsColumnChartReport()
+                            'col_span' => 'col-span-6',
+                            'title' => 'Subscribers by App',
+                            'subtitle' => 'Unique subscribers connected to each app.',
+                            'series_name' => 'Subscribers',
+                            'series_data' => self::getAppConnectionsColumnChartReport(),
                         ],
 
-                        //  Active Project Connections (Name vs Total)
-                        [
-                            'chart' => 'column',
-                            'title' => 'Active Project Connections',
-                            'subtitle' => 'Total account to project active associations',
-                            'series_name' => 'active connections',
-                            'series_color' => '#83cc16',
-                            'series_data' => self::getActiveProjectConnectionsColumnChartReport()
-                        ],
-
-                        //  Inactive Project Connections (Name vs Total)
-                        [
-                            'chart' => 'column',
-                            'title' => 'Inactive Project Connections',
-                            'subtitle' => 'Total account to project inactive associations',
-                            'series_name' => 'inactive connections',
-                            'series_color' => '#f59e0b',
-                            'series_data' => self::getInactiveProjectConnectionsColumnChartReport()
-                        ],
-
-                        //  App Connections (Name vs Total)
-                        [
-                            'chart' => 'column',
-                            'title' => 'App Connections',
-                            'subtitle' => 'Total account to app associations',
-                            'series_name' => 'connections',
-                            'series_data' => self::getAppConnectionsColumnChartReport()
-                        ],
-
-                        //  Active App Connections (Name vs Total)
-                        [
-                            'chart' => 'column',
-                            'title' => 'Active App Connections',
-                            'subtitle' => 'Total account to app active associations',
-                            'series_name' => 'active connections',
-                            'series_color' => '#83cc16',
-                            'series_data' => self::getActiveAppConnectionsColumnChartReport()
-                        ],
-
-                        //  Inactive App Connections (Name vs Total)
-                        [
-                            'chart' => 'column',
-                            'title' => 'Inactive App Connections',
-                            'subtitle' => 'Total account to app inactive associations',
-                            'series_name' => 'inactive connections',
-                            'series_color' => '#f59e0b',
-                            'series_data' => self::getInactiveAppConnectionsColumnChartReport()
-                        ],
-
-                        //  Version Connections (Number vs Total)
-                        [
-                            'chart' => 'column',
-                            'title' => 'Version Connections',
-                            'subtitle' => 'Total account to version associations',
-                            'series_name' => 'connections',
-                            'series_data' => self::getVersionConnectionsColumnChartReport()
-                        ],
-
-                        //  Active Version Connections (Number vs Total)
-                        [
-                            'chart' => 'column',
-                            'title' => 'Active Version Connections',
-                            'subtitle' => 'Total account to version active associations',
-                            'series_name' => 'active connections',
-                            'series_color' => '#83cc16',
-                            'series_data' => self::getActiveVersionConnectionsColumnChartReport()
-                        ],
-
-                        //  Inactive Version Connections (Number vs Total)
-                        [
-                            'chart' => 'column',
-                            'title' => 'Inactive Version Connections',
-                            'subtitle' => 'Total account to version inactive associations',
-                            'series_name' => 'inactive connections',
-                            'series_color' => '#f59e0b',
-                            'series_data' => self::getInactiveVersionConnectionsColumnChartReport()
-                        ],
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                        //  Account payment activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-4',
-                            'title' => 'Accounts By Attempted Payments',
-                            'subtitle' => 'Total accounts based on their last attempted payment activity (more and less recent activity combined)',
-                            'series_name' => self::getDateType(),
-                            'series_data' => self::getAccountsThatHaveAttemptedPaymentLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getAccountsThatHaveAttemptedPaymentLineChartComparisonReport()
-                        ],
-
-                        //  Active Account payment activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-4',
-                            'title' => 'Active Accounts By Attempted Payments',
-                            'subtitle' => 'Total accounts based on their last attempted payment activity (more recent activity)',
-                            'series_name' => self::getDateType(),
-                            'series_data' => self::getActiveAccountsThatHaveAttemptedPaymentLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getActiveAccountsThatHaveAttemptedPaymentLineChartComparisonReport()
-                        ],
-
-                        //  Inactive Account payment activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-4',
-                            'title' => 'Inactive Accounts By Attempted Payments',
-                            'subtitle' => 'Total accounts based on their last attempted payment activity (less recent activity)',
-                            'series_name' => self::getDateType(),
-                            'series_data' => self::getInactiveAccountsThatHaveAttemptedPaymentLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getInactiveAccountsThatHaveAttemptedPaymentLineChartComparisonReport()
-                        ],
-
-
-
-                        //  Account one payment activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-4',
-                            'title' => 'Accounts By One Successful Payment',
-                            'subtitle' => 'Total accounts based on their last attempted payment activity (more and less recent activity combined)',
-                            'series_name' => self::getDateType(),
-                            'series_data' => self::getAccountsThatHaveOneSuccessfulPaymentLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getAccountsThatHaveOneSuccessfulPaymentLineChartComparisonReport()
-                        ],
-
-                        //  Active Account one payment activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-4',
-                            'title' => 'Active Accounts By One Successful Payment',
-                            'subtitle' => 'Total accounts based on their last attempted payment activity (more recent activity)',
-                            'series_name' => self::getDateType(),
-                            'series_data' => self::getActiveAccountsThatHaveOneSuccessfulPaymentLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getActiveAccountsThatHaveOneSuccessfulPaymentLineChartComparisonReport()
-                        ],
-
-                        //  Inactive Account one payment activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-4',
-                            'title' => 'Inactive Accounts By One Successful Payment',
-                            'subtitle' => 'Total accounts based on their last attempted payment activity (less recent activity)',
-                            'series_name' => self::getDateType(),
-                            'series_data' => self::getInactiveAccountsThatHaveOneSuccessfulPaymentLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getInactiveAccountsThatHaveOneSuccessfulPaymentLineChartComparisonReport()
-                        ],
-
-
-
-
-
-
-
-                        //  Account more than one payment activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-4',
-                            'title' => 'Accounts By More Than One Successful Payment',
-                            'subtitle' => 'Total accounts based on their last attempted payment activity (more and less recent activity combined)',
-                            'series_name' => self::getDateType(),
-                            'series_data' => self::getAccountsThatHaveMoreThanOneSuccessfulPaymentLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getAccountsThatHaveMoreThanOneSuccessfulPaymentLineChartComparisonReport()
-                        ],
-
-                        //  Active Account more than one payment activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-4',
-                            'title' => 'Active Accounts By More Than One Successful Payment',
-                            'subtitle' => 'Total accounts based on their last attempted payment activity (more recent activity)',
-                            'series_name' => self::getDateType(),
-                            'series_data' => self::getActiveAccountsThatHaveMoreThanOneSuccessfulPaymentLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getActiveAccountsThatHaveMoreThanOneSuccessfulPaymentLineChartComparisonReport()
-                        ],
-
-                        //  Inactive Account more than one payment activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-4',
-                            'title' => 'Inactive Accounts By More Than One Successful Payment',
-                            'subtitle' => 'Total accounts based on their last attempted payment activity (less recent activity)',
-                            'series_name' => self::getDateType(),
-                            'series_data' => self::getInactiveAccountsThatHaveMoreThanOneSuccessfulPaymentLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getInactiveAccountsThatHaveMoreThanOneSuccessfulPaymentLineChartComparisonReport()
-                        ],
-
-
-
-
-
-                        //  Account by one failed payment activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-4',
-                            'title' => 'Accounts By One Failed Payment',
-                            'subtitle' => 'Total accounts based on their last attempted payment activity (more and less recent activity combined)',
-                            'series_name' => self::getDateType(),
-                            'series_color' => '#ef4444',
-                            'series_data' => self::getAccountsThatHaveOneFailedPaymentLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getAccountsThatHaveOneFailedPaymentLineChartComparisonReport()
-                        ],
-
-                        //  Active Account by one failed payment activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-4',
-                            'title' => 'Active Accounts By One Failed Payment',
-                            'subtitle' => 'Total accounts based on their last attempted payment activity (more recent activity)',
-                            'series_name' => self::getDateType(),
-                            'series_color' => '#ef4444',
-                            'series_data' => self::getActiveAccountsThatHaveOneFailedPaymentLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getActiveAccountsThatHaveOneFailedPaymentLineChartComparisonReport()
-                        ],
-
-                        //  Inactive Account by one failed payment activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-4',
-                            'title' => 'Inactive Accounts By One Failed Payment',
-                            'subtitle' => 'Total accounts based on their last attempted payment activity (less recent activity)',
-                            'series_name' => self::getDateType(),
-                            'series_color' => '#ef4444',
-                            'series_data' => self::getInactiveAccountsThatHaveOneFailedPaymentLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getInactiveAccountsThatHaveOneSuccessfulPaymentLineChartComparisonReport()
-                        ],
-
-
-
-
-
-
-
-                        //  Account by more than one failed payment activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-4',
-                            'title' => 'Accounts By More Than One Failed Payment',
-                            'subtitle' => 'Total accounts based on their last attempted payment activity (more and less recent activity combined)',
-                            'series_name' => self::getDateType(),
-                            'series_color' => '#ef4444',
-                            'series_data' => self::getAccountsThatHaveMoreThanOneFailedPaymentLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getAccountsThatHaveMoreThanOneFailedPaymentLineChartComparisonReport()
-                        ],
-
-                        //  Active Account by more than one failed payment activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-4',
-                            'title' => 'Active Accounts By More Than One Failed Payment',
-                            'subtitle' => 'Total accounts based on their last attempted payment activity (more recent activity)',
-                            'series_name' => self::getDateType(),
-                            'series_color' => '#ef4444',
-                            'series_data' => self::getActiveAccountsThatHaveMoreThanOneFailedPaymentLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getActiveAccountsThatHaveMoreThanOneFailedPaymentLineChartComparisonReport()
-                        ],
-
-                        //  Inactive Account by more than one failed payment activity total over time
-                        [
-                            'chart' => 'area',
-                            'col_span' => 'col-span-4',
-                            'title' => 'Inactive Accounts By More Than One Failed Payment',
-                            'subtitle' => 'Total accounts based on their last attempted payment activity (less recent activity)',
-                            'series_name' => self::getDateType(),
-                            'series_color' => '#ef4444',
-                            'series_data' => self::getInactiveAccountsThatHaveMoreThanOneFailedPaymentLineChartReport(),
-                            'comparison_series_name' => self::getComparisonDateType(),
-                            'comparison_series_data' => self::getInactiveAccountsThatHaveMoreThanOneSuccessfulPaymentLineChartComparisonReport()
-                        ],
-
-
-
-                    ]
-                ],
-                /*
-                'sessionReport' => [
-                    'overview' => [
-                        array_merge(['name' => 'Sessions'], self::getSessionReport()),
                     ],
-                    'charts' => [
-
-                        //  Session total over time
-                        [
-                            'chart' => 'line',
-                            'title' => self::getDateType(),
-                            'data' => self::getSessionTotalOverTimeReport(),
-                            'comparison_title' => self::getComparisonDateType(),
-                            'comparison_data' => self::getSessionTotalOverTimeComparisonReport()
-                        ]
-                    ]
                 ],
-                */
                 'aboutReport' => [
                     'date_range_text' => self::getDateRangeText(),
                     'date_range_comparison_text' => self::getDateRangeComparisonText()
                 ],
             ]
         ];
+    }
 
-        //  Merge the payload with the project, app and version payloads
-        $payload = self::mergeAdditionalPayloads($payload);
+    /************************
+     *  Lean report helpers *
+     ***********************/
 
-        //  Return payload
-        return $payload;
+    /** All subscriber accounts ever created (all-time, unaffected by the date filter). */
+    protected static function totalAccountsReport()
+    {
+        return DB::table('ussd_accounts')->count();
+    }
+
+    /** Subscriber accounts created within the selected date range. */
+    protected static function accountsCreatedInRangeReport()
+    {
+        return self::filterByDateConstraints(DB::table('ussd_accounts'), 'created_at')->count();
+    }
+
+    /** USSD sessions within the selected date range, optionally by outcome. */
+    protected static function sessionsInRangeReport($status = null)
+    {
+        $query = self::filterByDateConstraints(DB::table('ussd_sessions'), 'created_at');
+
+        if ($status === 'success') $query->where('fatal_error', 0);
+        if ($status === 'fail')    $query->where('fatal_error', 1);
+
+        return $query->count();
+    }
+
+    /** Sessions over time (bucketed + counted in SQL, same shape as the accounts chart). */
+    public static function getSessionsLineChartReport()
+    {
+        return self::groupByDateConstraintsSql(DB::table('ussd_sessions'), 'created_at', false);
+    }
+
+    public static function getSessionsLineChartComparisonReport()
+    {
+        return self::groupByDateConstraintsSql(DB::table('ussd_sessions'), 'created_at', true);
+    }
+
+    /** Sessions grouped by dialed short code (top N), within the selected date range. */
+    public static function getSessionsByServiceCodeColumnChartReport()
+    {
+        $rows = self::filterByDateConstraints(DB::table('ussd_sessions'), 'created_at')
+            ->select('service_code as name', DB::raw('COUNT(*) as total'))
+            ->groupBy('service_code')
+            ->orderByDesc('total')
+            ->get();
+
+        return self::setXandYaxis($rows, 'total', 'name', self::getColumnChartLimit());
     }
 
 
