@@ -1136,8 +1136,9 @@ class ReportPayloadService extends BasePayloadService
      */
     public static function getAccountCreationLineChartReport()
     {
-        $queryCollection = resolve(UssdAccount::class)->oldest()->get();
-        return self::groupByDateConstraints(self::filterByDateConstraints($queryCollection));
+        //  Bucket + count entirely in SQL (was: hydrate ALL accounts as models then
+        //  Carbon::parse every row — OOM at scale, e.g. a window spanning >1M rows).
+        return self::groupByDateConstraintsSql(DB::table('ussd_accounts'), 'created_at', false);
     }
 
     /**
@@ -1145,8 +1146,7 @@ class ReportPayloadService extends BasePayloadService
      */
     public static function getAccountCreationLineChartComparisonReport()
     {
-        $queryCollection = resolve(UssdAccount::class)->oldest()->get();
-        return self::groupByDateConstraints(self::filterComparisonDateConstraints($queryCollection));
+        return self::groupByDateConstraintsSql(DB::table('ussd_accounts'), 'created_at', true);
     }
 
     /***************************************
@@ -1308,33 +1308,24 @@ class ReportPayloadService extends BasePayloadService
      */
     public static function getAccountsByLastFailedActivityAsFinalActivity($count = false)
     {
-        $collection = DB::table('ussd_accounts')
-            ->select('ussd_accounts.id', 'ussd_sessions.fatal_error', DB::raw("MAX(ussd_sessions.updated_at) as updated_at"))
+        //  Greatest-per-group in SQL (was: hydrate every (account, fatal_error) row then
+        //  group/sort/filter in PHP). For each account we group its sessions by fatal_error,
+        //  take each group's MAX(updated_at), then ROW_NUMBER ranks those groups so rn=1 is the
+        //  account's most-recent group. Keeping rn=1 AND fatal_error=1 yields the accounts whose
+        //  final activity was a failure — identical to the old top-of-stack selection.
+        $ranked = DB::table('ussd_accounts')
             ->join('ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
-            ->groupBy('ussd_accounts.id', 'fatal_error')
-            ->orderByDesc('updated_at')
-            ->get();
+            ->selectRaw('ussd_accounts.id as id, ussd_sessions.fatal_error as fatal_error, '
+                .'MAX(ussd_sessions.updated_at) as updated_at, '
+                .'ROW_NUMBER() OVER (PARTITION BY ussd_accounts.id ORDER BY MAX(ussd_sessions.updated_at) DESC) as rn')
+            ->groupBy('ussd_accounts.id', 'ussd_sessions.fatal_error');
 
-        /**
-         *  We need to collect the top-most account-to-session record of each grouped record so
-         *  that we can determine whether the top-most record is composed of a failed session.
-         *
-         *  We then need to capture account-to-session records that have failed
-         */
-        $collection = collect($collection)->groupBy('id')->map(function($groupRecords){
+        $instance = DB::query()->fromSub($ranked, 't')
+            ->select('id', 'fatal_error', 'updated_at')
+            ->where('rn', 1)
+            ->where('fatal_error', 1);
 
-            /**
-             *  Sort the related records according to the updated_at so that
-             *  we can retrieve the record a the top of the stack. We want
-             *  to capture the top-most record with the latest fatal_error
-             */
-            return collect($groupRecords)->sortByDesc('updated_at')->first();
-
-        })->flatten()->filter(function($record){
-            return $record->fatal_error == 1;
-        });
-
-        return $count ? $collection->count() : $collection;
+        return $count ? self::countGroups($instance) : $instance->get();
     }
 
     /**
@@ -1420,35 +1411,25 @@ class ReportPayloadService extends BasePayloadService
          *  duration (the duration before timeout) before being captured while any other session that
          *  has a request type other than 1 can be collection immediately.
          */
-        $collection = DB::table('ussd_accounts')
-            ->select('ussd_accounts.id', 'ussd_sessions.request_type', DB::raw("MAX(ussd_sessions.timeout_at) as timeout_at"))
-            ->havingRaw('(request_type = ? AND timeout_at <= ?) OR (request_type != 1)', ['1', Carbon::now()])
+        //  Greatest-per-group in SQL (was: hydrate every (account, request_type) row then
+        //  group/sort/filter in PHP). request_type=1 groups only qualify once timed out
+        //  (timeout_at <= now); other request types qualify immediately (the HAVING). Groups
+        //  are ranked per account by MAX(timeout_at) so rn=1 is the most-recent group; keeping
+        //  rn=1 AND request_type=1 yields accounts whose final activity was a bounce.
+        $ranked = DB::table('ussd_accounts')
             ->join('ussd_sessions', 'ussd_accounts.id', '=', 'ussd_sessions.ussd_account_id')
-            ->groupBy('ussd_accounts.id', 'request_type')
-            ->orderByDesc('timeout_at')
-            ->get();
+            ->selectRaw('ussd_accounts.id as id, ussd_sessions.request_type as request_type, '
+                .'MAX(ussd_sessions.timeout_at) as timeout_at, '
+                .'ROW_NUMBER() OVER (PARTITION BY ussd_accounts.id ORDER BY MAX(ussd_sessions.timeout_at) DESC) as rn')
+            ->groupBy('ussd_accounts.id', 'ussd_sessions.request_type')
+            ->havingRaw('(request_type = ? AND MAX(ussd_sessions.timeout_at) <= ?) OR (request_type != 1)', ['1', Carbon::now()]);
 
-        /**
-         *  We need to collect the top-most account-to-session record of each grouped record so
-         *  that we can determine whether the top-most record is a bounced session.
-         *
-         *  We then need to capture account-to-session records that have failed
-         */
-        $collection = collect($collection)->groupBy('id')->map(function($groupRecords){
+        $instance = DB::query()->fromSub($ranked, 't')
+            ->select('id', 'request_type', 'timeout_at')
+            ->where('rn', 1)
+            ->where('request_type', 1);
 
-            /**
-             *  Sort the related records according to the timeout_at so that
-             *  we can retrieve the record a the top of the stack. We want
-             *  to capture the top-most record with the request type
-             *  equal to "1"
-             */
-            return collect($groupRecords)->sortByDesc('timeout_at')->first();
-
-        })->flatten()->filter(function($record){
-            return $record->request_type == 1;
-        });
-
-        return $count ? $collection->count() : $collection;
+        return $count ? self::countGroups($instance) : $instance->get();
     }
 
     /**
@@ -1487,7 +1468,7 @@ class ReportPayloadService extends BasePayloadService
             ->groupBy('ussd_accounts.id')
             ->select('ussd_accounts.id');
 
-        return $count ? $instance->get()->count() : $instance->get();
+        return $count ? self::countGroups($instance) : $instance->get();
     }
 
     /**
@@ -1504,7 +1485,7 @@ class ReportPayloadService extends BasePayloadService
         /**
          *  Using count() alone does not output the correct result the we must get() then count()
          */
-        return $count ? $instance->get()->count() : $instance->get();
+        return $count ? self::countGroups($instance) : $instance->get();
     }
 
     /**
@@ -1523,7 +1504,7 @@ class ReportPayloadService extends BasePayloadService
         /**
          *  Using count() alone does not output the correct result the we must get() then count()
          */
-        return $count ? $instance->get()->count() : $instance->get();
+        return $count ? self::countGroups($instance) : $instance->get();
     }
 
     /**
@@ -1542,7 +1523,7 @@ class ReportPayloadService extends BasePayloadService
         /**
          *  Using count() alone does not output the correct result the we must get() then count()
          */
-        return $count ? $instance->get()->count() : $instance->get();
+        return $count ? self::countGroups($instance) : $instance->get();
     }
 
     /**
@@ -1556,7 +1537,7 @@ class ReportPayloadService extends BasePayloadService
             ->groupBy('ussd_accounts.id')
             ->select('ussd_accounts.id');
 
-        return $count ? $instance->get()->count() : $instance->get();
+        return $count ? self::countGroups($instance) : $instance->get();
     }
 
     /**
@@ -1570,7 +1551,7 @@ class ReportPayloadService extends BasePayloadService
             ->groupBy('ussd_accounts.id')
             ->select('ussd_accounts.id');
 
-        return $count ? $instance->get()->count() : $instance->get();
+        return $count ? self::countGroups($instance) : $instance->get();
     }
 
     /**
@@ -1585,7 +1566,7 @@ class ReportPayloadService extends BasePayloadService
             ->having('total_prepaid', '>' , '0')
             ->groupBy('ussd_accounts.id');
 
-        return $count ? $instance->get()->count() : $instance->get();
+        return $count ? self::countGroups($instance) : $instance->get();
     }
 
     /**
@@ -1601,7 +1582,7 @@ class ReportPayloadService extends BasePayloadService
             ->groupBy('ussd_accounts.id')
             ->orderByDesc('created_at');
 
-        return $count ? $instance->get()->count() : $instance->get();
+        return $count ? self::countGroups($instance) : $instance->get();
     }
 
     /**
@@ -1619,7 +1600,7 @@ class ReportPayloadService extends BasePayloadService
             ->groupBy('ussd_accounts.id')
             ->orderByDesc('created_at');
 
-        return $count ? $instance->get()->count() : $instance->get();
+        return $count ? self::countGroups($instance) : $instance->get();
     }
 
     /**
@@ -1637,7 +1618,7 @@ class ReportPayloadService extends BasePayloadService
             ->groupBy('ussd_accounts.id')
             ->orderByDesc('created_at');
 
-        return $count ? $instance->get()->count() : $instance->get();
+        return $count ? self::countGroups($instance) : $instance->get();
     }
 
     /**
@@ -1654,7 +1635,7 @@ class ReportPayloadService extends BasePayloadService
             ->groupBy('ussd_accounts.id')
             ->orderByDesc('created_at');
 
-        return $count ? $instance->get()->count() : $instance->get();
+        return $count ? self::countGroups($instance) : $instance->get();
     }
 
     /**
@@ -1672,7 +1653,7 @@ class ReportPayloadService extends BasePayloadService
             ->groupBy('ussd_accounts.id')
             ->orderByDesc('created_at');
 
-        return $count ? $instance->get()->count() : $instance->get();
+        return $count ? self::countGroups($instance) : $instance->get();
     }
 
     /**
@@ -1690,7 +1671,7 @@ class ReportPayloadService extends BasePayloadService
             ->groupBy('ussd_accounts.id')
             ->orderByDesc('created_at');
 
-        return $count ? $instance->get()->count() : $instance->get();
+        return $count ? self::countGroups($instance) : $instance->get();
     }
 
     /**
@@ -1704,7 +1685,7 @@ class ReportPayloadService extends BasePayloadService
             ->groupBy('ussd_accounts.id')
             ->select('ussd_accounts.id');
 
-        return $count ? $instance->get()->count() : $instance->get();
+        return $count ? self::countGroups($instance) : $instance->get();
     }
 
     /**
@@ -1720,7 +1701,7 @@ class ReportPayloadService extends BasePayloadService
             ->groupBy('ussd_accounts.id')
             ->orderByDesc('created_at');
 
-        return $count ? $instance->get()->count() : $instance->get();
+        return $count ? self::countGroups($instance) : $instance->get();
     }
 
     /**
@@ -1738,7 +1719,7 @@ class ReportPayloadService extends BasePayloadService
             ->groupBy('ussd_accounts.id')
             ->orderByDesc('created_at');
 
-        return $count ? $instance->get()->count() : $instance->get();
+        return $count ? self::countGroups($instance) : $instance->get();
     }
 
     /**
@@ -1756,7 +1737,7 @@ class ReportPayloadService extends BasePayloadService
             ->groupBy('ussd_accounts.id')
             ->orderByDesc('created_at');
 
-        return $count ? $instance->get()->count() : $instance->get();
+        return $count ? self::countGroups($instance) : $instance->get();
     }
 
     /**
@@ -1772,7 +1753,7 @@ class ReportPayloadService extends BasePayloadService
             ->groupBy('ussd_accounts.id')
             ->orderByDesc('created_at');
 
-        return $count ? $instance->get()->count() : $instance->get();
+        return $count ? self::countGroups($instance) : $instance->get();
     }
 
     /**
@@ -1790,7 +1771,7 @@ class ReportPayloadService extends BasePayloadService
             ->groupBy('ussd_accounts.id')
             ->orderByDesc('created_at');
 
-        return $count ? $instance->get()->count() : $instance->get();
+        return $count ? self::countGroups($instance) : $instance->get();
     }
 
     /**
@@ -1808,7 +1789,7 @@ class ReportPayloadService extends BasePayloadService
             ->groupBy('ussd_accounts.id')
             ->orderByDesc('created_at');
 
-        return $count ? $instance->get()->count() : $instance->get();
+        return $count ? self::countGroups($instance) : $instance->get();
     }
 
 
@@ -2751,22 +2732,8 @@ class ReportPayloadService extends BasePayloadService
     public static function getProjectConnections()
     {
         if( is_null(self::$projectConnections) ) {
-
-            /**
-             *  Starting with the "ussd_account_connections", we must join to the "projects"
-             *  so that we can collect the "ussd_account_connections" project name. We then
-             *  groupBy() the "ussd_account_id" and "project_id" so that we can derive the
-             *  available connections between users and projects. The select() will then
-             *  narrow down the results to what we care about.
-             */
-            $queryCollection = resolve(UssdAccountConnection::class)
-                ->select('projects.name', 'ussd_account_connections.project_id', 'ussd_account_connections.ussd_account_id')
-                ->groupBy('ussd_account_connections.ussd_account_id', 'ussd_account_connections.project_id')
-                ->join('projects', 'projects.id', '=', 'ussd_account_connections.project_id')
-                ->get();
-
-            self::$projectConnections = self::groupRelatedRecordsIntoTotals($queryCollection, 'project_id');
-
+            self::$projectConnections = self::connectionTotals('project_id', 'projects.name',
+                [['projects', 'projects.id', 'ussd_account_connections.project_id']]);
         }
 
         return self::$projectConnections;
@@ -2778,29 +2745,8 @@ class ReportPayloadService extends BasePayloadService
     public static function getActiveProjectConnections($duration = 1)
     {
         if( is_null(self::$activeProjectConnections) ) {
-
-            /**
-             *  Starting with the "ussd_account_connections", we must join to the "ussd_sessions"
-             *  so that we can collect the sessions of each "ussd_account_connection" record.
-             *  Then using the havingRaw(), we can select "ussd_account_connections" having
-             *  sessions that were created recently. The groupBy() will be useful to group
-             *  the results so that we can determine the MAX date of the sessions foreach
-             *  "ussd_account_connection" making it possible to know whether the
-             *  "ussd_account_connection" has a session recently created. We
-             *  must also join to the "projects" so that we can collect the
-             *  "ussd_account_connections" project name. The select() will
-             *  then narrow down the results to what we care about.
-             */
-            $queryCollection = resolve(UssdAccountConnection::class)
-                ->select('projects.name', 'ussd_account_connections.project_id', 'ussd_account_connections.ussd_account_id', DB::raw("MAX(ussd_sessions.updated_at) as last_active_at"))
-                ->join('ussd_sessions', 'ussd_account_connections.id', '=', 'ussd_sessions.ussd_account_connection_id')
-                ->groupBy('ussd_account_connections.ussd_account_id', 'ussd_account_connections.project_id')
-                ->havingRaw('MAX(ussd_sessions.updated_at) >= ?', [Carbon::now()->subDays($duration)])
-                ->join('projects', 'projects.id', '=', 'ussd_account_connections.project_id')
-                ->get();
-
-            self::$activeProjectConnections = self::groupRelatedRecordsIntoTotals($queryCollection, 'project_id');
-
+            self::$activeProjectConnections = self::connectionTotals('project_id', 'projects.name',
+                [['projects', 'projects.id', 'ussd_account_connections.project_id']], '>=', $duration);
         }
 
         return self::$activeProjectConnections;
@@ -2812,29 +2758,8 @@ class ReportPayloadService extends BasePayloadService
     public static function getInactiveProjectConnections($duration = 1)
     {
         if( is_null(self::$inactiveProjectConnections) ) {
-
-            /**
-             *  Starting with the "ussd_account_connections", we must join to the "ussd_sessions"
-             *  so that we can collect the sessions of each "ussd_account_connection" record.
-             *  Then using the havingRaw(), we can select "ussd_account_connections" having
-             *  sessions that were not created recently. The groupBy() will be useful to
-             *  group the results so that we can determine the MAX date of the sessions
-             *  foreach "ussd_account_connection" making it possible to know whether
-             *  the "ussd_account_connection" has a session recently created. We
-             *  must also join to the "projects" so that we can collect the
-             *  "ussd_account_connections" project name. The select() will
-             *  then narrow down the results to what we care about.
-             */
-            $queryCollection = resolve(UssdAccountConnection::class)
-                ->select('projects.name', 'ussd_account_connections.project_id', 'ussd_account_connections.ussd_account_id', DB::raw("MAX(ussd_sessions.updated_at) as last_active_at"))
-                ->join('ussd_sessions', 'ussd_account_connections.id', '=', 'ussd_sessions.ussd_account_connection_id')
-                ->groupBy('ussd_account_connections.ussd_account_id', 'ussd_account_connections.project_id')
-                ->havingRaw('MAX(ussd_sessions.updated_at) < ?', [Carbon::now()->subDays($duration)])
-                ->join('projects', 'projects.id', '=', 'ussd_account_connections.project_id')
-                ->get();
-
-            self::$inactiveProjectConnections = self::groupRelatedRecordsIntoTotals($queryCollection, 'project_id');
-
+            self::$inactiveProjectConnections = self::connectionTotals('project_id', 'projects.name',
+                [['projects', 'projects.id', 'ussd_account_connections.project_id']], '<', $duration);
         }
 
         return self::$inactiveProjectConnections;
@@ -2912,22 +2837,8 @@ class ReportPayloadService extends BasePayloadService
     public static function getAppConnections()
     {
         if( is_null(self::$appConnections) ) {
-
-            /**
-             *  Starting with the "ussd_account_connections", we must join to the "apps"
-             *  so that we can collect the "ussd_account_connections" app name. We then
-             *  groupBy() the "ussd_account_id" and "app_id" so that we can derive the
-             *  available connections between users and apps. The select() will then
-             *  narrow down the results to what we care about.
-             */
-            $queryCollection = resolve(UssdAccountConnection::class)
-                ->select('apps.name', 'ussd_account_connections.app_id', 'ussd_account_connections.ussd_account_id')
-                ->groupBy('ussd_account_connections.ussd_account_id', 'ussd_account_connections.app_id')
-                ->join('apps', 'apps.id', '=', 'ussd_account_connections.app_id')
-                ->get();
-
-            self::$appConnections = self::groupRelatedRecordsIntoTotals($queryCollection, 'app_id');
-
+            self::$appConnections = self::connectionTotals('app_id', 'apps.name',
+                [['apps', 'apps.id', 'ussd_account_connections.app_id']]);
         }
 
         return self::$appConnections;
@@ -2939,29 +2850,8 @@ class ReportPayloadService extends BasePayloadService
     public static function getActiveAppConnections($duration = 1)
     {
         if( is_null(self::$activeAppConnections) ) {
-
-            /**
-             *  Starting with the "ussd_account_connections", we must join to the "ussd_sessions"
-             *  so that we can collect the sessions of each "ussd_account_connection" record.
-             *  Then using the havingRaw(), we can select "ussd_account_connections" having
-             *  sessions that were created recently. The groupBy() will be useful to group
-             *  the results so that we can determine the MAX date of the sessions foreach
-             *  "ussd_account_connection" making it possible to know whether the
-             *  "ussd_account_connection" has a session recently created. We
-             *  must also join to the "apps" so that we can collect the
-             *  "ussd_account_connections" app name. The select() will
-             *  then narrow down the results to what we care about.
-             */
-            $queryCollection = resolve(UssdAccountConnection::class)
-                ->select('apps.name', 'ussd_account_connections.app_id', 'ussd_account_connections.ussd_account_id', DB::raw("MAX(ussd_sessions.updated_at) as last_active_at"))
-                ->join('ussd_sessions', 'ussd_account_connections.id', '=', 'ussd_sessions.ussd_account_connection_id')
-                ->groupBy('ussd_account_connections.ussd_account_id', 'ussd_account_connections.app_id')
-                ->havingRaw('MAX(ussd_sessions.updated_at) >= ?', [Carbon::now()->subDays($duration)])
-                ->join('apps', 'apps.id', '=', 'ussd_account_connections.app_id')
-                ->get();
-
-            self::$activeAppConnections = self::groupRelatedRecordsIntoTotals($queryCollection, 'app_id');
-
+            self::$activeAppConnections = self::connectionTotals('app_id', 'apps.name',
+                [['apps', 'apps.id', 'ussd_account_connections.app_id']], '>=', $duration);
         }
 
         return self::$activeAppConnections;
@@ -2973,29 +2863,8 @@ class ReportPayloadService extends BasePayloadService
     public static function getInactiveAppConnections($duration = 1)
     {
         if( is_null(self::$inactiveAppConnections) ) {
-
-            /**
-             *  Starting with the "ussd_account_connections", we must join to the "ussd_sessions"
-             *  so that we can collect the sessions of each "ussd_account_connection" record.
-             *  Then using the havingRaw(), we can select "ussd_account_connections" having
-             *  sessions that were not created recently. The groupBy() will be useful to
-             *  group the results so that we can determine the MAX date of the sessions
-             *  foreach "ussd_account_connection" making it possible to know whether
-             *  the "ussd_account_connection" has a session recently created. We
-             *  must also join to the "apps" so that we can collect the
-             *  "ussd_account_connections" app name. The select() will
-             *  then narrow down the results to what we care about.
-             */
-            $queryCollection = resolve(UssdAccountConnection::class)
-                ->select('apps.name', 'ussd_account_connections.app_id', 'ussd_account_connections.ussd_account_id', DB::raw("MAX(ussd_sessions.updated_at) as last_active_at"))
-                ->join('ussd_sessions', 'ussd_account_connections.id', '=', 'ussd_sessions.ussd_account_connection_id')
-                ->groupBy('ussd_account_connections.ussd_account_id', 'ussd_account_connections.app_id')
-                ->havingRaw('MAX(ussd_sessions.updated_at) < ?', [Carbon::now()->subDays($duration)])
-                ->join('apps', 'apps.id', '=', 'ussd_account_connections.app_id')
-                ->get();
-
-            self::$inactiveAppConnections = self::groupRelatedRecordsIntoTotals($queryCollection, 'app_id');
-
+            self::$inactiveAppConnections = self::connectionTotals('app_id', 'apps.name',
+                [['apps', 'apps.id', 'ussd_account_connections.app_id']], '<', $duration);
         }
 
         return self::$inactiveAppConnections;
@@ -3073,25 +2942,12 @@ class ReportPayloadService extends BasePayloadService
     public static function getVersionConnections()
     {
         if( is_null(self::$versionConnections) ) {
-
-            /**
-             *  Starting with the "ussd_account_connections", we must join to the "versions"
-             *  so that we can collect the "ussd_account_connections" version number. we
-             *  must then join to the "apps" so that we can collect the app name. We
-             *  then groupBy() the "apps.name", "ussd_account_id" and "version_id"
-             *  so that we can derive the available connections between users and
-             *  versions. The select() will then narrow down the results to what
-             *  we care about.
-             */
-            $queryCollection = resolve(UssdAccountConnection::class)
-                ->select(DB::raw("CONCAT(name, ' (v ' , number, ')') AS name"), 'ussd_account_connections.version_id', 'ussd_account_connections.ussd_account_id')
-                ->groupBy('apps.name', 'ussd_account_connections.ussd_account_id', 'ussd_account_connections.version_id')
-                ->join('versions', 'versions.id', '=', 'ussd_account_connections.version_id')
-                ->join('apps', 'apps.id', '=', 'ussd_account_connections.app_id')
-                ->get();
-
-            self::$versionConnections = self::groupRelatedRecordsIntoTotals($queryCollection, 'version_id');
-
+            self::$versionConnections = self::connectionTotals('version_id',
+                "CONCAT(apps.name, ' (v ', versions.number, ')')",
+                [
+                    ['versions', 'versions.id', 'ussd_account_connections.version_id'],
+                    ['apps', 'apps.id', 'ussd_account_connections.app_id'],
+                ]);
         }
 
         return self::$versionConnections;
@@ -3103,31 +2959,12 @@ class ReportPayloadService extends BasePayloadService
     public static function getActiveVersionConnections($duration = 1)
     {
         if( is_null(self::$activeVersionConnections) ) {
-
-            /**
-             *  Starting with the "ussd_account_connections", we must join to the "ussd_sessions"
-             *  so that we can collect the sessions of each "ussd_account_connection" record.
-             *  Then using the havingRaw(), we can select "ussd_account_connections" having
-             *  sessions that were created recently. The groupBy() will be useful to group
-             *  the results so that we can determine the MAX date of the sessions foreach
-             *  "ussd_account_connection" making it possible to know whether the
-             *  "ussd_account_connection" has a session recently created. We
-             *  must also join to the "versions" and "apps" so that we can
-             *  collect the "ussd_account_connections" app name as well as
-             *  the version number. The select() will then narrow down
-             *  the results to what we care about.
-             */
-            $queryCollection = resolve(UssdAccountConnection::class)
-                ->select(DB::raw("CONCAT(name, ' (v ' , number, ')') AS name"), 'ussd_account_connections.version_id', 'ussd_account_connections.ussd_account_id', DB::raw("MAX(ussd_sessions.updated_at) as last_active_at"))
-                ->groupBy('apps.name', 'ussd_account_connections.ussd_account_id', 'ussd_account_connections.version_id')
-                ->join('ussd_sessions', 'ussd_account_connections.id', '=', 'ussd_sessions.ussd_account_connection_id')
-                ->havingRaw('MAX(ussd_sessions.updated_at) >= ?', [Carbon::now()->subDays($duration)])
-                ->join('versions', 'versions.id', '=', 'ussd_account_connections.version_id')
-                ->join('apps', 'apps.id', '=', 'ussd_account_connections.app_id')
-                ->get();
-
-            self::$activeVersionConnections = self::groupRelatedRecordsIntoTotals($queryCollection, 'version_id');
-
+            self::$activeVersionConnections = self::connectionTotals('version_id',
+                "CONCAT(apps.name, ' (v ', versions.number, ')')",
+                [
+                    ['versions', 'versions.id', 'ussd_account_connections.version_id'],
+                    ['apps', 'apps.id', 'ussd_account_connections.app_id'],
+                ], '>=', $duration);
         }
 
         return self::$activeVersionConnections;
@@ -3139,31 +2976,12 @@ class ReportPayloadService extends BasePayloadService
     public static function getInactiveVersionConnections($duration = 1)
     {
         if( is_null(self::$inactiveVersionConnections) ) {
-
-            /**
-             *  Starting with the "ussd_account_connections", we must join to the "ussd_sessions"
-             *  so that we can collect the sessions of each "ussd_account_connection" record.
-             *  Then using the havingRaw(), we can select "ussd_account_connections" having
-             *  sessions that were not created recently. The groupBy() will be useful to
-             *  group the results so that we can determine the MAX date of the sessions
-             *  foreach "ussd_account_connection" making it possible to know whether
-             *  the "ussd_account_connection" has a session recently created. We
-             *  must also join to the "versions" and "apps" so that we can
-             *  collect the "ussd_account_connections" app name as well as
-             *  the version number. The select() will then narrow down
-             *  the results to what we care about.
-             */
-            $queryCollection = resolve(UssdAccountConnection::class)
-            ->select(DB::raw("CONCAT(name, ' (v ' , number, ')') AS name"), 'ussd_account_connections.version_id', 'ussd_account_connections.ussd_account_id', DB::raw("MAX(ussd_sessions.updated_at) as last_active_at"))
-            ->groupBy('apps.name', 'ussd_account_connections.ussd_account_id', 'ussd_account_connections.version_id')
-            ->join('ussd_sessions', 'ussd_account_connections.id', '=', 'ussd_sessions.ussd_account_connection_id')
-            ->havingRaw('MAX(ussd_sessions.updated_at) < ?', [Carbon::now()->subDays($duration)])
-            ->join('versions', 'versions.id', '=', 'ussd_account_connections.version_id')
-            ->join('apps', 'apps.id', '=', 'ussd_account_connections.app_id')
-            ->get();
-
-            self::$inactiveVersionConnections = self::groupRelatedRecordsIntoTotals($queryCollection, 'version_id');
-
+            self::$inactiveVersionConnections = self::connectionTotals('version_id',
+                "CONCAT(apps.name, ' (v ', versions.number, ')')",
+                [
+                    ['versions', 'versions.id', 'ussd_account_connections.version_id'],
+                    ['apps', 'apps.id', 'ussd_account_connections.app_id'],
+                ], '<', $duration);
         }
 
         return self::$inactiveVersionConnections;
@@ -3244,6 +3062,74 @@ class ReportPayloadService extends BasePayloadService
     public static function getColumnChartLimit()
     {
         return 10;
+    }
+
+    /**
+     *  Count the number of GROUPS that a GROUP BY query returns, entirely in SQL.
+     *
+     *  A bare ->count() on a grouped query returns the row count of the FIRST group,
+     *  so the original code did ->get()->count() — materialising every grouped row
+     *  (up to one per account, ~150k) into a PHP collection just to count them. That
+     *  is the primary cause of the reports OOM. Wrapping the grouped query as
+     *  `SELECT COUNT(*) FROM (<grouped query>) aggregate` returns the identical number
+     *  without loading a single row into PHP.
+     */
+    public static function countGroups($query)
+    {
+        return DB::query()->fromSub($query, 'aggregate')->count();
+    }
+
+    /**
+     *  Account-connection totals per dimension (project / app / version), computed
+     *  ENTIRELY in SQL. The original code hydrated every ussd_account_connections row
+     *  as an Eloquent model (~150k rows, ~1.4GB) and grouped them in PHP just to emit
+     *  ~25 rows — the dominant reports OOM.
+     *
+     *  Returns a collection of stdClass {name, <idColumn>, total} sorted by total desc:
+     *  the exact shape the old groupRelatedRecordsIntoTotals() produced. (Its records
+     *  also carried a stray ussd_account_id — the first row of each group — but no
+     *  consumer ever read it: setXandYaxis plucks name/total, the totals sum 'total'.)
+     *
+     *  @param string      $idColumn   e.g. 'project_id'
+     *  @param string      $nameSelect raw SQL for the display name
+     *  @param array       $nameJoins  [[table, first, second], ...] joins that resolve the name
+     *  @param string|null $activity   null = all; '>=' = active; '<' = inactive
+     *  @param int         $duration   day threshold for the active/inactive session-recency HAVING
+     */
+    protected static function connectionTotals($idColumn, $nameSelect, array $nameJoins, $activity = null, $duration = 1)
+    {
+        $col = 'ussd_account_connections.'.$idColumn;
+
+        //  Group ONLY by the dimension id (covered by the (dim_id, ussd_account_id) index)
+        //  and resolve the display name with ANY_VALUE — grouping by the CONCAT/name string
+        //  itself forced a filesort over every row (19s for the version report on 1M+ rows).
+        //  Secondary sort by id makes the tie order deterministic.
+
+        //  All connections: distinct accounts per dimension.
+        if ($activity === null) {
+            $query = DB::table('ussd_account_connections')
+                ->select(DB::raw('ANY_VALUE('.$nameSelect.') as name'), $col.' as '.$idColumn,
+                         DB::raw('COUNT(DISTINCT ussd_account_connections.ussd_account_id) as total'));
+            foreach ($nameJoins as $j) { $query->join($j[0], $j[1], '=', $j[2]); }
+            return $query->groupBy($col)->orderByDesc('total')->orderBy($col)->get();
+        }
+
+        //  Active / inactive: a (account, dimension) pair qualifies when the MAX updated_at
+        //  of its sessions is recent ('>=') or not ('<'); then count qualifying pairs per dimension.
+        $inner = DB::table('ussd_account_connections')
+            ->select($col.' as '.$idColumn, 'ussd_account_connections.ussd_account_id',
+                     DB::raw('ANY_VALUE('.$nameSelect.') as name'))
+            ->join('ussd_sessions', 'ussd_account_connections.id', '=', 'ussd_sessions.ussd_account_connection_id');
+        foreach ($nameJoins as $j) { $inner->join($j[0], $j[1], '=', $j[2]); }
+        $inner->groupBy($col, 'ussd_account_connections.ussd_account_id')
+              ->havingRaw('MAX(ussd_sessions.updated_at) '.$activity.' ?', [Carbon::now()->subDays($duration)]);
+
+        return DB::query()->fromSub($inner, 'c')
+            ->select(DB::raw('ANY_VALUE(c.name) as name'), 'c.'.$idColumn, DB::raw('COUNT(*) as total'))
+            ->groupBy('c.'.$idColumn)
+            ->orderByDesc('total')
+            ->orderBy('c.'.$idColumn)
+            ->get();
     }
 
     /**
@@ -3990,6 +3876,77 @@ class ReportPayloadService extends BasePayloadService
 
         return self::setXandYaxis($collection, 'date', 'total');
 
+    }
+
+    /**
+     *  SQL-aggregated equivalent of groupByDateConstraints(): computes the per-bucket
+     *  COUNTS with a single GROUP BY query so the rows never materialise in PHP, then
+     *  produces the identical {x-axis, y-axis} shape (verified A/B against the PHP path).
+     *
+     *  groupByDateConstraints() runs Carbon::parse() on every row — fine for the small,
+     *  date-windowed series, but catastrophic for a series that can span >1M rows (e.g.
+     *  account creation). This does the bucketing in the database instead: the same fixed,
+     *  zero-filled label set, the same swapped date/total mapping into setXandYaxis.
+     *
+     *  @param \Illuminate\Database\Query\Builder $query      base query exposing $dateColumn
+     *  @param string $dateColumn                              column/alias to bucket + window on
+     *  @param bool   $comparison                              comparison window vs the primary window
+     */
+    protected static function groupByDateConstraintsSql($query, $dateColumn, $comparison = false)
+    {
+        $type  = self::getDateType();
+        $dates = $comparison ? self::getComparisonDateConstraints() : self::getDateConstraints();
+
+        //  SQL bucket expression + the ordered/zero-filled label set for this date type,
+        //  mirroring groupByDateConstraints() exactly (DATE_FORMAT tokens chosen to match
+        //  Carbon's format/dayName/monthName/day output).
+        $expr = null; $labels = [];
+
+        if (in_array($type, ['today', 'yesterday'])) {
+            $expr = "DATE_FORMAT($dateColumn, '%H:00')";
+            for ($h = 0; $h < 24; $h++) { $labels[] = sprintf('%02d:00', $h); }
+
+        } elseif (in_array($type, ['this week', 'last week'])) {
+            $expr = "DATE_FORMAT($dateColumn, '%W')";
+            $labels = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+
+        } elseif (in_array($type, ['this month', 'last month'])) {
+            $expr = "DAY($dateColumn)";
+            for ($d = 1; $d <= 31; $d++) { $labels[] = $d; }
+
+        } elseif (in_array($type, ['this year','last year','2 years ago','3 years ago'])) {
+            $expr = "DATE_FORMAT($dateColumn, '%M')";
+            $labels = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+        } elseif (in_array($type, ['last 7 days','last 14 days','last 30 days','last 60 days','last 90 days'])) {
+            $sub    = ['last 7 days'=>6,'last 14 days'=>13,'last 30 days'=>29,'last 60 days'=>59,'last 90 days'=>89][$type];
+            $start  = Carbon::now()->subDays($sub)->startOfDay();
+            $end    = Carbon::now();
+            $format = $start->year === $end->year ? 'd M'   : 'd M Y';
+            $token  = $start->year === $end->year ? '%d %b' : '%d %b %Y';
+            $expr   = "DATE_FORMAT($dateColumn, '$token')";
+            foreach (CarbonPeriod::create($start, $end) as $day) { $labels[] = $day->format($format); }
+
+        } else {
+            //  custom / unknown → the PHP path emits no fixed buckets
+            return self::setXandYaxis(collect([]), 'date', 'total');
+        }
+
+        $counts = (clone $query)
+            ->selectRaw($expr.' as bucket, COUNT(*) as aggregate_total')
+            ->whereBetween($dateColumn, [$dates->start, $dates->end])
+            ->groupBy('bucket')
+            ->pluck('aggregate_total', 'bucket')
+            ->all();
+
+        //  Zero-fill in label order and emit the SAME swapped {date => count, total => label}
+        //  shape groupByDateConstraints() feeds to setXandYaxis (x-axis = counts, y-axis = labels).
+        $ordered = [];
+        foreach ($labels as $label) {
+            $ordered[] = ['date' => (int) ($counts[$label] ?? 0), 'total' => $label];
+        }
+
+        return self::setXandYaxis(collect($ordered), 'date', 'total');
     }
 
     /**
