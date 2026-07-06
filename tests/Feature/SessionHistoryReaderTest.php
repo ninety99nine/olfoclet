@@ -57,15 +57,19 @@ class SessionHistoryReaderTest extends TestCase
         $this->assertNotNull(SessionHistory::find($arch), 'archived session must be findable for the detail view');
     }
 
-    public function test_sessions_list_repository_returns_archived_too(): void
+    public function test_sessions_list_repository_reads_only_the_fast_live_table(): void
     {
         $this->seedRow('ussd_sessions');
         $this->seedRow('ussd_sessions_archive');
 
+        // The Sessions LIST reads the base ussd_sessions table only: paging/sorting the
+        // live+archive UNION view took ~55s on real data (fpm-killed -> 502). Archived
+        // sessions stay reachable via the detail lookup (SessionHistory::find, covered by
+        // test_history_model_sees_live_and_archived) where the id predicate is index-served.
         $repo = resolve(UssdSessionRepository::class)->setModel();
         $sessions = $repo->queryUssdSessionsWithoutFilters()->get();
 
-        $this->assertCount(2, $sessions, 'the Sessions list must include archived sessions');
+        $this->assertCount(1, $sessions, 'the Sessions list must read only the fast live table');
     }
 
     public function test_history_model_is_read_only(): void

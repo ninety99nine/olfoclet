@@ -4,15 +4,18 @@ namespace App\Repositories;
 
 use App\Models\App;
 use App\Models\Project;
-use App\Models\SessionHistory;
+use App\Models\UssdSession;
 use App\Models\Version;
 
 class UssdSessionRepository extends BaseRepository
 {
-    //  Read the ussd_sessions_all UNION view (24h live + up to 3 months archived)
-    //  so the Sessions list shows the full history window. The USSD runtime and
-    //  writes stay on the base UssdSession model (hot table).
-    protected $modelClass = SessionHistory::class;
+    //  The Sessions LIST + stat counts read the base ussd_sessions table (indexed,
+    //  ~ms). Paging/sorting the ussd_sessions_all UNION view instead forced MySQL to
+    //  materialise + sort the whole live+archive set (~333k rows) for every page —
+    //  55s per request, past the fpm limit -> 502. Individual archived sessions are
+    //  still openable: the session-detail lookup (BaseController) resolves by id via
+    //  SessionHistory, where MySQL pushes the id predicate into each UNION branch (fast).
+    protected $modelClass = UssdSession::class;
 
     /**
      *  Query the sessions
