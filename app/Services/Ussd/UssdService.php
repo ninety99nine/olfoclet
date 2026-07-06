@@ -101,6 +101,13 @@ class UssdService
     public $onStartHttpReplay = [];        //  key => ['body','status'] loaded from session_state
     public $onStartHttpCapture = [];       //  key => ['body','status'] captured this request
 
+    //  Cache-behind-the-cursor: on-screen REST responses for screens/displays the user
+    //  has already answered (behind the cursor). Keyed by nav-path prefix + method + url,
+    //  so a behind screen replays from cache while the FOCUSED screen always runs live,
+    //  and navigating back re-fires the landed screen (its path prefix becomes current).
+    public $screenHttpReplay = [];         //  key => ['body','status'] loaded from session_state
+    public $screenHttpCapture = [];        //  key => ['body','status'] captured/refreshed this request
+
     public $global_variables_to_save = [];
     public $ussd_account_connection = null;
     public $incorrect_option_selected = null;
@@ -2490,6 +2497,11 @@ class UssdService
         $this->onStartHttpCapture = [];
         $this->onStartHttpActive = true;
 
+        //  Load the on-screen (behind-the-cursor) cache too — this runs before the screen
+        //  walk, so cached responses are available while replaying already-answered screens.
+        $this->screenHttpReplay = $this->loadScreenHttpReplay();
+        $this->screenHttpCapture = [];
+
         try {
 
             //  Check if the screen has on_start events
@@ -2561,14 +2573,121 @@ class UssdService
         return (($state['v'] ?? null) === 1) ? ($state['http'] ?? []) : [];
     }
 
-    /** P20 — the session_state payload to persist (replayed entries carried
-     *  forward plus any freshly-captured ones), or null if nothing was captured.
+    /** Cache key for a behind-the-cursor screen REST call: <nav path prefix>|method|url. */
+    private function screenHttpKey($method, $url)
+    {
+        return $this->currentReplayPathKey().'|'.strtolower((string) $method).'|'.(string) $url;
+    }
+
+    /** The *-joined responses that led to the CURRENT level — the prefix that identifies
+     *  this step in the journey. It is stable across requests for the same step, and is
+     *  re-keyed automatically after a go-back (manageGoBackRequests() has already pruned
+     *  the path by the time screens are walked). */
+    private function currentReplayPathKey()
+    {
+        $responses = $this->getUserResponses();
+
+        return implode('*', array_slice($responses, 0, max(0, ((int) $this->level) - 1)));
+    }
+
+    /** True while walking a screen/display the user has ALREADY answered (behind the
+     *  cursor). On-start calls are excluded — they use their own onStart* cache. */
+    public function isReconstructingScreen()
+    {
+        return !$this->onStartHttpActive && $this->hasResponded();
+    }
+
+    /** A cached response for this behind-cursor screen call, or null (must call live). */
+    public function getScreenHttpReplay($method, $url)
+    {
+        if (!$this->isReconstructingScreen()) {
+            return null;
+        }
+
+        return $this->screenHttpReplay[$this->screenHttpKey($method, $url)] ?? null;
+    }
+
+    /** Record a screen call's response so later continuations can replay it. Captures the
+     *  FOCUSED screen's live call (so next turn, when it falls behind, it replays) and
+     *  refreshes behind ones — but never on-start calls (those are captureOnStartHttp's). */
+    public function captureScreenHttp($method, $url, $body, $status)
+    {
+        if ($this->onStartHttpActive) {
+            return;
+        }
+
+        $this->screenHttpCapture[$this->screenHttpKey($method, $url)] = [
+            'body' => (string) $body,
+            'status' => (int) $status,
+        ];
+    }
+
+    /** Load the on-screen HTTP cache from the existing session's state. */
+    private function loadScreenHttpReplay()
+    {
+        if (empty($this->existing_session) || empty($this->existing_session->session_state)) {
+            return [];
+        }
+
+        $state = $this->existing_session->session_state;
+        $state = is_array($state) ? $state : (json_decode($state, true) ?: []);
+
+        return (($state['v'] ?? null) === 1) ? ($state['screen_http'] ?? []) : [];
+    }
+
+    /** Drop cached screen entries whose nav-path prefix is no longer on the current
+     *  (post go-back) path — this is the "unset the cache of the screens we left" rule.
+     *  A go-back shortens $this->text, so any entry keyed on an abandoned deeper branch
+     *  is no longer a prefix of the current path and gets removed. */
+    private function pruneScreenHttpToCurrentPath(array $map)
+    {
+        $currentTokens = $this->getUserResponses();
+        $kept = [];
+
+        foreach ($map as $key => $value) {
+
+            $prefix = explode('|', $key, 2)[0];
+            $prefixTokens = ($prefix === '') ? [] : explode('*', $prefix);
+
+            //  Keep only if the entry's path prefix is a token-prefix of the current path.
+            if (count($prefixTokens) > count($currentTokens)) {
+                continue;
+            }
+
+            $onPath = true;
+
+            foreach ($prefixTokens as $i => $token) {
+                if (($currentTokens[$i] ?? null) !== $token) { $onPath = false; break; }
+            }
+
+            if ($onPath) { $kept[$key] = $value; }
+        }
+
+        return $kept;
+    }
+
+    /** P20 — the session_state payload to persist (replayed entries carried forward plus
+     *  freshly-captured ones), or null if nothing was captured. Holds both the on-start
+     *  cache ('http') and the on-screen cache ('screen_http', pruned to the current path).
      */
     private function buildSessionStatePayload()
     {
-        $map = array_merge($this->onStartHttpReplay ?? [], $this->onStartHttpCapture ?? []);
+        $http = array_merge($this->onStartHttpReplay ?? [], $this->onStartHttpCapture ?? []);
 
-        return empty($map) ? null : ['v' => 1, 'http' => $map];
+        $screenHttp = $this->pruneScreenHttpToCurrentPath(
+            array_merge($this->screenHttpReplay ?? [], $this->screenHttpCapture ?? [])
+        );
+
+        if (empty($http) && empty($screenHttp)) {
+            return null;
+        }
+
+        $payload = ['v' => 1];
+
+        if (!empty($http)) { $payload['http'] = $http; }
+        if (!empty($screenHttp)) { $payload['screen_http'] = $screenHttp; }
+
+        return $payload;
     }
 
     /** JSON-encoded session_state for raw DB::table writes (null when empty). */
@@ -7275,12 +7394,14 @@ class UssdService
         //  requests from the session state). Everything else below runs exactly
         //  as normal on the cached body, so all derived data is recomputed with
         //  correct types — only the network call is skipped.
-        $__replay = $this->getOnStartHttpReplay($method, $url);
+        $__replay = $this->getOnStartHttpReplay($method, $url) ?? $this->getScreenHttpReplay($method, $url);
 
         if ($__replay !== null) {
 
-            //  Serve the cached on-start response — no network call
-            $this->logInfo('Replaying cached on-start API response for: '.$this->wrapAsSuccessHtml($url));
+            //  Serve the cached response — no network call. Either the on-start cache (while
+            //  on-start events run) or the behind-the-cursor screen cache (an already-answered
+            //  screen being replayed); the FOCUSED screen always misses here and runs live.
+            $this->logInfo('Replaying cached API response for: '.$this->wrapAsSuccessHtml($url));
 
             $body = (string) $__replay['body'];
             $status_code = (int) $__replay['status'];
@@ -7308,8 +7429,10 @@ class UssdService
             $status_phrase = $response->getReasonPhrase() ?? '';
         }
 
-        //  Capture this on-start response so future continuations can replay it
+        //  Capture for future continuations: the on-start cache while on-start events run,
+        //  otherwise the behind-the-cursor screen cache keyed by the current navigation path.
         $this->captureOnStartHttp($method, $url, $body, $status_code);
+        $this->captureScreenHttp($method, $url, $body, $status_code);
 
         //  Get the response body as an Associative Array
         $array_body = json_decode($body, true);
