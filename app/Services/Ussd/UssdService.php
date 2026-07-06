@@ -108,6 +108,16 @@ class UssdService
     public $screenHttpReplay = [];         //  key => ['body','status'] loaded from session_state
     public $screenHttpCapture = [];        //  key => ['body','status'] captured/refreshed this request
 
+    //  Session-state fast-path (off by default via config `ussd.fast_path`). A "box" of the
+    //  fully-computed state is stored per level, keyed by nav-path prefix. On a continuation
+    //  we restore the box for the previous level and resume at the focused screen instead of
+    //  replaying the whole journey. Any doubt -> fall back to the full replay.
+    public $fastPathBoxes = [];            //  path-prefix => box  (loaded from session_state)
+    public $fastPathCapture = [];          //  path-prefix => box  (captured this request)
+    public $resumingFromBox = false;       //  true only while resuming a restored level (skips its re-entry)
+    public $fastPathResumeBuilt = '';      //  the restored level's already-rendered display (reused on resume)
+    public $fastPathRestoreCount = 0;      //  how many times this request resumed from a box (for tests/telemetry)
+
     public $global_variables_to_save = [];
     public $ussd_account_connection = null;
     public $incorrect_option_selected = null;
@@ -2135,30 +2145,45 @@ class UssdService
             return $doesNotExistResponse;
         }
 
-        //  Reset the dynamic data storage
-        $this->resetDynamicDataStorage();
+        //  Fast-path: if enabled and a box exists for the level below the one the user is
+        //  now replying to, restore it and resume at the focused level — skipping the reset
+        //  + on-start + replay of every behind level. Any doubt falls through to the full walk.
+        $this->fastPathBoxes = $this->fastPathEnabled() ? $this->loadFastPathBoxes() : [];
 
-        //  Locally store the current session details within a dynamic variable
-        $this->storeUssdSessionValues();
+        if ($this->tryFastPathRestore()) {
 
-        //  Locally store the global variables within a dynamic variable
-        $outputResponse = $this->storeGlobalVariables();
+            //  Resume: process the reply to the restored (focused) level directly. The
+            //  restore already positioned $this->screen/$this->display; resumingFromBox makes
+            //  handleCurrentDisplay skip re-entering it and go straight to the reply handling.
+            $outputResponse = $this->handleCurrentDisplay();
 
-        //  If we have a screen to show return the response otherwise continue
-        if ($this->shouldDisplayScreen($outputResponse)) {
-            return $outputResponse;
+        } else {
+
+            //  Reset the dynamic data storage
+            $this->resetDynamicDataStorage();
+
+            //  Locally store the current session details within a dynamic variable
+            $this->storeUssdSessionValues();
+
+            //  Locally store the global variables within a dynamic variable
+            $outputResponse = $this->storeGlobalVariables();
+
+            //  If we have a screen to show return the response otherwise continue
+            if ($this->shouldDisplayScreen($outputResponse)) {
+                return $outputResponse;
+            }
+
+            //  Run application on start events
+            $outputResponse = $this->handleApplicationOnStartEvents();
+
+            //  If we have a screen to show return the response otherwise continue
+            if ($this->shouldDisplayScreen($outputResponse)) {
+                return $outputResponse;
+            }
+
+            //  Start building and showing the ussd screens
+            $outputResponse = $this->startBuildingUssdScreens();
         }
-
-        //  Run application on start events
-        $outputResponse = $this->handleApplicationOnStartEvents();
-
-        //  If we have a screen to show return the response otherwise continue
-        if ($this->shouldDisplayScreen($outputResponse)) {
-            return $outputResponse;
-        }
-
-        //  Start building and showing the ussd screens
-        $outputResponse = $this->startBuildingUssdScreens();
 
         //  If we have an end screen to show (Usually a fatal error occured) return the response otherwise continue
         if ($this->isEndScreen($outputResponse)) {
@@ -2670,6 +2695,187 @@ class UssdService
      *  freshly-captured ones), or null if nothing was captured. Holds both the on-start
      *  cache ('http') and the on-screen cache ('screen_http', pruned to the current path).
      */
+    /*******************************
+     *  Session-state fast-path     *
+     *  (config `ussd.fast_path`)   *
+     ******************************/
+
+    /** Whether the fast-path is enabled for this run (off by default). */
+    public function fastPathEnabled()
+    {
+        return (bool) config('ussd.fast_path', false);
+    }
+
+    /** Keep only dynamic-data entries that survive the session_state JSON round-trip
+     *  losslessly. Helper closures (e.g. $_menus) encode to "{}" and are dropped here —
+     *  they are re-created on restore by re-running storeGlobalVariables(), exactly as a
+     *  full replay would. Pure-data values (scalars, arrays, decoded JSON) are kept. */
+    protected function jsonSafeDynamicData(array $dds)
+    {
+        $safe = [];
+
+        foreach ($dds as $key => $value) {
+            $encoded = json_encode($value);
+            if ($encoded !== false && json_encode(json_decode($encoded, true)) === $encoded) {
+                $safe[$key] = $value;
+            }
+        }
+
+        return $safe;
+    }
+
+    /** Snapshot the fully-computed state of the focused level into a "box". */
+    protected function captureLevelBox($builtDisplay)
+    {
+        return [
+            'dds'              => $this->jsonSafeDynamicData($this->dynamic_data_storage),
+            'level'            => $this->level,
+            'screen_id'        => $this->screen['id'] ?? null,
+            'display_id'       => $this->display['id'] ?? null,
+            'chained_screens'  => $this->chained_screens,
+            'chained_displays' => $this->chained_displays,
+            'csm'              => $this->chained_screen_metadata,
+            'cdm'              => $this->chained_display_metadata,
+            'str'             => $this->screen_total_responses,
+            'dtr'             => $this->display_total_responses,
+            'pagination_index' => $this->pagination_index,
+            'cur'             => $this->current_user_response,
+            'api_response'     => $this->api_response,
+            'built'            => (string) $builtDisplay,
+        ];
+    }
+
+    /** Restore a level box onto $this, re-resolving screen/display from their ids. Called
+     *  AFTER the fresh per-request setup (reset + session values + global variables), so the
+     *  box's captured data is merged ON TOP of the re-derived globals/helper closures. */
+    protected function restoreLevelBox($box)
+    {
+        //  Re-derivable state the fast-path skips setting up (normally done in getFirstScreen):
+        //  the screen collection and its O(1) id indexes, needed to resolve screen/display ids.
+        $this->screens = $this->version->builder['screens'];
+        $this->buildScreenIndexes();
+
+        //  Merge the box's (serialisable) accumulated data over the freshly re-derived
+        //  dynamic data. Fresh globals provide helper closures (dropped from the box); the
+        //  box provides the journey-accumulated values (which win on any key overlap).
+        $this->dynamic_data_storage    = array_merge($this->dynamic_data_storage, $box['dds'] ?? []);
+        $this->level                   = $box['level'] ?? 1;
+        $this->chained_screens         = $box['chained_screens'] ?? [];
+        $this->chained_displays        = $box['chained_displays'] ?? [];
+        $this->chained_screen_metadata = $box['csm'] ?? ['text' => ''];
+        $this->chained_display_metadata= $box['cdm'] ?? ['text' => ''];
+        $this->screen_total_responses  = $box['str'] ?? [];
+        $this->display_total_responses = $box['dtr'] ?? [];
+        $this->pagination_index        = $box['pagination_index'] ?? 0;
+        $this->current_user_response   = $box['cur'] ?? null;
+        $this->api_response            = $box['api_response'] ?? null;
+        $this->screen  = !empty($box['screen_id'])  ? $this->searchScreenById($box['screen_id']) : null;
+        $this->display = !empty($box['display_id']) ? $this->getDisplayById($box['display_id']) : null;
+    }
+
+    /** Load the fast-path level boxes from the existing session's state. */
+    protected function loadFastPathBoxes()
+    {
+        if (empty($this->existing_session) || empty($this->existing_session->session_state)) {
+            return [];
+        }
+
+        $state = $this->existing_session->session_state;
+        $state = is_array($state) ? $state : (json_decode($state, true) ?: []);
+
+        return (($state['v'] ?? null) === 1) ? ($state['fast'] ?? []) : [];
+    }
+
+    /** A box is only trustworthy if it round-trips through JSON losslessly (no closures,
+     *  objects, or resources from eval/custom-code). If not, we simply don't store it and
+     *  the next request falls back to the full replay. */
+    protected function isBoxJsonSafe($box)
+    {
+        //  The box is persisted into `session_state` (cast `array`) and reloaded as
+        //  json_decode(..., true): stdClass -> array and {} -> [] are expected, harmless
+        //  coercions (the engine reads these values by dotted path, and behavioural
+        //  equivalence is proven by the fast-path parity + golden-master suites). The only
+        //  thing we must reject here is state that cannot be encoded at all (resources, or
+        //  values that trigger a JSON error) — those would silently corrupt the restore.
+        json_encode($box);
+
+        return json_last_error() === JSON_ERROR_NONE;
+    }
+
+    /** Restore the box for the level BELOW the one the user is now replying to, and set up
+     *  the resume. Returns true if it restored (skip the replay), false to fall back to the
+     *  full walk. Continuation-only; a missing box for the parent path => full walk. The box
+     *  key is the nav path WITHOUT the latest reply — identical for a forward step or a
+     *  go-back that lands on an earlier level. */
+    protected function tryFastPathRestore()
+    {
+        if (!$this->fastPathEnabled() || empty($this->existing_session)) {
+            return false;
+        }
+
+        $responses = $this->getUserResponses();
+        $count = count($responses);
+
+        if ($count < 1) {
+            return false;
+        }
+
+        $parentKey = implode('*', array_slice($responses, 0, $count - 1));
+
+        if (!array_key_exists($parentKey, $this->fastPathBoxes)) {
+            return false;
+        }
+
+        //  Re-derive the deterministic per-request setup a full replay always repeats,
+        //  in the same order: reset, the request-scoped 'ussd' variable, global variables,
+        //  and the app on-start events. These recreate helper closures (e.g. $_menus) and
+        //  baseline data that cannot be serialised into a box; on-start's REST calls are
+        //  served from the on-start HTTP cache, so this is O(1) regardless of menu depth.
+        //  What we SKIP — and restore from the box instead — is the behind-level screen
+        //  walk, which is the depth-dependent cost this fast-path exists to remove.
+        $this->resetDynamicDataStorage();
+        $this->storeUssdSessionValues();
+        $globalsOutput = $this->storeGlobalVariables();
+
+        //  A global-variable stage that wants to short-circuit to a screen is unusual;
+        //  fall back to the full walk rather than resume in an ambiguous state.
+        if ($this->shouldDisplayScreen($globalsOutput)) {
+            return false;
+        }
+
+        $onStartOutput = $this->handleApplicationOnStartEvents();
+
+        //  Likewise, an on-start stage that short-circuits to a screen -> full walk.
+        if ($this->shouldDisplayScreen($onStartOutput)) {
+            return false;
+        }
+
+        //  Merge the box's accumulated data over the fresh globals and re-resolve position.
+        $this->restoreLevelBox($this->fastPathBoxes[$parentKey]);
+        $this->fastPathResumeBuilt = (string) ($this->fastPathBoxes[$parentKey]['built'] ?? '');
+
+        $this->resumingFromBox = true;
+        $this->fastPathRestoreCount++;
+
+        return true;
+    }
+
+    /** Capture the focused (rendered, awaiting-reply) level into a box keyed by the full
+     *  current path, so the next reply resumes from it. Skipped if the state isn't JSON-safe
+     *  (the next reply then falls back to a full replay). */
+    protected function captureFocusedBox($builtDisplay)
+    {
+        if (!$this->fastPathEnabled()) {
+            return;
+        }
+
+        $box = $this->captureLevelBox($builtDisplay);
+
+        if ($this->isBoxJsonSafe($box)) {
+            $this->fastPathCapture[implode('*', $this->getUserResponses())] = $box;
+        }
+    }
+
     private function buildSessionStatePayload()
     {
         $http = array_merge($this->onStartHttpReplay ?? [], $this->onStartHttpCapture ?? []);
@@ -2678,7 +2884,13 @@ class UssdService
             array_merge($this->screenHttpReplay ?? [], $this->screenHttpCapture ?? [])
         );
 
-        if (empty($http) && empty($screenHttp)) {
+        //  Fast-path boxes: carry forward loaded ones + freshly captured, pruned to the
+        //  current (post go-back) path so abandoned levels' boxes are dropped.
+        $fast = $this->pruneScreenHttpToCurrentPath(
+            array_merge($this->fastPathBoxes ?? [], $this->fastPathCapture ?? [])
+        );
+
+        if (empty($http) && empty($screenHttp) && empty($fast)) {
             return null;
         }
 
@@ -2686,6 +2898,7 @@ class UssdService
 
         if (!empty($http)) { $payload['http'] = $http; }
         if (!empty($screenHttp)) { $payload['screen_http'] = $screenHttp; }
+        if (!empty($fast)) { $payload['fast'] = $fast; }
 
         return $payload;
     }
@@ -3988,6 +4201,12 @@ class UssdService
      */
     public function handleCurrentDisplay()
     {
+        //  Fast-path resume: the restored box already ran this level's ENTRY (the chained
+        //  push, pagination/nav resets, on_enter events and auto-link) and captured its
+        //  rendered display — so skip re-entering it and go straight to handling the reply
+        //  below. No-op when the flag is off (resumingFromBox is never set).
+        if (!$this->resumingFromBox) {
+
         //  Add the current display to the list of chained displays
         array_push($this->chained_displays, [
             'id' => $this->display['id'],
@@ -4044,6 +4263,8 @@ class UssdService
         if ($this->shouldDisplayScreen($handleLinkingResponse)) {
             return $handleLinkingResponse;
         }
+
+        }   //  end fast-path entry guard (skipped on resume)
 
         /*****************************************
          *  RECORD THE TOTAL NUMBER OF RESPONSES *
@@ -4122,8 +4343,14 @@ class UssdService
          *  BUILD THE DISPLAY   *
          ************************/
 
-        //  Build the current screen display
-        $builtDisplay = $this->buildCurrentDisplay();
+        //  Build the current screen display. On a fast-path resume, reuse the display the
+        //  restored level already rendered (no re-render); from here we only handle the reply.
+        if ($this->resumingFromBox) {
+            $builtDisplay = $this->fastPathResumeBuilt;
+            $this->resumingFromBox = false;
+        } else {
+            $builtDisplay = $this->buildCurrentDisplay();
+        }
 
         //  Check if the user has already responded to the current display screen
         if ($this->hasResponded()) {
@@ -4202,6 +4429,12 @@ class UssdService
                  */
                 return $this->showCustomGoBackScreen($this->incorrect_option_selected);
             }
+        }
+
+        //  Fast-path: capture this focused level (rendered, awaiting a reply) so the next
+        //  reply resumes from it. Only when this is the focused screen (no reply yet).
+        if (!$this->hasResponded()) {
+            $this->captureFocusedBox($builtDisplay);
         }
 
         //  Determine whether to remove dynamic content highlighting
