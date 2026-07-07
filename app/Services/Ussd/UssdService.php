@@ -115,7 +115,6 @@ class UssdService
     public $fastPathBoxes = [];            //  path-prefix => box  (loaded from session_state)
     public $fastPathCapture = [];          //  path-prefix => box  (captured this request)
     public $resumingFromBox = false;       //  true only while resuming a restored level (skips its re-entry)
-    public $fastPathResumeBuilt = '';      //  the restored level's already-rendered display (reused on resume)
     public $fastPathRestoreCount = 0;      //  how many times this request resumed from a box (for tests/telemetry)
 
     public $global_variables_to_save = [];
@@ -2725,7 +2724,7 @@ class UssdService
     }
 
     /** Snapshot the fully-computed state of the focused level into a "box". */
-    protected function captureLevelBox($builtDisplay)
+    protected function captureLevelBox()
     {
         return [
             'dds'              => $this->jsonSafeDynamicData($this->dynamic_data_storage),
@@ -2741,7 +2740,8 @@ class UssdService
             'pagination_index' => $this->pagination_index,
             'cur'             => $this->current_user_response,
             'api_response'     => $this->api_response,
-            'built'            => (string) $builtDisplay,
+            //  Note: no 'built' — the current screen is always rendered live on resume, so a
+            //  cached render is never reused (reusing it broke pagination scrolling).
         ];
     }
 
@@ -2852,7 +2852,6 @@ class UssdService
 
         //  Merge the box's accumulated data over the fresh globals and re-resolve position.
         $this->restoreLevelBox($this->fastPathBoxes[$parentKey]);
-        $this->fastPathResumeBuilt = (string) ($this->fastPathBoxes[$parentKey]['built'] ?? '');
 
         $this->resumingFromBox = true;
         $this->fastPathRestoreCount++;
@@ -2863,13 +2862,13 @@ class UssdService
     /** Capture the focused (rendered, awaiting-reply) level into a box keyed by the full
      *  current path, so the next reply resumes from it. Skipped if the state isn't JSON-safe
      *  (the next reply then falls back to a full replay). */
-    protected function captureFocusedBox($builtDisplay)
+    protected function captureFocusedBox()
     {
         if (!$this->fastPathEnabled()) {
             return;
         }
 
-        $box = $this->captureLevelBox($builtDisplay);
+        $box = $this->captureLevelBox();
 
         if ($this->isBoxJsonSafe($box)) {
             $this->fastPathCapture[implode('*', $this->getUserResponses())] = $box;
@@ -4343,14 +4342,13 @@ class UssdService
          *  BUILD THE DISPLAY   *
          ************************/
 
-        //  Build the current screen display. On a fast-path resume, reuse the display the
-        //  restored level already rendered (no re-render); from here we only handle the reply.
+        //  Build the current screen display. Always render live — even on a fast-path resume —
+        //  because the same screen can re-render differently (e.g. pagination scroll) and the
+        //  displayed screen is always the current one. (Reusing a cached render broke scrolling.)
         if ($this->resumingFromBox) {
-            $builtDisplay = $this->fastPathResumeBuilt;
             $this->resumingFromBox = false;
-        } else {
-            $builtDisplay = $this->buildCurrentDisplay();
         }
+        $builtDisplay = $this->buildCurrentDisplay();
 
         //  Check if the user has already responded to the current display screen
         if ($this->hasResponded()) {
@@ -4431,10 +4429,10 @@ class UssdService
             }
         }
 
-        //  Fast-path: capture this focused level (rendered, awaiting a reply) so the next
-        //  reply resumes from it. Only when this is the focused screen (no reply yet).
+        //  Fast-path: capture this focused level (awaiting a reply) so the next reply resumes
+        //  from it. Only when this is the focused screen (no reply yet).
         if (!$this->hasResponded()) {
-            $this->captureFocusedBox($builtDisplay);
+            $this->captureFocusedBox();
         }
 
         //  Determine whether to remove dynamic content highlighting
